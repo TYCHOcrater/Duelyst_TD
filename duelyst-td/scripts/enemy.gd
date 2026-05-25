@@ -33,22 +33,7 @@ var _pending_def: Dictionary = {}
 var _on_death_events: Array = []
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
-
-func _draw() -> void:
-	# Duelyst-style soft ground shadow. Drawn each frame because the enemy
-	# is moving along the path — we want the shadow to track the unit.
-	# (PathFollow2D's _process is called every frame anyway; queue_redraw
-	# is implicit via the next frame's redraw of moved nodes.)
-	var shadow := Color(0.0, 0.0, 0.0, 0.20)
-	var c := Vector2(0, 14)
-	var rx: float = 18.0 * scale.x
-	var ry: float = 6.0 * scale.y
-	var pts: PackedVector2Array = PackedVector2Array()
-	pts.append(c)
-	for i in 25:
-		var a: float = TAU * i / 24
-		pts.append(c + Vector2(cos(a) * rx, sin(a) * ry))
-	draw_polygon(pts, PackedColorArray([shadow]))
+var _shadow_sprite: AnimatedSprite2D = null
 @onready var hp_bar: Node2D = $HealthBar
 @onready var status_icons: Node2D = $StatusIcons
 
@@ -102,6 +87,20 @@ func _apply_sprite_frames() -> void:
 		sprite.play("run")
 	elif sprite.sprite_frames and sprite.sprite_frames.has_animation("idle"):
 		sprite.play("idle")
+	_ensure_shadow_sprite()
+
+func _ensure_shadow_sprite() -> void:
+	# Squashed silhouette of the enemy as its ground shadow.
+	if sprite.sprite_frames == null or _shadow_sprite != null:
+		return
+	_shadow_sprite = AnimatedSprite2D.new()
+	_shadow_sprite.sprite_frames = sprite.sprite_frames
+	_shadow_sprite.z_index = -2
+	_shadow_sprite.position = Vector2(0, 14)
+	_shadow_sprite.scale = Vector2(0.95, 0.35)
+	_shadow_sprite.modulate = Color(0.0, 0.0, 0.0, 0.35)
+	_shadow_sprite.play(sprite.animation)
+	add_child(_shadow_sprite)
 
 func _ready() -> void:
 	add_to_group("enemies")
@@ -149,6 +148,12 @@ func _process(delta: float) -> void:
 		sprite.flip_h = true
 	elif global_position.x > prev_x:
 		sprite.flip_h = false
+	# Keep silhouette shadow in sync with sprite anim/frame/flip
+	if _shadow_sprite != null:
+		if _shadow_sprite.animation != sprite.animation and sprite.sprite_frames and sprite.sprite_frames.has_animation(sprite.animation):
+			_shadow_sprite.play(sprite.animation)
+		_shadow_sprite.frame = sprite.frame
+		_shadow_sprite.flip_h = sprite.flip_h
 	if progress_ratio >= 1.0:
 		reached_end.emit(damage_to_base, enemy_id)
 		queue_free()

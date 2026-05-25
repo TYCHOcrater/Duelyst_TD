@@ -64,6 +64,11 @@ const EVO_THRESHOLDS := [15, 40, 80]
 const EVO_NAMES := ["", "Tempered", "Veteran", "Legendary"]
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+# Polish: silhouette shadow + halo highlight, built lazily as siblings of
+# the main sprite. They share the same SpriteFrames + current animation
+# so the silhouette matches the unit's pose every frame.
+var _shadow_sprite: AnimatedSprite2D = null
+var _highlight_sprite: AnimatedSprite2D = null
 
 func apply_def(def: Dictionary) -> void:
 	unit_id = def.get("id", "")
@@ -95,6 +100,33 @@ func _apply_sprite_frames() -> void:
 		sprite.sprite_frames = sf
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation("idle"):
 		sprite.play("idle")
+	if not is_preview:
+		_ensure_decorative_sprites()
+
+func _ensure_decorative_sprites() -> void:
+	# Lazily build the shadow + highlight overlay sprites. They share the
+	# main sprite's frames so the silhouette/halo matches the unit's pose.
+	# z_index < 0 places them behind the main sprite within this Node2D.
+	if sprite.sprite_frames == null:
+		return
+	if _shadow_sprite == null:
+		_shadow_sprite = AnimatedSprite2D.new()
+		_shadow_sprite.sprite_frames = sprite.sprite_frames
+		_shadow_sprite.z_index = -2
+		_shadow_sprite.position = Vector2(0, 18)
+		_shadow_sprite.scale = Vector2(0.95, 0.38)   # squashed silhouette on the ground
+		_shadow_sprite.modulate = Color(0.0, 0.0, 0.0, 0.40)
+		_shadow_sprite.play(sprite.animation)
+		add_child(_shadow_sprite)
+	if _highlight_sprite == null:
+		_highlight_sprite = AnimatedSprite2D.new()
+		_highlight_sprite.sprite_frames = sprite.sprite_frames
+		_highlight_sprite.z_index = -1
+		_highlight_sprite.scale = Vector2(1.10, 1.10)
+		_highlight_sprite.modulate = Color(1.0, 0.85, 0.4, 0.0)  # invisible until pulse
+		_highlight_sprite.visible = false
+		_highlight_sprite.play(sprite.animation)
+		add_child(_highlight_sprite)
 
 func _ready() -> void:
 	if not is_preview:
@@ -322,11 +354,12 @@ func evolution_progress() -> Dictionary:
 
 func _process(delta: float) -> void:
 	fire_cooldown -= delta
-	# Drive the upgradable-highlight pulse for any non-preview tower that
-	# has an action available. Cheap check, no queue_redraw if there's
-	# nothing to highlight.
-	if not is_preview and _has_upgrade_available():
-		queue_redraw()
+	# Polish: keep shadow + halo synced with the main sprite's frame so the
+	# silhouette / glow tracks attack/idle/death animations. Cheap if not
+	# in-tree (early return).
+	if not is_preview and _shadow_sprite != null:
+		_sync_decorative_sprites()
+		_update_upgrade_halo()
 	if buff_damage_mult > 0.0 and damage <= 0:
 		queue_redraw()
 		return
@@ -432,17 +465,10 @@ func _fire() -> void:
 			sprite.play("idle")
 
 func _draw() -> void:
-	# Soft elliptical ground shadow under the unit (Duelyst-style). Drawn
-	# first so range circles + aura pulses layer over it. Skipped for the
-	# placement-preview ghost so it doesn't double up with the live tower.
-	if not is_preview:
-		_draw_unit_shadow()
-		# A2/A4/A5/A6 upgradable highlight: pulsing ring when this unit has a
-		# pending evolution OR can be promoted in the current growth mode OR
-		# can be classically upgraded with current gold. Helps the player see
-		# at a glance "I have an action available on this unit".
-		if _has_upgrade_available():
-			_draw_upgrade_highlight()
+	# Shadow + upgrade-available halo are now rendered by sibling
+	# AnimatedSprite2D nodes (_shadow_sprite / _highlight_sprite) built in
+	# _ensure_decorative_sprites(). They follow the unit's silhouette
+	# automatically. Old polygon-based fallbacks removed.
 	if show_range:
 		var range_color := Color(0.2, 0.7, 1.0, 0.12)
 		var border_color := Color(0.2, 0.7, 1.0, 0.5)
@@ -471,6 +497,35 @@ func _draw() -> void:
 		for i in evolution_tier:
 			var sx: float = -total_w * 0.5 + i * spacing
 			_draw_star(Vector2(sx, star_y), 4.0, star_color)
+
+func _sync_decorative_sprites() -> void:
+	# Match the main sprite's current animation + frame + flip on the
+	# shadow/highlight layers. Animation handoff (e.g. idle → attack) is
+	# rare enough that the .play() call is cheap.
+	if _shadow_sprite:
+		if _shadow_sprite.animation != sprite.animation and sprite.sprite_frames and sprite.sprite_frames.has_animation(sprite.animation):
+			_shadow_sprite.play(sprite.animation)
+		_shadow_sprite.frame = sprite.frame
+		_shadow_sprite.flip_h = sprite.flip_h
+	if _highlight_sprite:
+		if _highlight_sprite.animation != sprite.animation and sprite.sprite_frames and sprite.sprite_frames.has_animation(sprite.animation):
+			_highlight_sprite.play(sprite.animation)
+		_highlight_sprite.frame = sprite.frame
+		_highlight_sprite.flip_h = sprite.flip_h
+
+func _update_upgrade_halo() -> void:
+	# Sprite-based replacement for the old polygon ring. Pulses the
+	# highlight sprite's alpha when the player has an action available.
+	if _highlight_sprite == null:
+		return
+	var has_action: bool = _has_upgrade_available()
+	if not has_action:
+		_highlight_sprite.visible = false
+		return
+	_highlight_sprite.visible = true
+	var pulse: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() / 320.0)
+	var alpha: float = 0.35 + 0.30 * pulse
+	_highlight_sprite.modulate = Color(1.0, 0.88, 0.42, alpha)
 
 func _draw_unit_shadow() -> void:
 	# Squashed ellipse approximated via two stacked circles to avoid needing a
