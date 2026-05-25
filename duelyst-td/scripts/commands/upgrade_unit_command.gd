@@ -27,7 +27,7 @@ func execute(main: Node) -> bool:
 		return false
 	GameState.spend_gold(cost)
 	t.upgrade()
-	AudioManager.play("place_tower")
+	AudioManager.play("place_tower", 0.08)
 	RunLog.record("upgrade_unit", {"unit": t.unit_id, "cost": cost, "level": t.level})
 	# Re-emit selected so HUD refreshes the panel.
 	placement.tower_selected.emit(t)
