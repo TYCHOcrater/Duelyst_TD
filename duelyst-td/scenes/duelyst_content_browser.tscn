@@ -103,6 +103,29 @@ size_flags_vertical = 3
 expand_mode = 1
 stretch_mode = 5
 
+[node name="AnimRow" type="HBoxContainer" parent="Root/Split/PreviewPanel/PreviewBox"]
+visible = false
+theme_override_constants/separation = 6
+
+[node name="AnimLabel" type="Label" parent="Root/Split/PreviewPanel/PreviewBox/AnimRow"]
+text = "Animation:"
+
+[node name="AnimOption" type="OptionButton" parent="Root/Split/PreviewPanel/PreviewBox/AnimRow"]
+size_flags_horizontal = 3
+
+[node name="AnimPlayBtn" type="Button" parent="Root/Split/PreviewPanel/PreviewBox/AnimRow"]
+text = "▶"
+custom_minimum_size = Vector2(36, 32)
+
+[node name="AnimStopBtn" type="Button" parent="Root/Split/PreviewPanel/PreviewBox/AnimRow"]
+text = "■"
+custom_minimum_size = Vector2(36, 32)
+
+[node name="AnimStatus" type="Label" parent="Root/Split/PreviewPanel/PreviewBox/AnimRow"]
+text = ""
+theme_override_font_sizes/font_size = 11
+modulate = Color(0.75, 0.75, 0.82, 1)
+
 [node name="AudioRow" type="HBoxContainer" parent="Root/Split/PreviewPanel/PreviewBox"]
 visible = false
 theme_override_constants/separation = 8
