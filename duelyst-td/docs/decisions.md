@@ -1297,6 +1297,55 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — UX batch (camera, ESC menu, offers-randomness fix, mastery icons)
+**Decision:** Bundle five user-requested UX improvements into one iteration: (1) fix the offers-not-random bug, (2) mouse-wheel zoom + RMB-drag pan on the play board, (3) in-game ESC pause menu with Main Menu / Quit exits, (4) unit portraits inline with the mastery list, (5) main menu compress carried over from earlier today.
+**Why one bundle:** All five touch the same surface (main_menu / hud / main scene) and none change gameplay logic. Shipping them as one keeps decisions.md surface area small and lets the user playtest the whole UX pass at once.
+**Why offer randomness broke:** `RunConfig.randomize_seed()` only ran once at autoload `_ready`, which fires once per process. Returning to the menu from an end-of-run, or clicking New Run twice without touching the ↻ button, reused the same seed → identical first-wave offers. Same-seed-same-offers is *correct* for the end-panel "Replay (same seed)" button and for shared daily seeds; it was only the default-menu path that needed re-randomization. Fix: `main_menu._ready` calls `RunConfig.randomize_seed()` on every entry. The user can still type a specific seed in the field before pressing New Run if they want to replay one.
+**Why the camera uses a Camera2D in the World node, not a global transform:** Wanted the background (`battlemap3_background.png`) to stay fixed while only tiles/units zoom. Putting Background in a separate `CanvasLayer` (layer = -10, behind the world) means it ignores the camera transform entirely. The camera moves world-space contents (board + tile renderer + enemies + hover indicator + placement preview) while the background, HUD (CanvasLayer 0), and any future overlays stay locked to the viewport.
+**Why the camera position defaults to viewport center:** Pre-camera, the world was rendered at default coords with the playable area roughly filling the viewport. Godot 4's Camera2D maps `position` to the viewport center, so setting `position = Vector2(viewport_rect.size) * 0.5` preserves the original framing. Without this, the camera would default to (0,0) and the playable area would slide off-screen toward the top-left.
+**Why zoom anchors at the cursor (not at world origin):** Standard map-tool behavior — the world point under the mouse stays put as you zoom in/out. Implemented via the canonical "world position before, change zoom, world position after, adjust camera by the delta" formula. Bound zoom to [0.5×, 3.0×]; 1.15× per wheel notch (~5 notches to reach max from default).
+**Why placement still works under zoom/pan:** `placement_controller` and `hover_indicator` use `get_global_mouse_position()`, which Godot auto-adjusts for the active Camera2D's transform. Zero gameplay code touched.
+**Why ESC opens its own overlay (not toggling the existing top-bar Pause button):** Top-bar Pause is a soft pause — keeps the HUD visible, mostly just stops time. ESC is the standard "I'm leaving" affordance; the overlay dims the world, blocks gameplay clicks (mouse_filter=stop), and offers Main Menu / Quit. Resume + ESC both close it. Disabled when the end-of-run panel is up (run already over).
+**Why mastery uses `RichTextLabel.add_image()`:** Tried BBCode `[img]` first — it requires a path string. Unit portraits are AtlasTexture sub-resources of SpriteFrames .tres (no canonical disk path). `RichTextLabel.add_image(Texture2D, w, h)` accepts the Texture directly and renders it inline. Same `_portrait_for(unit_id)` helper as the HUD draft cards (idle/breathing/breath/default preference + first-non-empty fallback for prefixed atlas names).
+**Impact:**
+- `scripts/main_menu.gd`: `_ready` calls `RunConfig.randomize_seed()` before populating the seed field. `_refresh_mastery_list` now uses `mastery_list.clear() + append_text + add_image` for per-row layout. New `_portrait_for(unit_id)` helper.
+- `scripts/camera_controller.gd` (new, ~50 lines): zoom-at-cursor on wheel, drag-to-pan on RMB, clamped zoom, `make_current()` at ready.
+- `scenes/main.tscn`: Background promoted to a `CanvasLayer` (layer = -10) outside World. New `Camera2D` child of World with the camera_controller script.
+- `scenes/hud.tscn`: new `PauseOverlay` (full-viewport ColorRect at 50% black + centered Panel) with "Paused" title + ESC-to-resume hint + Resume / Main Menu / Quit buttons.
+- `scripts/hud.gd`: ESC key handling in `_unhandled_input` → `_toggle_pause_menu()`. Three button handlers. Suppressed when end panel is visible.
+**Test:** See "Manual Test Checklist - Iter UX batch" below.
+
+---
+
+### Manual Test Checklist - Iter UX batch
+
+**Offers randomness fix:**
+- [ ] Start a run, end it, return to main menu. Click New Run again without touching the seed field. First-wave offers are different from the previous run.
+- [ ] Quit to desktop, relaunch, click New Run. First-wave offers differ from prior launches.
+- [ ] Edge: pick a specific seed by typing in the field → New Run → close to menu (don't end the run). Type the SAME seed again → New Run. Same first-wave offers (replayability preserved).
+
+**Camera zoom + pan:**
+- [ ] In a run, scroll mouse wheel up over the board. Board tiles + units scale up around the cursor; the painted-stone background stays fixed.
+- [ ] Scroll wheel down. Zooms out, clamped at 0.5×.
+- [ ] Continue scrolling up — zooms in, clamped at 3.0×.
+- [ ] Right-click and drag. Camera pans (board content moves opposite the drag); release pans stop.
+- [ ] Place a unit while zoomed in or panned away from default. The unit lands on the tile under the cursor (not at the pre-zoom world position).
+- [ ] Hover indicator + tower selection still respond correctly under any zoom/pan.
+
+**ESC pause menu:**
+- [ ] In a run, press ESC. A dimmed overlay appears with "Paused" title, "Resume" / "Main Menu" / "Quit to Desktop" buttons. Game time stops.
+- [ ] Press ESC again → overlay closes, game resumes.
+- [ ] Click Resume → same as ESC.
+- [ ] Click Main Menu → returns to main menu (game state discarded).
+- [ ] Open ESC menu, end the wave by leaking, end panel appears → ESC no longer toggles (the run is already over).
+
+**Mastery portraits:**
+- [ ] Play a run, place at least one of each of 3-4 different units. Win or lose, end the run.
+- [ ] Main menu → Unit Mastery. Each row of the mastery list shows the unit's idle-frame portrait inline before its name.
+- [ ] Units without a SpriteFrames atlas show 5 spaces of indent (alignment placeholder) so columns stay aligned.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

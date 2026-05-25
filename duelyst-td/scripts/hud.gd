@@ -85,6 +85,10 @@ var _current_choice_kind: String = "pact"
 @onready var daily_badge: Label = $EndPanel/VBox/DailyBadge
 @onready var daily_score_label: Label = $EndPanel/VBox/DailyScore
 @onready var daily_rank_label: Label = $EndPanel/VBox/DailyRank
+@onready var pause_overlay: ColorRect = $PauseOverlay
+@onready var pause_resume_btn: Button = $PauseOverlay/PausePanel/VBox/ResumeBtn
+@onready var pause_menu_btn: Button = $PauseOverlay/PausePanel/VBox/MainMenuBtn
+@onready var pause_quit_btn: Button = $PauseOverlay/PausePanel/VBox/QuitBtn
 @onready var tower_panel: Panel = $TowerPanel
 @onready var tp_name: Label = $TowerPanel/VBox/TowerName
 @onready var tp_stats: Label = $TowerPanel/VBox/TowerStats
@@ -154,13 +158,19 @@ func _ready() -> void:
 	tp_sell.pressed.connect(_on_sell)
 	end_panel.visible = false
 	tower_panel.visible = false
+	pause_overlay.visible = false
+	pause_resume_btn.pressed.connect(_close_pause_menu)
+	pause_menu_btn.pressed.connect(_on_pause_main_menu)
+	pause_quit_btn.pressed.connect(_on_pause_quit)
 	_on_gold_changed(GameState.gold)
 	_on_lives_changed(GameState.lives)
 	_on_wave_changed(GameState.wave)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_SPACE:
+		if event.keycode == KEY_ESCAPE:
+			_toggle_pause_menu()
+		elif event.keycode == KEY_SPACE:
 			pause_btn.button_pressed = not pause_btn.button_pressed
 		elif event.keycode == KEY_ENTER and start_wave_btn.visible and not start_wave_btn.disabled:
 			_on_start_wave()
@@ -172,6 +182,27 @@ func _unhandled_input(event: InputEvent) -> void:
 			_quick_pick(1)
 		elif event.keycode == KEY_3:
 			_quick_pick(2)
+
+func _toggle_pause_menu() -> void:
+	# ESC toggles a hard pause overlay. The top-bar Pause button is a softer
+	# space-bar pause; this one also gates running away to the main menu.
+	# Don't toggle when end panel is up (the run is over).
+	if end_panel.visible:
+		return
+	pause_overlay.visible = not pause_overlay.visible
+	get_tree().paused = pause_overlay.visible
+
+func _close_pause_menu() -> void:
+	pause_overlay.visible = false
+	get_tree().paused = false
+
+func _on_pause_main_menu() -> void:
+	get_tree().paused = false
+	Engine.time_scale = 1.0
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+func _on_pause_quit() -> void:
+	get_tree().quit()
 
 func _quick_pick(idx: int) -> void:
 	if idx < _current_offers.size():

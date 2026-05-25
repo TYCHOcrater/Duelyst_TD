@@ -30,6 +30,13 @@ func _ready() -> void:
 	if "--content-scan" in OS.get_cmdline_args():
 		_run_content_pipeline_smoke_test()
 		return
+	# Fresh seed each time we land on the menu (after a run, between launches, etc.).
+	# RunConfig._ready only fires once per process; without this, returning to the
+	# menu post-run would reuse the same seed → identical first-wave offers. The
+	# user can still type a specific seed before pressing New Run if they want to
+	# replay a particular run, and the end-panel "Replay (same seed)" path
+	# bypasses the menu so its semantics are unaffected.
+	RunConfig.randomize_seed()
 	seed_field.text = RunConfig.format_seed()
 	seed_field.text_submitted.connect(_on_seed_submitted)
 	randomize_btn.pressed.connect(_on_randomize)
@@ -245,11 +252,11 @@ const TIER_COLORS := {
 
 func _refresh_mastery_list() -> void:
 	var rows: Array = Mastery.sorted_entries()
+	mastery_list.clear()
 	if rows.is_empty():
-		mastery_list.text = "[color=#7a7a82]No runs recorded yet. Play a run and your units will appear here.[/color]"
+		mastery_list.append_text("[color=#7a7a82]No runs recorded yet. Play a run and your units will appear here.[/color]")
 		return
-	var lines: Array[String] = []
-	lines.append("[color=#a0a0a8]Unit  ·  Tier  ·  Kills (est.)  ·  Wins  ·  Placements  ·  Best wave[/color]")
+	mastery_list.append_text("[color=#a0a0a8]    Unit  ·  Tier  ·  Kills (est.)  ·  Wins  ·  Placements  ·  Best wave[/color]\n")
 	for row in rows:
 		var uid: String = row.unit_id
 		var e: Dictionary = row.entry
@@ -260,8 +267,15 @@ func _refresh_mastery_list() -> void:
 		var hex: String = TIER_COLORS.get(level, "#aaaaaa")
 		var tier_name: String = Mastery.tier_name(level)
 		var tier_text: String = "Lv %d %s" % [level, tier_name] if level > 0 else "Lv 0"
-		lines.append(
-			"[color=%s][b]%s[/b][/color]  [color=#7a7a82](%s)[/color]  ·  [color=%s]%s[/color]  ·  %d kills  ·  %d wins  ·  %d placements  ·  best W%d" % [
+		# Inline unit portrait if a SpriteFrames exists for this unit.
+		var icon: Texture2D = _portrait_for(uid)
+		if icon != null:
+			mastery_list.add_image(icon, 28, 28)
+			mastery_list.append_text(" ")
+		else:
+			mastery_list.append_text("     ")  # alignment placeholder
+		mastery_list.append_text(
+			"[color=%s][b]%s[/b][/color]  [color=#7a7a82](%s)[/color]  ·  [color=%s]%s[/color]  ·  %d kills  ·  %d wins  ·  %d placements  ·  best W%d\n" % [
 				hex,
 				name_text,
 				faction.capitalize(),
@@ -273,7 +287,22 @@ func _refresh_mastery_list() -> void:
 				int(e.get("max_wave", 0)),
 			]
 		)
-	mastery_list.text = "\n".join(lines)
+
+func _portrait_for(unit_id: String) -> Texture2D:
+	# Mirrors the helper in hud.gd: prefer idle/breathing animations, fall
+	# back to the first non-empty animation, return null if no SpriteFrames.
+	var sf: SpriteFrames = UnitFactory.sprite_frames_for(unit_id)
+	if sf == null:
+		return null
+	var names: PackedStringArray = sf.get_animation_names()
+	for keyword in ["idle", "breathing", "breathe", "breath", "default"]:
+		for n in names:
+			if String(n).ends_with(keyword) and sf.get_frame_count(n) > 0:
+				return sf.get_frame_texture(n, 0)
+	for n in names:
+		if sf.get_frame_count(n) > 0:
+			return sf.get_frame_texture(n, 0)
+	return null
 
 func _run_generator_smoke_test() -> void:
 	const MapGen = preload("res://scripts/map_generator.gd")

@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_m"]
 [ext_resource type="Texture2D" path="res://assets/maps/battlemap3_background.png" id="2_bg"]
@@ -7,6 +7,7 @@
 [ext_resource type="Script" path="res://scripts/placement_controller.gd" id="9_pc"]
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="10_h"]
 [ext_resource type="Script" path="res://scripts/session_controller.gd" id="11_sc"]
+[ext_resource type="Script" path="res://scripts/camera_controller.gd" id="12_cam"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_m")
@@ -14,13 +15,19 @@ script = ExtResource("1_m")
 [node name="SessionController" type="Node" parent="."]
 script = ExtResource("11_sc")
 
-[node name="World" type="Node2D" parent="."]
+[node name="BackgroundLayer" type="CanvasLayer" parent="."]
+layer = -10
 
-[node name="Background" type="Sprite2D" parent="World"]
+[node name="BackgroundSprite" type="Sprite2D" parent="BackgroundLayer"]
 texture = ExtResource("2_bg")
 centered = false
 position = Vector2(0, 0)
 modulate = Color(1, 1, 1, 0.65)
+
+[node name="World" type="Node2D" parent="."]
+
+[node name="Camera2D" type="Camera2D" parent="World"]
+script = ExtResource("12_cam")
 
 [node name="Board" parent="World" instance=ExtResource("3_board")]
 
