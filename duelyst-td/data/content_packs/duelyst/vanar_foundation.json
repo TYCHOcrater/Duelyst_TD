@@ -1,0 +1,217 @@
+{
+  "id": "vanar_foundation",
+  "display_name": "Vanar Foundation Pack",
+  "faction": "vanar",
+  "type": "faction_pack",
+  "version": 1,
+  "description": "Frost control. Slow stacking, brittle triggers, range disruption. Strong on long paths and against fast waves; weak to slow-resistant enemies and short maps.",
+  "fantasy": "Slow, brittle, control, snowballing precision.",
+  "balance_state": "needs_playtest",
+  "enabled_in_debug": true,
+  "enabled_in_normal_runs": false,
+
+  "defender_unit_ids": [
+    "snowchaser",
+    "frostiva",
+    "gravity_well",
+    "hearth_sister",
+    "kindred_hunter"
+  ],
+
+  "defender_shells": [
+    {
+      "id": "vanar_arctic_rhyno",
+      "source_duelyst_unit_id": "f6_arcticrhyno",
+      "display_name": "Arctic Rhyno",
+      "asset_profile_id": "f6_arcticrhyno",
+      "faction": "vanar",
+      "role": "blocker",
+      "rarity": "uncommon",
+      "cost": 9,
+      "range": 96,
+      "damage": 7,
+      "fire_rate": 0.65,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [0.55, 0.85, 1.0],
+      "slow_duration": 0.6,
+      "slow_factor": 0.7,
+      "tags": ["vanar", "blocker", "beast", "frost", "tank_melee"],
+      "description": "Heavy frost beast. Slow attacks, slows on hit."
+    },
+    {
+      "id": "vanar_crystal_beetle",
+      "source_duelyst_unit_id": "f6_crystalbeetle",
+      "display_name": "Crystal Beetle",
+      "asset_profile_id": "f6_crystalbeetle",
+      "faction": "vanar",
+      "role": "basic_melee",
+      "rarity": "common",
+      "cost": 4,
+      "range": 80,
+      "damage": 3,
+      "fire_rate": 1.4,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [0.6, 0.9, 1.0],
+      "tags": ["vanar", "basic_melee", "construct", "crystal", "swarm"],
+      "description": "Cheap fast melee. Good early-wave filler."
+    },
+    {
+      "id": "vanar_fenrir_werewolf",
+      "source_duelyst_unit_id": "f6_fenrirwerewolf",
+      "display_name": "Fenrir Werewolf",
+      "asset_profile_id": "f6_fenrirwerewolf",
+      "faction": "vanar",
+      "role": "assassin",
+      "rarity": "rare",
+      "cost": 9,
+      "range": 112,
+      "damage": 9,
+      "fire_rate": 1.3,
+      "damage_type": "strike",
+      "targeting": "strongest",
+      "projectile_speed": 0,
+      "projectile_color": [0.7, 0.85, 1.0],
+      "tags": ["vanar", "assassin", "beast", "fast_melee"],
+      "description": "Fast hitter targeting the toughest enemy in range."
+    },
+    {
+      "id": "vanar_draugar_lord",
+      "source_duelyst_unit_id": "f6_draugarlord",
+      "display_name": "Draugar Lord",
+      "asset_profile_id": "f6_draugarlord",
+      "faction": "vanar",
+      "role": "control_unit",
+      "rarity": "rare",
+      "cost": 9,
+      "range": 176,
+      "damage": 4,
+      "fire_rate": 0.8,
+      "damage_type": "frost",
+      "targeting": "first",
+      "projectile_speed": 380,
+      "projectile_color": [0.5, 0.75, 1.0],
+      "slow_duration": 1.2,
+      "slow_factor": 0.5,
+      "tags": ["vanar", "control_unit", "spirit", "frost", "ranged"],
+      "description": "Heavy slow on every hit. Stacks into a freeze."
+    },
+    {
+      "id": "vanar_elder_saberspine",
+      "source_duelyst_unit_id": "f6_eldersaberspine",
+      "display_name": "Elder Saberspine",
+      "asset_profile_id": "f6_eldersaberspine",
+      "faction": "vanar",
+      "role": "basic_melee",
+      "rarity": "uncommon",
+      "cost": 7,
+      "range": 96,
+      "damage": 6,
+      "fire_rate": 1.1,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [0.65, 0.9, 1.0],
+      "tags": ["vanar", "basic_melee", "beast", "fast_melee"],
+      "description": "Reliable mid-cost beast attacker."
+    },
+    {
+      "id": "vanar_bonechill_barrier",
+      "source_duelyst_unit_id": "f6_bonechillbarrier",
+      "display_name": "Bonechill Barrier",
+      "asset_profile_id": "f6_bonechillbarrier",
+      "faction": "vanar",
+      "role": "control_unit",
+      "rarity": "uncommon",
+      "cost": 6,
+      "range": 128,
+      "damage": 2,
+      "fire_rate": 0.9,
+      "damage_type": "frost",
+      "targeting": "first",
+      "projectile_speed": 360,
+      "projectile_color": [0.55, 0.85, 1.0],
+      "slow_duration": 0.8,
+      "slow_factor": 0.55,
+      "tags": ["vanar", "control_unit", "construct", "frost", "barrier"],
+      "description": "Cheap slow tower. Stacks well in a row."
+    }
+  ],
+
+  "enemy_shell_ids": [
+    "f6_arcticrhyno_enemy",
+    "f6_crystalbeetle_enemy",
+    "f6_fenrirwerewolf_enemy",
+    "f6_draugarlord_enemy",
+    "f6_eldersaberspine_enemy",
+    "f6_bonechillbarrier_enemy"
+  ],
+
+  "trait": {
+    "id": "vanar_glacial",
+    "display_name": "Glacial",
+    "rarity": "uncommon",
+    "applies_to_factions": ["vanar"],
+    "stat_mods": {"damage_mult": 0.95, "slow_duration_add": 0.3},
+    "description": "Slightly less damage, but slow effects last 0.3s longer."
+  },
+
+  "flaw": {
+    "id": "vanar_brittle",
+    "display_name": "Brittle",
+    "applies_to_factions": ["vanar"],
+    "stat_mods": {"cost_mult": 0.85, "fire_rate_mult": 1.1, "range_mult": 0.85},
+    "description": "Cheaper, faster attack rate, but shorter range."
+  },
+
+  "relic": {
+    "id": "vanar_frozen_core",
+    "display_name": "Frozen Core",
+    "category": "control",
+    "boon": "Vanar units' slow effects stack additively to up to 90% slow. Fully-slowed enemies take +30% damage from all sources.",
+    "effects": [
+      {"type": "vanar_slow_stack_cap", "value": 0.9},
+      {"type": "fully_slowed_damage_bonus", "value": 0.30}
+    ]
+  },
+
+  "wave_modifier": {
+    "id": "blizzard_assault",
+    "display_name": "Blizzard Assault",
+    "wave_index_hint": 7,
+    "description": "Wave is entirely frost-resistant fast enemies. Standard Vanar slow tactics struggle here.",
+    "tags": ["fast", "frost_resist"],
+    "spawn_overrides": {
+      "force_family": "fast",
+      "magic_resist_bonus": 0.30,
+      "speed_mult": 1.10
+    }
+  },
+
+  "vfx_event_overrides": {
+    "attack_projectile": "vanar_frost_bolt",
+    "hit_impact":        "vanar_frost_shatter",
+    "slow_applied":      "vanar_chill_aura"
+  },
+
+  "sfx_event_overrides": {
+    "unit_place":   "place_tower",
+    "tower_shoot":  "tower_archer_shoot",
+    "tower_cast":   "tower_caster_shoot",
+    "enemy_death":  "enemy_death"
+  },
+
+  "challenge_seed": "SHARD-VAN4RC0R",
+
+  "balance_notes": [
+    "Pack identity is slow-stack-into-burst. Fenrir Werewolf is the only true damage carry; everything else softens enemies for it.",
+    "Bonechill Barrier + Draugar Lord in series should fully freeze most armored enemies for 1-2s.",
+    "Crystal Beetle is the only cost-4 unit — fills the early-wave affordability slot.",
+    "Frozen Core relic shifts the deck from 'control' to 'control + execute' if it lands.",
+    "Blizzard Assault wave hard-counters straight slow strategies; mix in a Lyonar or neutral damage unit before wave 7.",
+    "Without Frozen Core, Vanar shells slightly under-perform pure damage factions; that's intentional — relic carries the build."
+  ]
+}

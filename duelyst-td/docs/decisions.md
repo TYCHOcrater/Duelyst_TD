@@ -1562,6 +1562,33 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — Vanar + Abyssian Foundation Packs (D13 continuation)
+**Decision:** Two more foundation packs on the same D13 template as Lyonar. 12 new sprite-ready atlas conversions + 12 new playable defender shells + enemy refs + trait/flaw/relic/wave_modifier per pack. Three packs now ship — user can mix-and-match in the Pack Manager.
+**Why two more packs in one bundle:** The template is settled after Lyonar. Each pack is now ~30 minutes of work (6 atlas conversions + JSON authoring) and validates that the PackManager + UnitFactory integration scales beyond one pack.
+**Why these factions next:** Vanar (frost control) and Abyssian (swarm/sacrifice) are *maximally different* from Lyonar (armored frontline). Three packs cover three core playstyles, giving the user something to compare when playtesting.
+**End-to-end verification** (`--test-packs` extended to disable all first for a clean baseline):
+- Curated baseline: 24 units
+- +abyssian_foundation → 30
+- +lyonar_foundation → 36
+- +vanar_foundation → 42
+- All three packs enabled: 42 total (+18 over curated).
+**Faction pack pricing pattern emerging:**
+- **Lyonar Foundation**: blocker-centric, 8-11 cost units, defensive + aura, weak to anti-armor + silence
+- **Vanar Foundation**: control-centric, 4-9 cost units, slow-stacking + execute, weak to slow-resistant + fast
+- **Abyssian Foundation**: swarm-centric, 3-10 cost units, cheap quantity + soul economy, weak to splash + silence
+**Bulk conversions** (`tools/convert_units.py`):
+- 6 Vanar: arcticrhyno, crystalbeetle, fenrirwerewolf, draugarlord, eldersaberspine, bonechillbarrier
+- 6 Abyssian: abomination, abyssiansentinel, arachne, bloodbaronette, crawler, creepmangler
+- ~720KB additional spritesheets/atlases committed
+**Impact:**
+- New `data/content_packs/duelyst/vanar_foundation.json` — 6 frost-themed defender shells + Glacial trait + Brittle flaw + Frozen Core relic + Blizzard Assault wave modifier.
+- New `data/content_packs/duelyst/abyssian_foundation.json` — 6 swarm-themed defender shells + Sacrificial trait + Corrupted flaw + Soulcaster's Pact relic + Shadow Silence wave modifier.
+- `assets/units/`: 12 new converted SpriteFrames directories.
+- `scripts/main_menu.gd`: `_run_pack_smoke_test` now disables all packs first for clean baseline.
+**Test:** Same as D13/D14 checklist; replace "1 pack" with "3 packs" and verify all 18 shells appear when their pack is enabled.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

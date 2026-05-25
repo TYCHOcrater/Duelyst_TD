@@ -428,12 +428,19 @@ func _run_offers_smoke_test() -> void:
 	get_tree().quit()
 
 func _run_pack_smoke_test() -> void:
+	# Disable all packs first to establish a clean baseline (persisted state
+	# from earlier toggles can pollute the result otherwise).
+	for pid in PackManager.all_pack_ids():
+		PackManager.set_enabled(String(pid), false)
 	var before: int = UnitFactory.all_ids().size()
-	print("Curated units (pack disabled): %d" % before)
+	print("Curated units (packs disabled): %d" % before)
 	print("Packs available: %s" % str(PackManager.all_pack_ids()))
-	PackManager.set_enabled("lyonar_foundation", true)
+	for pid in PackManager.all_pack_ids():
+		PackManager.set_enabled(String(pid), true)
+		var n: int = UnitFactory.all_ids().size()
+		print("  +%s → total %d" % [String(pid), n])
 	var enabled: int = UnitFactory.all_ids().size()
-	print("After enabling lyonar_foundation: %d (delta +%d)" % [enabled, enabled - before])
+	print("All packs enabled: %d total (delta +%d vs curated)" % [enabled, enabled - before])
 	# Verify new shell ids are present.
 	var ids: Array = UnitFactory.all_ids()
 	var lyonar_pack_ids: Array[String] = [
