@@ -159,6 +159,10 @@ theme_override_font_sizes/font_size = 13
 text = "Unit Mastery"
 custom_minimum_size = Vector2(0, 30)
 
+[node name="DuelystContentButton" type="Button" parent="CenterContainer/VBox"]
+text = "Duelyst Content (D0-D2)"
+custom_minimum_size = Vector2(0, 30)
+
 [node name="QuitButton" type="Button" parent="CenterContainer/VBox"]
 text = "Quit"
 custom_minimum_size = Vector2(0, 30)

@@ -14,6 +14,7 @@ extends Control
 @onready var determinism_btn: Button = $CenterContainer/VBox/DeterminismButton
 @onready var determinism_result: Label = $CenterContainer/VBox/DeterminismResult
 @onready var mastery_btn: Button = $CenterContainer/VBox/MasteryButton
+@onready var duelyst_content_btn: Button = $CenterContainer/VBox/DuelystContentButton
 @onready var quit_btn: Button = $CenterContainer/VBox/QuitButton
 @onready var mastery_panel: Panel = $MasteryPanel
 @onready var mastery_list: RichTextLabel = $MasteryPanel/VBox/Scroll/List
@@ -25,6 +26,10 @@ func _ready() -> void:
 	if "--test-generator" in OS.get_cmdline_args():
 		_run_generator_smoke_test()
 		return
+	# --content-scan runs D1 + D2 pipeline non-interactively and prints results.
+	if "--content-scan" in OS.get_cmdline_args():
+		_run_content_pipeline_smoke_test()
+		return
 	seed_field.text = RunConfig.format_seed()
 	seed_field.text_submitted.connect(_on_seed_submitted)
 	randomize_btn.pressed.connect(_on_randomize)
@@ -35,6 +40,7 @@ func _ready() -> void:
 	mastery_close_btn.pressed.connect(_on_close_mastery)
 	quit_btn.pressed.connect(_on_quit)
 	map_editor_btn.pressed.connect(_on_open_editor)
+	duelyst_content_btn.pressed.connect(_on_open_duelyst_content)
 	mastery_panel.visible = false
 	_populate_map_sources()
 	_populate_growth_modes()
@@ -194,6 +200,9 @@ func _on_play_daily() -> void:
 func _on_open_editor() -> void:
 	get_tree().change_scene_to_file("res://scenes/map_editor.tscn")
 
+func _on_open_duelyst_content() -> void:
+	get_tree().change_scene_to_file("res://scenes/duelyst_content_hub.tscn")
+
 func _on_determinism_test() -> void:
 	const N := 200
 	SessionRng.set_seed(123)
@@ -293,6 +302,32 @@ func _run_generator_smoke_test() -> void:
 	else:
 		det += "FAIL"
 	print("%s   total ok=%d  fail=%d" % [det, ok, fail])
+	get_tree().quit()
+
+func _run_content_pipeline_smoke_test() -> void:
+	const Scanner = preload("res://scripts/content/duelyst_raw_scanner.gd")
+	const Categorizer = preload("res://scripts/content/duelyst_categorizer.gd")
+	var t0: int = Time.get_ticks_msec()
+	var scan_res: Dictionary = Scanner.scan()
+	var scan_ms: int = Time.get_ticks_msec() - t0
+	if not scan_res.get("ok", false):
+		print("D1 SCAN FAIL: %s" % scan_res.get("message", "?"))
+		get_tree().quit(1)
+		return
+	var c: Dictionary = scan_res.get("counts", {})
+	print("D1 scan PASS: %d files in %d ms" % [int(c.get("total_files", 0)), scan_ms])
+	print("  by_section: %s" % JSON.stringify(c.get("by_section", {})))
+	t0 = Time.get_ticks_msec()
+	var cat_res: Dictionary = Categorizer.categorize()
+	var cat_ms: int = Time.get_ticks_msec() - t0
+	if not cat_res.get("ok", false):
+		print("D2 CATEGORIZE FAIL: %s" % cat_res.get("message", "?"))
+		get_tree().quit(1)
+		return
+	var cc: Dictionary = cat_res.get("counts", {})
+	print("D2 categorize PASS: %d entries in %d ms" % [int(cc.get("total", 0)), cat_ms])
+	print("  by_category: %s" % JSON.stringify(cc.get("by_category", {})))
+	print("  by_faction: %s" % JSON.stringify(cc.get("by_faction", {})))
 	get_tree().quit()
 
 func _on_quit() -> void:

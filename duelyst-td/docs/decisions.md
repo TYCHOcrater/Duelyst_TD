@@ -1148,19 +1148,76 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
-## Next iteration candidates (C-track now active, A-track paused)
+## 2026-05-25 — Duelyst content pipeline foundation (Iterations D0-D2 — Milestone "Duelyst Content Ingestion")
+**Decision:** Implement the first three stages of the content ingestion pipeline per `shardstorm_td_duelyst_content_ingestion_milestone.md`: D0 (configurable source path + validator), D1 (raw scanner that walks the Duelyst source tree), D2 (categorizer + manual override file). Pipeline is dev-time only — settings, catalogs, and reports live under `user://duelyst_content/`, *not* in `res://` (which is read-only in exported builds). Existing gameplay is untouched.
+**Why D0-D2 as one bundle:** The ingestion milestone doc explicitly suggests D0+D1 as the starter bundle (line 1390), and D2 is the natural minimum to make D1's output *useful* (raw paths alone aren't queryable; categories are). D3 (Godot import layer) and D4 (content browser MVP) follow as their own iteration once we know what categories actually shake out of real scans — turns out we have 6055 files split across ~12 categories, which informs how D4's tabs/filters should be designed.
+**Why not start by enabling more units in normal runs:** Per the milestone doc §1 and §15, the goal is *not* "add 400 units now." It's "make 400 units indexed and previewable, with 60-80 promoted to playable through a controlled pipeline." Skipping D0-D2 to hand-add units would defeat the milestone's main purpose.
+**Why `user://duelyst_content/` not `res://data/duelyst/`:** The catalogs change every time the dev's local Duelyst clone updates. Storing them in `res://` would commit machine-specific data to git on every scan. `user://` keeps them dev-local; once a snapshot is canon, the dev can manually copy it into `res://data/duelyst/` and commit.
+**Why RefCounted + `_init()` for DuelystContentSettings (not Node + static singleton):** Initially used a Node held in a static var. Godot leaked it at exit (`ObjectDB instances leaked at exit`). Switched to RefCounted with auto-load in `_init()` so each caller gets a fresh instance that auto-frees when the holder drops it. Cleaner lifecycle, no leak.
+**Why GDScript `static func` was abandoned:** Tried `static func load_or_default()` on the settings script and Godot 4.6 reported `"Nonexistent function 'load_or_default' in base 'GDScript'"` despite the method clearly being defined. Static-method dispatch on `preload()`'d scripts is finicky in 4.6 (probably related to script-resource initialization order). Replaced with plain `SETTINGS_SCRIPT.new()` + `_init()` self-load.
+**Pipeline output structure** (under `user://duelyst_content/`):
+- `settings.json` — D0 config (source_root, output_root, last_scan_at, etc.)
+- `catalog_raw.json` — D1 output: every file with id, rel_path, abs_path, top_dir, section_hint, extension, size_bytes, readiness_level=0
+- `report_raw.json` — D1 counts: by_extension, by_section, by_top_dir, total_files, total_bytes
+- `catalog_categorized.json` — D2 output: same entries with category + faction + readiness_level=1
+- `report_categorized.json` — D2 counts: by_category, by_faction, unit_atlases_paired
+- `manual_overrides.json` — user-edited overrides (per-id), stub created on first run with format docs in `_note` / `_example`
+**Real-data smoke test** (`--content-scan` CLI flag): scanned 6055 files in 1.7s, categorized in 281ms. Breakdown:
+- `unit_sprite` 820, `unit_animation_data` 696 (atlas pairs)
+- `fx_sprite` 326, `fx_animation_data` 272
+- `sfx` 712, `music` 22
+- `ui_image` 1325, `icon` 1233
+- `map_background` 78, `map_tile` 66
+- `font` 30
+- `unknown` 475 (~8%)
+- Faction inference: lyonar 373, songhai 398, vetruvian 374, abyssian 415, magmar 370, vanar 403, neutral 804
+**Impact:**
+- New `scripts/content/` directory + 4 scripts: `duelyst_content_settings.gd` (D0), `duelyst_raw_scanner.gd` (D1), `duelyst_categorizer.gd` (D2), `duelyst_content_hub.gd` (UI driver).
+- New `scenes/duelyst_content_hub.tscn` — dev tool with two PanelContainer sections: D0 source path + Validate/Save, D1+D2 action buttons + result/report panel. Reached from main menu via new "Duelyst Content (D0-D2)" button.
+- `scripts/main_menu.gd`: new `duelyst_content_btn` + handler. New `_run_content_pipeline_smoke_test()` triggered by `--content-scan` CLI flag (mirrors `--test-generator` pattern).
+- `scenes/main_menu.tscn`: new `DuelystContentButton` in main button column.
+- Output written exclusively to `user://duelyst_content/` (see structure above). No `res://` writes.
+**Test:** See "Manual Test Checklist - Iter D0-D2" below.
 
-C-track (from co-op addendum §13 "Most impactful next path"):
+---
+
+### Manual Test Checklist - Iter D0-D2 (Content pipeline foundation)
+
+- [ ] Main menu shows a new "Duelyst Content (D0-D2)" button below "Unit Mastery".
+- [ ] Click it → Duelyst Content hub opens. Settings section shows the default source path (`E:/CODE/Duelyst_TD/duelyst-main/duelyst-main/app/resources`).
+- [ ] Click Validate → green message confirms the folder + lists detected subdirs (units, fx, sfx, ui).
+- [ ] Set source path to a bogus folder → Validate → red message with specific reason.
+- [ ] Restore real path → click "Run D1 — Scan source" → status flips to "Scanning…" → completes within ~2 seconds → shows total file count (~6000) + by-section + by-extension breakdown.
+- [ ] Click "Run D2 — Categorize" → completes in <1 second → shows by-category + by-faction counts.
+- [ ] Open `%APPDATA%\Godot\app_userdata\Duelyst_TD\duelyst_content\` → confirm 6 files: `settings.json`, `catalog_raw.json`, `report_raw.json`, `catalog_categorized.json`, `report_categorized.json`, `manual_overrides.json`.
+- [ ] Edit `manual_overrides.json` to add one override (e.g. `{"units_boss_andromeda_png": {"category": "unit_sprite", "faction": "neutral"}}`) → re-run D2 → report says override_count = 1.
+- [ ] Re-run D1 → no duplicate explosion in catalog (entry count stays ~6055).
+- [ ] Back to main menu → start a normal run → confirm existing gameplay unaffected.
+- [ ] Headless smoke test passes: `godot.exe --headless --path . res://scenes/main_menu.tscn --content-scan` prints `D1 scan PASS: 6055 files in N ms` then `D2 categorize PASS: 6055 entries in N ms` with the same by-category breakdown.
+
+---
+
+## Next iteration candidates (C-track + D-track now interleaved)
+
+**D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):
+- **D3 Godot import/reference layer** — copy categorized assets into `res://assets/duelyst/<category>/`, idempotent re-run.
+- **D4 Content browser MVP** — in-game scene with Units/VFX/SFX/UI/Maps/Unknown tabs; preview images, play audio, filter by readiness level.
+- **D5 Unit animation preview** — idle/attack/run/death playback inside the browser.
+- **D6 Unit catalog builder** — `DuelystUnitCatalogEntry` with name/faction/animation links.
+- **D7 Generated unit shells** — at least 50 conservative `GeneratedUnitShell`s, debug-only.
+- **D8 Dual-use enemy conversion** — enemies from Duelyst units, 30+ in debug.
+- **D9-D10** SFX + VFX cataloging and event routing.
+- **D11-D13** UI skin + map theme ingestion + faction foundation packs.
+- **D14-D17** Pack enablement UI, validator, collection browser, reuse report.
+
+**C-track — Starbase co-op** (from co-op addendum §13):
 - **C1 CoopMapDef schema** — data format for one shared map with multiple routes. Hand-authored 2-player Starbase map loads.
 - **C2 Multi-route enemy spawning** — wave spawner routes enemies per slot; leaks damage the correct Gate Shield then shared Core.
 - **C3 Route ownership + placement zones** — players can only build in their own zone + shared ring.
 - **C4 Synced co-op phases** — ready checks; wave starts when all ready.
-- **C5 Co-op camera + overview** — zoom to own route or full Starbase.
-- **C6 Gate Shield + team Core UI** — visible per-route shields + shared core.
-- **C7 Aid Token v1** — send temporary unit copy to ally route.
-- **C8 Breach Tunnel v1** — collapsed routes spawn a breach packet near Core that everyone can damage.
-- **C10 2-player Starbase balance pass** — tune shields + enemy budgets.
-- **C11 Simple generated Starbase maps** — generator + validator for multi-route maps.
+- **C5-C8** Camera, Gate Shield UI, Aid Token, Breach Tunnel.
 
-A-track resumes after C8 is fun:
+**A-track — growth bake-off** (paused until C8 + D7 land):
 - A2 Unit Instance Identity → A8 Growth Bake-Off Report.
+
+Suggested next pick: **D3 + D4** (content browser unlocks visual inspection of the 6055 cataloged assets — essential before D6+ generates anything).

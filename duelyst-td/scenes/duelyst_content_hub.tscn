@@ -1,0 +1,109 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/content/duelyst_content_hub.gd" id="1_hub"]
+
+[node name="DuelystContentHub" type="Control"]
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_hub")
+
+[node name="Background" type="ColorRect" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.06, 0.06, 0.09, 1)
+mouse_filter = 2
+
+[node name="Root" type="VBoxContainer" parent="."]
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = -24.0
+offset_bottom = -18.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 14
+
+[node name="TopBar" type="HBoxContainer" parent="Root"]
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="Root/TopBar"]
+text = "Duelyst Content Pipeline"
+theme_override_font_sizes/font_size = 22
+
+[node name="Subtitle" type="Label" parent="Root/TopBar"]
+text = "D0 settings · D1 scanner · D2 categorizer"
+theme_override_font_sizes/font_size = 12
+modulate = Color(0.65, 0.65, 0.72, 1)
+
+[node name="Spacer" type="Control" parent="Root/TopBar"]
+size_flags_horizontal = 3
+
+[node name="BackBtn" type="Button" parent="Root/TopBar"]
+text = "Back"
+
+[node name="SettingsSection" type="PanelContainer" parent="Root"]
+
+[node name="VBox" type="VBoxContainer" parent="Root/SettingsSection"]
+theme_override_constants/separation = 6
+
+[node name="SectionTitle" type="Label" parent="Root/SettingsSection/VBox"]
+text = "D0  Source path"
+theme_override_font_sizes/font_size = 16
+
+[node name="SourceRow" type="HBoxContainer" parent="Root/SettingsSection/VBox"]
+theme_override_constants/separation = 6
+
+[node name="SourceLabel" type="Label" parent="Root/SettingsSection/VBox/SourceRow"]
+text = "Duelyst resources/:"
+custom_minimum_size = Vector2(140, 0)
+
+[node name="SourceField" type="LineEdit" parent="Root/SettingsSection/VBox/SourceRow"]
+size_flags_horizontal = 3
+placeholder_text = "E:/path/to/duelyst-main/app/resources"
+
+[node name="SaveBtn" type="Button" parent="Root/SettingsSection/VBox/SourceRow"]
+text = "Save"
+
+[node name="ValidateBtn" type="Button" parent="Root/SettingsSection/VBox/SourceRow"]
+text = "Validate"
+
+[node name="SourceStatus" type="RichTextLabel" parent="Root/SettingsSection/VBox"]
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+custom_minimum_size = Vector2(0, 28)
+text = "[i]Press Validate to check the source folder.[/i]"
+
+[node name="ScanSection" type="PanelContainer" parent="Root"]
+
+[node name="VBox" type="VBoxContainer" parent="Root/ScanSection"]
+theme_override_constants/separation = 6
+
+[node name="SectionTitle" type="Label" parent="Root/ScanSection/VBox"]
+text = "D1  Raw scanner  →  D2  Categorizer"
+theme_override_font_sizes/font_size = 16
+
+[node name="ActionRow" type="HBoxContainer" parent="Root/ScanSection/VBox"]
+theme_override_constants/separation = 8
+
+[node name="ScanBtn" type="Button" parent="Root/ScanSection/VBox/ActionRow"]
+text = "Run D1 — Scan source"
+custom_minimum_size = Vector2(220, 36)
+
+[node name="CategorizeBtn" type="Button" parent="Root/ScanSection/VBox/ActionRow"]
+text = "Run D2 — Categorize"
+custom_minimum_size = Vector2(220, 36)
+
+[node name="OpenOutputBtn" type="Button" parent="Root/ScanSection/VBox/ActionRow"]
+text = "Show output paths"
+
+[node name="ResultLabel" type="RichTextLabel" parent="Root/ScanSection/VBox"]
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+custom_minimum_size = Vector2(0, 320)
+text = "[i]No scan run yet.[/i]"
+size_flags_vertical = 3
