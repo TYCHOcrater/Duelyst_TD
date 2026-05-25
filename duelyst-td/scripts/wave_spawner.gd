@@ -204,6 +204,9 @@ func _on_enemy_reached_end(damage: int, enemy_id: String, route_id: String) -> v
 		# C6: route the damage through Gate Shield first; overflow hits Core.
 		var breakdown: Dictionary = GameState.take_leak_damage(route_id, effective_damage)
 		AudioManager.play("base_hit", 0.1)
+		# Burst at the gate tile so the leak reads on the map too. Color +
+		# size shift on whether the shield absorbed it or the Core took it.
+		_spawn_leak_fx(route_id, int(breakdown.get("shield_hits", 0)), int(breakdown.get("core_hits", 0)))
 		RunLog.record("leak", {
 			"enemy_id": enemy_id,
 			"damage": effective_damage,
@@ -212,6 +215,26 @@ func _on_enemy_reached_end(damage: int, enemy_id: String, route_id: String) -> v
 			"shield_hits": breakdown.get("shield_hits", 0),
 			"core_hits": breakdown.get("core_hits", 0),
 		})
+
+func _spawn_leak_fx(route_id: String, shield_hits: int, core_hits: int) -> void:
+	var gate_path: Path2D = _path_by_route.get(route_id, path)
+	if gate_path == null or gate_path.curve == null:
+		return
+	var n: int = gate_path.curve.point_count
+	if n == 0:
+		return
+	var local_pos: Vector2 = gate_path.curve.get_point_position(n - 1)
+	var gate_pos: Vector2 = gate_path.to_global(local_pos)
+	var host: Node = get_tree().current_scene
+	if host == null:
+		return
+	if core_hits > 0:
+		# Core hit — heavy red burst, larger if multiple HP came off.
+		var scale_mult: float = clamp(0.8 + 0.25 * core_hits, 0.8, 2.0)
+		CombatFX.burst(host, gate_pos, Color(1.0, 0.35, 0.3), 18, scale_mult)
+	elif shield_hits > 0:
+		# Shield absorbed — amber spark, contained.
+		CombatFX.burst(host, gate_pos, Color(1.0, 0.7, 0.3), 10, 0.7)
 	# Corruption modifier: leak corrupts the nearest buildable tile (capped at 6).
 	# Uses the core's world position as the seed since the leak hits the core.
 	if WaveEffects.corrupt_on_leak and grid != null:
