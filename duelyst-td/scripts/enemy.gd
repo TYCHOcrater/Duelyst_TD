@@ -247,6 +247,14 @@ func _die() -> void:
 	var host := get_tree().current_scene if is_inside_tree() else null
 	if host:
 		CombatFX.burst(host, global_position, burst_color, 14, scale_mult)
+		# Gold drop floater — same drift/fade as damage popups but with a
+		# `+` prefix and a coin-gold tint so it reads as "reward".
+		if gold_reward > 0:
+			var popup := Node2D.new()
+			popup.set_script(preload("res://scripts/damage_popup.gd"))
+			host.add_child(popup)
+			popup.global_position = global_position + Vector2(randi_range(-4, 4), -44)
+			popup.setup(gold_reward, Color(1.0, 0.85, 0.35), "+")
 	_process_on_death_events()
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation("death"):
 		sprite.play("death")
