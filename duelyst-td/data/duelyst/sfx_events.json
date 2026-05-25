@@ -8,18 +8,18 @@
     "unit_place":     { "sfx_id": "place_tower",        "priority": 60, "cooldown_ms":  80, "max_simultaneous": 2 },
     "unit_sell":      { "sfx_id": "ui_select",          "priority": 50, "cooldown_ms": 120, "max_simultaneous": 1 },
     "unit_upgrade":   { "sfx_id": "place_tower",        "priority": 60, "cooldown_ms": 120, "max_simultaneous": 1 },
-    "unit_merge":     { "sfx_id": null,                  "priority": 70, "cooldown_ms": 200, "max_simultaneous": 1 },
-    "unit_evolve":    { "sfx_id": null,                  "priority": 80, "cooldown_ms": 300, "max_simultaneous": 1 },
+    "unit_merge":     { "sfx_id": "place_tower",        "priority": 70, "cooldown_ms": 200, "max_simultaneous": 1 },
+    "unit_evolve":    { "sfx_id": "wave_start",         "priority": 80, "cooldown_ms": 300, "max_simultaneous": 1 },
     "tower_shoot":    { "sfx_id": "tower_archer_shoot", "priority": 20, "cooldown_ms":  20, "max_simultaneous": 6 },
     "tower_cast":     { "sfx_id": "tower_caster_shoot", "priority": 25, "cooldown_ms":  40, "max_simultaneous": 4 },
     "wave_start":     { "sfx_id": "wave_start",        "priority": 90, "cooldown_ms": 500, "max_simultaneous": 1 },
     "enemy_death":    { "sfx_id": "enemy_death",       "priority": 25, "cooldown_ms":  30, "max_simultaneous": 6 },
-    "boss_warning":   { "sfx_id": null,                  "priority": 95, "cooldown_ms": 800, "max_simultaneous": 1 },
+    "boss_warning":   { "sfx_id": "wave_start",         "priority": 95, "cooldown_ms": 800, "max_simultaneous": 1 },
     "leak":           { "sfx_id": "base_hit",          "priority": 80, "cooldown_ms": 120, "max_simultaneous": 2 },
     "core_damage":    { "sfx_id": "base_hit",          "priority": 85, "cooldown_ms":  80, "max_simultaneous": 2 },
     "pact_chosen":    { "sfx_id": "ui_select",          "priority": 70, "cooldown_ms": 200, "max_simultaneous": 1 },
     "relic_chosen":   { "sfx_id": "ui_select",          "priority": 70, "cooldown_ms": 200, "max_simultaneous": 1 },
-    "victory":        { "sfx_id": null,                  "priority": 99, "cooldown_ms":1000, "max_simultaneous": 1 },
-    "defeat":         { "sfx_id": null,                  "priority": 99, "cooldown_ms":1000, "max_simultaneous": 1 }
+    "victory":        { "sfx_id": "wave_start",         "priority": 99, "cooldown_ms":1000, "max_simultaneous": 1 },
+    "defeat":         { "sfx_id": "base_hit",           "priority": 99, "cooldown_ms":1000, "max_simultaneous": 1 }
   }
 }

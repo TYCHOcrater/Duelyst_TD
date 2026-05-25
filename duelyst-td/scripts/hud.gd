@@ -299,6 +299,13 @@ func _on_game_over(victory: bool) -> void:
 	end_panel.visible = true
 	end_label.text = "Victory!" if victory else "Defeat"
 	end_label.modulate = Color(0.4, 1, 0.5) if victory else Color(1, 0.4, 0.4)
+	# Victory/Defeat audio cue.
+	AudioManager.play_event("victory" if victory else "defeat")
+	# Full-screen vignette flash to match the moment.
+	if victory:
+		_flash_phase_vignette(Color(0.6, 1.0, 0.7, 1.0), 0.7)
+	else:
+		_flash_phase_vignette(Color(1.0, 0.3, 0.3, 1.0), 0.85)
 	_populate_run_summary()
 	_handle_daily_end()
 
@@ -518,6 +525,9 @@ func show_wave_banner(wave_num: int) -> void:
 	var tags := _wave_tags(wave_num)
 	if "boss" in tags:
 		_animate_banner("⚠  Wave %d  ·  BOSS  ⚠" % wave_num, Color(1.0, 0.5, 0.4))
+		AudioManager.play_event("boss_warning")
+		# Heavier red vignette so the player feels the threat.
+		_flash_phase_vignette(Color(1.0, 0.3, 0.25, 1.0), 0.85)
 	else:
 		_animate_banner("Wave %d" % wave_num, Color(1, 1, 1))
 
@@ -697,7 +707,25 @@ func _on_pact_card_pressed(idx: int) -> void:
 	var cid: String = pact_cards[idx].get_meta("choice_id", "")
 	if cid == "":
 		return
-	AudioManager.play("ui_select")
+	# Route through the event system so the kind-specific SFX plays.
+	# (unit_evolve uses wave_start — heftier — for the evolution moment.)
+	var evt: String = "pact_chosen"
+	var burst_color: Color = Color(0.7, 0.95, 1.0)
+	match _current_choice_kind:
+		"relic":
+			evt = "relic_chosen"
+			burst_color = Color(0.9, 0.7, 1.0)
+		"evolution":
+			evt = "unit_evolve"
+			burst_color = Color(0.6, 0.9, 1.0)
+	AudioManager.play_event(evt)
+	# Celebration burst at the picked card's center.
+	var host: Node = get_tree().current_scene
+	var card: Button = pact_cards[idx]
+	if host and card and card.is_inside_tree():
+		var card_center: Vector2 = card.get_global_rect().get_center()
+		CombatFX.burst(host, card_center, burst_color, 22, 1.1)
+		CombatFX.placement_pulse(host, card_center, Color(burst_color.r, burst_color.g, burst_color.b, 0.9))
 	hide_pact_choice()
 	match _current_choice_kind:
 		"relic":     CommandBus.dispatch(ChooseRelicCommand.new(cid))
