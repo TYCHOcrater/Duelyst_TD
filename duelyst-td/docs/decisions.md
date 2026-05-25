@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Atmosphere: ambient FX layer (dust + core glow + spawn portal)
+**Decision:** New `scripts/ambient_fx.gd` (a Node2D parented to `World` after map load) generates three procedural atmospheric effects: ~70 drifting dust motes filling the viewport via `CPUParticles2D`, a soft golden pulse at each Core position, and a slow-spinning purple pulse at the central spawn tile on multi-route maps. All visuals use code-generated soft-edge circle textures — no new assets are required.
+**Why:** User asked for small VFX/atmosphere wins to lift the visual style. Procedural + universally applied = the effects work on every existing map (default, generated, battleground) and on every map added later, with zero data-side work.
+**Impact:** New `scripts/ambient_fx.gd`, `scripts/main.gd` (preload + `_spawn_ambient_fx()` invoked right after `_spawn_base()`). All FX live behind the units (z_index -2 for glows, +4 for dust) so they don't obscure gameplay.
+**Test:** Headless boot of both default and `--use-battleground` parses + runs clean. In-engine: drifting motes are visible across the play area; each Core gently pulses gold; battleground spawn tile pulses purple and rotates slowly.
+
+---
+
 ## 2026-05-25 — Balance: minimum-viable attack range = 100
 **Decision:** Bumped `young_silithar` and `windblade_adept` from range=90 → 110. Added a UnitFactory load-time warning for any attacking unit (range>0 AND damage>0) with `range < 100`.
 **Why:** User feedback — saw a unit with low fire rate + small attack radius that wouldn't reliably hit. Diagonal-adjacent placement around a 64-px tile lands ~90.5 px from the path tile center; range=90 means the unit cannot fire at all from diagonal-adjacent positions. range=100 covers every legal adjacency (cardinal and diagonal), guaranteeing every legitimate placement yields at least one shot.

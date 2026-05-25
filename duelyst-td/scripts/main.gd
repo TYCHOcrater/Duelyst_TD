@@ -5,6 +5,7 @@ const PHASE_SCRIPT := preload("res://scripts/phase_controller.gd")
 const DRAFT_SCRIPT := preload("res://scripts/draft_director.gd")
 const DEBUG_OVERLAY_SCENE := preload("res://scenes/debug_overlay.tscn")
 const MAP_GENERATOR := preload("res://scripts/map_generator.gd")
+const AMBIENT_FX_SCRIPT := preload("res://scripts/ambient_fx.gd")
 
 const STARTER_MAP := "res://data/maps/starter_neutral.json"
 const BATTLEGROUND_MAP := "res://data/maps/battleground_test.json"
@@ -51,6 +52,7 @@ func _ready() -> void:
 		return
 	_apply_map_background()
 	_spawn_base()
+	_spawn_ambient_fx()
 	# C3: now that the grid + routes are loaded, seed each PlayerSlot's
 	# owned-tile set so placement can gate by zone. In solo this just makes
 	# every buildable tile belong to slot 0 (no visible change).
@@ -167,6 +169,17 @@ func _input(event: InputEvent) -> void:
 		if phase_controller and phase_controller.has_method("debug_force_start_wave"):
 			phase_controller.debug_force_start_wave()
 			print("F5: debug force-start wave")
+
+func _spawn_ambient_fx() -> void:
+	# Atmospheric layer: drifting dust + pulsing core glow + spawn portal.
+	# Sits between the background and the world units (parented to world so
+	# pan/zoom move it with the board, but z_index keeps it behind units).
+	# Instantiating from the script (not Node2D.new + set_script) so the
+	# typed `setup` method is visible to the static analyzer.
+	var fx = AMBIENT_FX_SCRIPT.new()
+	fx.name = "AmbientFX"
+	world.add_child(fx)
+	fx.setup(board, Vector2(get_viewport_rect().size))
 
 func _spawn_base() -> void:
 	if base != null and is_instance_valid(base):
