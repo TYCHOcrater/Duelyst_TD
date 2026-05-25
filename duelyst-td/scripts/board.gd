@@ -14,6 +14,12 @@ var cores: Array = []           # Array of Vector2i — all core positions
 var topology: String = "single"
 var background_image_path: String = ""
 
+# C2: per-route Path2D nodes built at map-load. For "single" topology this is
+# [enemy_path] (length 1). For "outburst", we build one Path2D per route,
+# parented to self, with curves derived from each route's path_chain.
+# Same ordering as `routes` so route[i] uses route_paths[i].
+var route_paths: Array = []
+
 const TILE_RENDERER_SCRIPT := preload("res://scripts/tile_renderer.gd")
 const HOVER_SCRIPT := preload("res://scripts/hover_indicator.gd")
 
@@ -62,8 +68,35 @@ func _apply_loaded(map: Dictionary) -> bool:
 	background_image_path = String(map.get("background_image", ""))
 	# Active curve = grid's primary path_chain (route[0] for outburst).
 	enemy_path.curve = grid.build_path_curve()
+	_rebuild_route_paths()
 	map_loaded.emit(map["id"])
 	return true
+
+# Rebuild the route_paths array on map (re)load. The scene's $EnemyPath is
+# always route_paths[0]; additional Path2D nodes are created at runtime for
+# routes[1..N-1] in "outburst" topology and parented to self.
+func _rebuild_route_paths() -> void:
+	# Free previously-created sibling Path2D nodes (keep the scene's $EnemyPath).
+	for child in get_children():
+		if child is Path2D and child != enemy_path:
+			child.queue_free()
+	route_paths.clear()
+	if routes.is_empty():
+		route_paths.append(enemy_path)
+		return
+	# routes[0] uses the existing $EnemyPath (curve already set above).
+	route_paths.append(enemy_path)
+	for i in range(1, routes.size()):
+		var rid: String = String(routes[i].get("id", ""))
+		var curve: Curve2D = curve_for_route(rid)
+		if curve == null:
+			push_warning("board: could not build curve for route '%s'" % rid)
+			continue
+		var p := Path2D.new()
+		p.name = "Route_%s" % rid
+		p.curve = curve
+		add_child(p)
+		route_paths.append(p)
 
 # C1 helper for future C2 (multi-route enemy spawning): build a curve from
 # any of the loaded routes by id. Returns null if no match.

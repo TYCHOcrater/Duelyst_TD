@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C2a: multi-route enemy spawning (fan-out)
+**Decision:** `wave_spawner` now spawns one enemy per scheduled entry on **every** active route Path2D, not just the primary. `board` builds one runtime `Path2D` per route on outburst maps (route_paths[]); single-topology maps still see a 1-element array and behavior is unchanged. Per-route gate-shield routing (C2 criteria 3-4) is deferred to fold into [[c6-gate-shield]] since it requires the Gate Shield system.
+**Why:** C-track next step. The battleground map already has 4 routes (from C1) but only one was spawning enemies — the others rendered as inert paths. This wires waves across all routes so the multi-core arena actually plays as 4 routes, which is also the foundation co-op needs.
+**Impact:** `scripts/board.gd` (new `route_paths: Array`, `_rebuild_route_paths()` on map load), `scripts/wave_spawner.gd` (new `paths: Array` + `configure_paths()`, `_spawn_one` fans onto every path, `_spawn_at_progress_on(path)` extracted), `scripts/main.gd` (wires `board.route_paths` into spawner when >1).
+**Test:** `--use-battleground` headless boot prints `main: multi-route spawn enabled across 4 route(s) [topology=outburst]` and runs cleanly. Default map (single) silent and unchanged.
+
+---
+
 ## 2026-05-25 — Battleground v2: longer winding routes + per-tile sprite fit
 **Decision:** Rewrote the 4 routes on `battleground_test.json` to be 13–14 tiles each with multiple 1-tile bends (was 10–12, mostly straight). Added `tower._fit_sprite_to_tile()` so every unit's feet anchor at a fixed tile-floor line regardless of sprite height.
 **Why:** User feedback — routes felt too short/straight to read as distinct quadrants; tall unit sprites visibly overflowed below their tile because their pivot was always sprite-centered.

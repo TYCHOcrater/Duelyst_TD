@@ -5,6 +5,10 @@ extends Node
 signal wave_cleared()
 
 var path: Path2D
+# C2: when the active map has multiple routes, paths holds one Path2D per
+# route. `path` always equals paths[0] for backward compat. For single-route
+# topology paths is just [path].
+var paths: Array = []
 var grid: GridController = null
 var phase_controller: Node = null
 var wave_set: Dictionary = {}    # {id, name, waves: [...]}
@@ -17,8 +21,17 @@ var _first_leak_consumed_this_wave: bool = false
 
 func configure(_path: Path2D, _wave_set: Dictionary, _phase_ctrl: Node) -> void:
 	path = _path
+	paths = [_path] if _path != null else []
 	wave_set = _wave_set
 	phase_controller = _phase_ctrl
+
+# C2: set the full route_paths array (board.route_paths). Wave-set is reused;
+# each scheduled spawn is fanned out onto every path so all routes see the
+# same enemy progression simultaneously.
+func configure_paths(_paths: Array) -> void:
+	paths = _paths
+	if not paths.is_empty():
+		path = paths[0]
 
 func get_wave_count() -> int:
 	if wave_set.is_empty():
@@ -88,11 +101,17 @@ func _run_wave_async(def: Dictionary) -> void:
 		_emit_clear()
 
 func _spawn_one(enemy_id: String) -> void:
-	_spawn_at_progress(enemy_id, 0.0)
+	# C2: fan one logical spawn out onto every active route.
+	var targets: Array = paths if not paths.is_empty() else [path]
+	for p in targets:
+		if p == null:
+			continue
+		_spawn_at_progress_on(enemy_id, 0.0, p)
 
 # Debug-only: spawn an enemy directly from a generated shell dict at the
 # path start. Used by the D8 debug F4 keybind. Counts toward active_enemies
 # so wave_cleared still fires correctly if the user spawns during combat.
+# Debug spawn always targets the primary path (slot 0's route).
 func debug_spawn_shell(shell: Dictionary) -> bool:
 	if not is_inside_tree() or path == null or shell.is_empty():
 		return false
@@ -109,11 +128,19 @@ func debug_spawn_shell(shell: Dictionary) -> bool:
 	return true
 
 func _spawn_at_progress(enemy_id: String, at_progress: float) -> void:
+	# Splitter children re-enter via this entry point; spawn them on the
+	# primary path. (Per-route splitter parenting is a future refinement;
+	# splitters are rare enough that the simplification is acceptable.)
+	_spawn_at_progress_on(enemy_id, at_progress, path)
+
+func _spawn_at_progress_on(enemy_id: String, at_progress: float, on_path: Path2D) -> void:
+	if on_path == null:
+		return
 	var enemy = EnemyFactory.make_enemy(enemy_id)
 	if enemy == null:
 		push_warning("Spawner: could not create enemy %s" % enemy_id)
 		return
-	path.add_child(enemy)
+	on_path.add_child(enemy)
 	enemy.progress = at_progress
 	enemy.died.connect(_on_enemy_died)
 	enemy.reached_end.connect(_on_enemy_reached_end)

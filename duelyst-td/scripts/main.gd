@@ -85,6 +85,14 @@ func _ready() -> void:
 		push_error("main: wave-set '%s' not found" % STARTER_WAVE_SET)
 		return
 	spawner.configure(board.enemy_path, wave_set, phase_controller)
+	# C2: hand the spawner the full per-route Path2D array so each scheduled
+	# spawn fans out onto every route. For single-topology maps route_paths
+	# is just [enemy_path] and behavior is unchanged.
+	if board.route_paths.size() > 1:
+		spawner.configure_paths(board.route_paths)
+		print("main: multi-route spawn enabled across %d route(s) [topology=%s]" % [
+			board.route_paths.size(), board.topology
+		])
 	spawner.grid = board.grid
 	WaveEffects.set_grid(board.grid)
 	phase_controller.configure(spawner, draft_director, spawner.get_wave_count())
