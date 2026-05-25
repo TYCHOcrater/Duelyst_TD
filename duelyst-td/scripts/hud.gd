@@ -826,6 +826,9 @@ func show_draft_offers(offers: Array) -> void:
 			_set_trait_chip(trait_chip, trait_id, flaw_id)
 			portrait.texture = _portrait_for(offers[i])
 			portrait.modulate = faction_color.lerp(Color.WHITE, 0.25)
+			# Tint the card frame itself with a very subtle faction wash so
+			# picks are scannable by color even without reading the chip.
+			offer_boxes[i].self_modulate = faction_color.lerp(Color.WHITE, 0.78)
 			offer_boxes[i].visible = true
 		else:
 			offer_boxes[i].visible = false
