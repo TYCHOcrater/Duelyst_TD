@@ -89,7 +89,12 @@ func _apply_sprite_frames() -> void:
 
 func _ready() -> void:
 	add_to_group("enemies")
+	# Defensively lock orientation. PathFollow2D.rotates=false alone proved
+	# unreliable on some seeds — enemies still ended up tilted at sharp curve
+	# corners. Force rotation to 0 here AND in _process so the sprite always
+	# faces the camera plane.
 	rotates = false
+	rotation = 0.0
 	loop = false
 	_apply_sprite_frames()
 	if not _pending_def.is_empty():
@@ -119,6 +124,11 @@ func _process(delta: float) -> void:
 		sprite.modulate = base_modulate
 	var prev_x := global_position.x
 	progress += move_speed * speed_mult * delta
+	# Re-lock orientation each frame. Godot 4.6 occasionally drifts rotation
+	# on PathFollow2D even with rotates=false (most visible at sharp 90° curve
+	# corners) — keeping rotation pinned to 0 here is the only thing that
+	# fully prevents the sprite from tilting between segments.
+	rotation = 0.0
 	if global_position.x < prev_x:
 		sprite.flip_h = true
 	elif global_position.x > prev_x:

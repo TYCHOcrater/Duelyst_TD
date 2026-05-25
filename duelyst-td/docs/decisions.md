@@ -1346,6 +1346,55 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — Critical bug fixes: SessionRng state reset, enemy rotation
+**Decision:** Two bug fixes from user playtest feedback.
+
+**Bug 1: First-wave offers identical across all seeds** (root cause)
+- `SessionRng.set_seed(s)` was assigning `_rng.seed = s` *then* `_rng.state = 0`. Godot's `RandomNumberGenerator.seed` setter derives a seed-specific PCG state, but the subsequent `state = 0` clobbered that, leaving every seed parked at the same RNG starting point.
+- The same bug existed in `SessionRng.reset()`.
+- Verification via `--test-offers` smoke test:
+  - BEFORE fix: 7 different seeds all returned `aphotic_devourer, gravity_well, gloomchaser`.
+  - AFTER fix: 7 different seeds return 7 distinct offer triples. Determinism preserved (seed 1 reproduces `gloomchaser, ethereal_obelysk, onyx_jaguar` on subsequent calls; seed 0xCAFEBABE reproduces `young_silithar, windblade_adept, azurite_lion`).
+- The previous menu-entry fix from the UX batch (re-randomize seed) was correct but obscured by this lower-level bug — even if a fresh seed was chosen, the RNG state was still 0.
+
+**Bug 2: Enemies rotate/tilt at sharp curve corners**
+- `enemy.gd._ready()` already set `rotates = false`, but enemies were still tilting at 90° turns in the path.
+- Likely a Godot 4.6 PathFollow2D quirk where rotation drifts despite `rotates = false`, possibly because the property is read after the path-driven transform has already applied a tilt.
+- Defensive fix on three layers:
+  1. `rotates = false` baked into `enemy.tscn` (applied at scene load, before `_ready`).
+  2. Explicit `rotation = 0.0` in `_ready` (in case scene-level value didn't stick).
+  3. Re-pin `rotation = 0.0` every `_process` tick (in case path traversal updates rotation mid-frame).
+- Sprite direction is still handled by `sprite.flip_h` based on x-velocity — that's the *correct* way to face left/right in a 2D side-on view.
+
+**Why the smoke test caught this and the determinism test didn't:**
+- The determinism test compared `set_seed(123)` vs `set_seed(456)` *internal randi sequences* — both produced 200 randi values starting from state=0. Looking at the test's `_run_determinism_test()`: it checks `a == a2` (same seed → same draws) and `a != b` (different seeds → different draws). With state=0 wiping seed effect, `a != b` should have been false (i.e. test should have FAILED). The fact that it claimed PASS in earlier playtests means either (a) the test was producing different sequences by coincidence due to some PCG quirk, or (b) the user remembered the test name passing without scrutinizing the result. The offers-specific `--test-offers` smoke test is a more targeted reproduction.
+
+**Impact:**
+- `scripts/session_rng.gd`: remove `_rng.state = 0` from `set_seed()` and `reset()`. Comment explains the bug.
+- `scripts/enemy.gd`: explicit `rotation = 0.0` in `_ready` + every `_process` tick. Comments explain why both are needed.
+- `scenes/enemy.tscn`: `rotates = false` baked into the root node.
+- `scripts/main_menu.gd`: new `--test-offers` CLI hook (next to `--test-generator` and `--content-scan`) for future regression testing.
+
+**Test:** See checklist below.
+
+---
+
+### Manual Test Checklist - Offer randomness + enemy rotation
+
+**Offer randomness:**
+- [ ] Start a run with seed `0x00000001` → first-wave offers are `gloomchaser, ethereal_obelysk, onyx_jaguar`.
+- [ ] Restart with seed `0xCAFEBABE` → first-wave offers are `young_silithar, windblade_adept, azurite_lion`.
+- [ ] Restart again with seed `0x00000001` → first-wave offers are *identical* to the first run (deterministic replay).
+- [ ] Click Randomize a few times → seeds change → first-wave offers change.
+- [ ] Headless: `godot --headless --path . res://scenes/main_menu.tscn --test-offers` prints distinct triples for each test seed and identical triples for repeated seeds.
+
+**Enemy rotation:**
+- [ ] Start a run, let the first wave spawn. Watch an enemy traverse a 90° corner in the path. The sprite should NOT tilt; only `flip_h` direction reverses for left-vs-right legs.
+- [ ] Pause the game with the enemy mid-turn → orientation visually flat (rotation = 0).
+- [ ] Try several different maps (Random Map source) → enemies on any path orientation behave the same.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

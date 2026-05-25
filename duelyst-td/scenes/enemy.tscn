@@ -5,6 +5,7 @@
 [ext_resource type="Script" path="res://scripts/status_icons.gd" id="3_si"]
 
 [node name="Enemy" type="PathFollow2D"]
+rotates = false
 script = ExtResource("1_e")
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]

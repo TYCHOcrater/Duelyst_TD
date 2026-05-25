@@ -12,14 +12,16 @@ func _ready() -> void:
 	set_seed(Time.get_unix_time_from_system())
 
 func set_seed(s: int) -> void:
+	# Critical: setting `seed` already derives a seed-specific PCG state.
+	# Do NOT also assign `_rng.state = 0` — that clobbers the seed-derived
+	# state and lands every seed on the same RNG starting point (bug:
+	# wave-1 offers were identical across all seeds).
 	seed = s
 	_rng.seed = s
-	_rng.state = 0
 
 func reset() -> void:
-	# Re-seed with the same seed for fresh-state reproducibility.
+	# Re-seed with the same seed; this re-derives the seed-specific state.
 	_rng.seed = seed
-	_rng.state = 0
 
 func randi() -> int:
 	return _rng.randi()

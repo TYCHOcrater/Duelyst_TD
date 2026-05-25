@@ -30,6 +30,11 @@ func _ready() -> void:
 	if "--content-scan" in OS.get_cmdline_args():
 		_run_content_pipeline_smoke_test()
 		return
+	# --test-offers prints the first-wave offers for a set of seeds, used to
+	# diagnose the offers-not-random bug.
+	if "--test-offers" in OS.get_cmdline_args():
+		_run_offers_smoke_test()
+		return
 	# Fresh seed each time we land on the menu (after a run, between launches, etc.).
 	# RunConfig._ready only fires once per process; without this, returning to the
 	# menu post-run would reuse the same seed → identical first-wave offers. The
@@ -381,6 +386,26 @@ func _run_content_pipeline_smoke_test() -> void:
 	print("D7 unit shells PASS: %d shells in %d ms" % [int(shell_res.get("total_shells", 0)), shell_ms])
 	print("  by_role: %s" % JSON.stringify(shell_res.get("by_role", {})))
 	print("  by_faction: %s" % JSON.stringify(shell_res.get("by_faction", {})))
+	get_tree().quit()
+
+func _run_offers_smoke_test() -> void:
+	# Simulate the same call chain main.gd → phase_controller → draft_director
+	# would do at wave 1, for several seeds, and print the picked offers.
+	const DraftDirector = preload("res://scripts/draft_director.gd")
+	var test_seeds: Array[int] = [1, 2, 3, 42, 0xDEAD, 0xBEEF, 0xCAFEBABE, 1, 0xCAFEBABE]
+	# Force a known starting gold so the affordability filter is consistent.
+	GameState.reset()
+	# DraftDirector is a Node that needs to live in the tree to use SessionRng helpers.
+	var dd = DraftDirector.new()
+	add_child(dd)
+	for s in test_seeds:
+		SessionRng.set_seed(s)
+		# Reach into the private _make_offers directly so we exercise the exact
+		# code path the live game uses.
+		var offers: Array = dd.call("_make_offers", 1)
+		var fmt: String = ", ".join(offers as PackedStringArray)
+		print("seed=0x%08x  wave1 offers: %s" % [s & 0xFFFFFFFF, fmt])
+	dd.queue_free()
 	get_tree().quit()
 
 func _on_quit() -> void:
