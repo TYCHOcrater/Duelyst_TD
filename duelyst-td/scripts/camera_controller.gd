@@ -11,11 +11,11 @@ extends Camera2D
 @export var pan_button: MouseButton = MOUSE_BUTTON_RIGHT
 
 var _panning: bool = false
-# C5: optional board reference. When bound, number keys 1..4 focus the
-# camera on the matching route and TAB pulls back to a framed overview.
+# C5: optional board reference. When bound, TAB frames the whole map for
+# a co-op overview. (Per-route number-key focus was removed because 1/2/3
+# already pick draft offers in the HUD.)
 var _board: Node = null
 var _focus_tween: Tween = null
-const FOCUS_ROUTE_ZOOM := 1.4
 const FOCUS_TWEEN_TIME := 0.35
 
 func _ready() -> void:
@@ -31,16 +31,11 @@ func bind_board(board: Node) -> void:
 	_board = board
 
 func _unhandled_input(event: InputEvent) -> void:
-	# C5: number keys 1..4 focus on the matching route; TAB frames the
-	# whole map for a co-op overview. Silently no-op if board isn't bound
-	# or the requested route doesn't exist on the current map.
-	if event is InputEventKey and event.pressed and not event.echo:
-		match event.keycode:
-			KEY_1: _focus_route_index(0); get_viewport().set_input_as_handled(); return
-			KEY_2: _focus_route_index(1); get_viewport().set_input_as_handled(); return
-			KEY_3: _focus_route_index(2); get_viewport().set_input_as_handled(); return
-			KEY_4: _focus_route_index(3); get_viewport().set_input_as_handled(); return
-			KEY_TAB: focus_overview(); get_viewport().set_input_as_handled(); return
+	# C5: TAB frames the whole map for a co-op overview.
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_TAB:
+		focus_overview()
+		get_viewport().set_input_as_handled()
+		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			if event.pressed:
@@ -66,21 +61,6 @@ func _zoom_at(screen_pos: Vector2, factor: float) -> void:
 	zoom = Vector2(new_zoom_value, new_zoom_value)
 	var world_after: Vector2 = position + (screen_pos - viewport_size * 0.5) / zoom
 	position += world_before - world_after
-
-# C5: tween to the centroid of route `index` at FOCUS_ROUTE_ZOOM. If the
-# route doesn't exist on the current map this is a no-op.
-func _focus_route_index(index: int) -> void:
-	if _board == null or _board.routes.size() <= index or _board.grid == null:
-		return
-	var route: Dictionary = _board.routes[index]
-	var chain: Array = route.get("path_chain", [])
-	if chain.is_empty():
-		return
-	var centroid: Vector2 = Vector2.ZERO
-	for pt in chain:
-		centroid += _board.grid.grid_to_world(pt.x, pt.y)
-	centroid /= chain.size()
-	_tween_to(centroid, FOCUS_ROUTE_ZOOM)
 
 # C5: zoom out to fit the whole grid in the viewport (with a small margin).
 func focus_overview() -> void:
