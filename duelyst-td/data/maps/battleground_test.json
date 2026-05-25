@@ -8,56 +8,56 @@
   "tile_size": 64,
   "origin": [0, 0],
   "background_image": "res://assets/maps/td_map_battleground_test.png",
-  "_note": "4-player Starbase variant: 1 shared spawn in the center, 4 player cores at the cardinal edges. Routes branch out from spawn — each one has 1-2 bends so the path isn't a perfectly straight line. Topology=outburst lets the loader skip single-path connectivity checks and read explicit per-route path_chain arrays instead.",
+  "_note": "4-player outburst variant: 1 central spawn, 4 cores at the cardinal edges. Each route is ~14 tiles with several 1-tile bends so the path weaves through buildable space instead of running in a straight line. Routes stay in their own quadrant so they never touch (no cross-route adjacency = clean rendering).",
   "tiles": [
     "BBBBBBBBBBBBBBBBBBBB",
     "BBBBBBBBBBCBBBBBBBBB",
-    "BBBBBBBBBBPBBBBBBBBB",
     "BBBBBBBBBPPBBBBBBBBB",
-    "BBBBBBBBBPBBBBBBBBBB",
-    "BBBBBBBBBPBBBBBBBBBB",
+    "BBBBBBBBPPBBBBBBBBBB",
+    "BBBBBBBBPBBBBBBBBBBB",
+    "BBBBBBBBPPBBBBBBBBBB",
     "BBBBBBBBBPBBBBBBBBBB",
     "BBBBBBBBBPPBBBBBBBBB",
-    "BBBBBBBBBBPBBBBBBBBB",
-    "BBPPPPPBBBPBBBBBBBBB",
-    "BCPBBBPPPPSPPPBBBPCB",
-    "BBBBBBBBBBPBBPPPPPBB",
-    "BBBBBBBBBBPBBBBBBBBB",
+    "BBBBPPPBBBPBBBBBBBBB",
+    "BBBPPBPPPBPBBBBBBBBB",
+    "BCPPBBBBPPSPPBBBBPCB",
+    "BBBBBBBBBBPBPPPBPPBB",
+    "BBBBBBBBBBPBBBPPPBBB",
     "BBBBBBBBBBPPBBBBBBBB",
     "BBBBBBBBBBBPBBBBBBBB",
-    "BBBBBBBBBBBPBBBBBBBB",
-    "BBBBBBBBBBBPBBBBBBBB",
-    "BBBBBBBBBBPPBBBBBBBB",
-    "BBBBBBBBBBCBBBBBBBBB",
+    "BBBBBBBBBBBPPBBBBBBB",
+    "BBBBBBBBBBBBPBBBBBBB",
+    "BBBBBBBBBBBPPBBBBBBB",
+    "BBBBBBBBBBCPBBBBBBBB",
     "BBBBBBBBBBBBBBBBBBBB"
   ],
   "routes": [
     {
       "id": "north",
-      "core_label": "Player 1",
+      "core_label": "Player 1 (N)",
       "path_chain": [
-        [10,10],[10,9],[10,8],[10,7],[9,7],[9,6],[9,5],[9,4],[9,3],[10,3],[10,2],[10,1]
+        [10,10],[10,9],[10,8],[10,7],[9,7],[9,6],[9,5],[8,5],[8,4],[8,3],[9,3],[9,2],[10,2],[10,1]
       ]
     },
     {
       "id": "east",
-      "core_label": "Player 2",
+      "core_label": "Player 2 (E)",
       "path_chain": [
-        [10,10],[11,10],[12,10],[13,10],[13,11],[14,11],[15,11],[16,11],[17,11],[17,10],[18,10]
+        [10,10],[11,10],[12,10],[12,11],[13,11],[14,11],[14,12],[15,12],[16,12],[16,11],[17,11],[17,10],[18,10]
       ]
     },
     {
       "id": "south",
-      "core_label": "Player 3",
+      "core_label": "Player 3 (S)",
       "path_chain": [
-        [10,10],[10,11],[10,12],[10,13],[11,13],[11,14],[11,15],[11,16],[11,17],[10,17],[10,18]
+        [10,10],[10,11],[10,12],[10,13],[11,13],[11,14],[11,15],[12,15],[12,16],[12,17],[11,17],[11,18],[10,18]
       ]
     },
     {
       "id": "west",
-      "core_label": "Player 4",
+      "core_label": "Player 4 (W)",
       "path_chain": [
-        [10,10],[9,10],[8,10],[7,10],[6,10],[6,9],[5,9],[4,9],[3,9],[2,9],[2,10],[1,10]
+        [10,10],[9,10],[8,10],[8,9],[7,9],[6,9],[6,8],[5,8],[4,8],[4,9],[3,9],[3,10],[2,10],[1,10]
       ]
     }
   ]

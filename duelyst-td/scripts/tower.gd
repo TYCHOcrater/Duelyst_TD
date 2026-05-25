@@ -100,8 +100,34 @@ func _apply_sprite_frames() -> void:
 		sprite.sprite_frames = sf
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation("idle"):
 		sprite.play("idle")
+	_fit_sprite_to_tile()
 	if not is_preview:
 		_ensure_decorative_sprites()
+
+const TILE_SIZE_PX := 64
+const SPRITE_FLOOR_INSET_PX := 6  # how many pixels above the tile's bottom edge a unit's feet sit
+
+func _fit_sprite_to_tile() -> void:
+	# Duelyst sprites vary in frame height (60-100px+). Centered placement
+	# at tile center makes tall units extend below the tile floor.
+	# This computes a per-unit vertical offset so every unit's "feet" land
+	# at the same y inside the tile, regardless of frame height.
+	if sprite.sprite_frames == null:
+		return
+	var anim: String = sprite.animation if sprite.animation != "" else "idle"
+	if not sprite.sprite_frames.has_animation(anim):
+		var names: PackedStringArray = sprite.sprite_frames.get_animation_names()
+		if names.is_empty():
+			return
+		anim = names[0]
+	var tex: Texture2D = sprite.sprite_frames.get_frame_texture(anim, 0)
+	if tex == null:
+		return
+	var h: float = tex.get_size().y
+	# Tile center is at local y=0. Tile floor is at y = TILE_SIZE/2.
+	# We want sprite.bottom = floor - INSET, i.e. sprite.center.y + h/2 = floor - INSET.
+	# So sprite.position.y = floor - INSET - h/2.
+	sprite.position.y = (TILE_SIZE_PX * 0.5) - SPRITE_FLOOR_INSET_PX - (h * 0.5)
 
 func _ensure_decorative_sprites() -> void:
 	# Lazily build the shadow + highlight overlay sprites. They share the
@@ -113,18 +139,20 @@ func _ensure_decorative_sprites() -> void:
 		_shadow_sprite = AnimatedSprite2D.new()
 		_shadow_sprite.sprite_frames = sprite.sprite_frames
 		_shadow_sprite.z_index = -2
-		_shadow_sprite.position = Vector2(0, 18)
-		_shadow_sprite.scale = Vector2(0.95, 0.38)   # squashed silhouette on the ground
-		_shadow_sprite.modulate = Color(0.0, 0.0, 0.0, 0.40)
+		# Shadow anchors at the tile floor (not the main sprite's feet) so
+		# every unit casts a shadow at the same ground line.
+		_shadow_sprite.position = Vector2(0, TILE_SIZE_PX * 0.5 - SPRITE_FLOOR_INSET_PX)
+		_shadow_sprite.scale = Vector2(0.95, 0.20)
+		_shadow_sprite.modulate = Color(0.0, 0.0, 0.0, 0.45)
 		_shadow_sprite.play(sprite.animation)
 		add_child(_shadow_sprite)
 	if _highlight_sprite == null:
 		_highlight_sprite = AnimatedSprite2D.new()
 		_highlight_sprite.sprite_frames = sprite.sprite_frames
 		_highlight_sprite.z_index = -1
-		# Bigger halo + brighter base so the player notices it from across
-		# the board. Was 1.10x with alpha 0.35-0.65 — too subtle on small
-		# Duelyst sprites.
+		# Halo follows the main sprite — share its y offset so the glow
+		# wraps the unit's actual silhouette, not a centered ghost.
+		_highlight_sprite.position = sprite.position
 		_highlight_sprite.scale = Vector2(1.20, 1.20)
 		_highlight_sprite.modulate = Color(1.0, 0.92, 0.45, 0.0)
 		_highlight_sprite.visible = false

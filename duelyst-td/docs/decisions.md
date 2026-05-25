@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Battleground v2: longer winding routes + per-tile sprite fit
+**Decision:** Rewrote the 4 routes on `battleground_test.json` to be 13–14 tiles each with multiple 1-tile bends (was 10–12, mostly straight). Added `tower._fit_sprite_to_tile()` so every unit's feet anchor at a fixed tile-floor line regardless of sprite height.
+**Why:** User feedback — routes felt too short/straight to read as distinct quadrants; tall unit sprites visibly overflowed below their tile because their pivot was always sprite-centered.
+**Impact:** `data/maps/battleground_test.json` (tiles + path_chain), `scripts/tower.gd` (new method called from `apply_def`; shadow now anchors to fixed floor, highlight follows main sprite offset).
+**Test:** `--use-battleground` headless boot loads cleanly (0 errors); in-game, place a tall unit (e.g. dragon) and a short one side-by-side — both feet sit on the same horizontal floor line; routes weave through buildable space rather than running straight to edges.
+
+---
+
 ## 2026-05-24 — Project pivot to Shardstorm TD (roguelike co-op TD)
 **Decision:** Move from arcade-style real-time TD to a planning/combat roguelike with draft shop, eventual pacts/traits/maps. Reference docs: `co_op_roguelike_td_design_doc.md`, `shardstorm_td_content_bible.md`, `shardstorm_td_research_engagement_addendum.md`.
 **Why:** Original design vision is roguelike Legion-TD-style. Arcade TD was a useful prototype but the wrong architecture for long-term play.
