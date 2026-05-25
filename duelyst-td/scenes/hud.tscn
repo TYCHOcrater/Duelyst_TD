@@ -396,32 +396,44 @@ visible = false
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -240.0
+offset_left = -280.0
 offset_top = 72.0
 offset_right = -12.0
-offset_bottom = 252.0
+offset_bottom = 308.0
 grow_horizontal = 0
 
 [node name="VBox" type="VBoxContainer" parent="TowerPanel"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 12.0
-offset_top = 10.0
-offset_right = -12.0
-offset_bottom = -10.0
+offset_left = 14.0
+offset_top = 12.0
+offset_right = -14.0
+offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 6
+theme_override_constants/separation = 8
 
 [node name="TowerName" type="Label" parent="TowerPanel/VBox"]
 text = "Tower"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 18
+autowrap_mode = 3
+theme_override_fonts/font = ExtResource("4_tgp")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.95, 0.92, 0.78, 1)
+
+[node name="NameSeparator" type="ColorRect" parent="TowerPanel/VBox"]
+custom_minimum_size = Vector2(0, 1)
+color = Color(0.45, 0.45, 0.5, 0.55)
 
 [node name="TowerStats" type="Label" parent="TowerPanel/VBox"]
 text = ""
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 14
+theme_override_constants/line_spacing = 4
+
+[node name="StatsSpacer" type="Control" parent="TowerPanel/VBox"]
+size_flags_vertical = 3
+custom_minimum_size = Vector2(0, 4)
 
 [node name="UpgradeButton" type="Button" parent="TowerPanel/VBox"]
 text = "Upgrade"
