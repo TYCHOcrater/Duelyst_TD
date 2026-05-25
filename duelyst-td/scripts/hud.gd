@@ -1130,7 +1130,9 @@ func _ensure_gate_strip() -> void:
 	_gate_strip = VBoxContainer.new()
 	_gate_strip.name = "GateShieldStrip"
 	_gate_strip.add_theme_constant_override("separation", 4)
-	_gate_strip.position = Vector2(12, 56)  # just below the TopBar
+	# Sits below ActivePactsLabel (~y 130) so the two never overlap on the
+	# left edge — pacts read first, gate shields slot under them.
+	_gate_strip.position = Vector2(12, 140)
 	_gate_strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_gate_strip)
 
