@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/main.gd" id="1_m"]
 [ext_resource type="Texture2D" path="res://assets/maps/battlemap3_background.png" id="2_bg"]
@@ -8,12 +8,16 @@
 [ext_resource type="PackedScene" path="res://scenes/hud.tscn" id="10_h"]
 [ext_resource type="Script" path="res://scripts/session_controller.gd" id="11_sc"]
 [ext_resource type="Script" path="res://scripts/camera_controller.gd" id="12_cam"]
+[ext_resource type="Script" path="res://scripts/net_controller.gd" id="13_net"]
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_m")
 
 [node name="SessionController" type="Node" parent="."]
 script = ExtResource("11_sc")
+
+[node name="NetController" type="Node" parent="."]
+script = ExtResource("13_net")
 
 [node name="BackgroundLayer" type="CanvasLayer" parent="."]
 layer = -10

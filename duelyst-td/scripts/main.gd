@@ -21,6 +21,7 @@ var _battleground_override: bool = false
 @onready var hud: CanvasLayer = $HUD
 @onready var world: Node2D = $World
 @onready var session: Node = $SessionController
+@onready var net: Node = $NetController
 
 var phase_controller: Node
 var draft_director: Node
@@ -40,6 +41,9 @@ func _ready() -> void:
 		_run_outburst_gen_smoke_test()
 		get_tree().quit(0)
 		return
+	# C12 smoke test: exercise the NetController loopback path post-init.
+	# Defers the trigger so all autoloads/scene nodes are ready first.
+	var _do_net_loopback: bool = "--test-net-loopback" in OS.get_cmdline_args()
 	GameState.reset()
 	PactManager.reset()
 	RelicManager.reset()
@@ -128,6 +132,10 @@ func _ready() -> void:
 	phase_controller.configure(spawner, draft_director, spawner.get_wave_count(), session)
 	await get_tree().create_timer(0.4).timeout
 	phase_controller.start()
+	if _do_net_loopback:
+		_run_net_loopback_smoke_test()
+		await get_tree().create_timer(0.2).timeout
+		get_tree().quit(0)
 
 func _apply_map_background() -> void:
 	# C1: if the loaded map declares a background_image, swap the static
@@ -188,6 +196,13 @@ func _input(event: InputEvent) -> void:
 		if phase_controller and phase_controller.has_method("debug_force_start_wave"):
 			phase_controller.debug_force_start_wave()
 			print("F5: debug force-start wave")
+	# C12: F7 = debug NetController loopback. Pretends a remote client
+	# placed a Backline Archer at the local cursor position so the relay
+	# path is exercised end-to-end without needing two real processes.
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F7:
+		if net and net.has_method("demo_loopback"):
+			net.demo_loopback("backline_archer", get_viewport().get_mouse_position(), 1)
+			print("F7: net loopback fired (remote PlaceUnit @ mouse)")
 	# C7: F6 = debug send aid. Source = local slot, target = slot 1 if it
 	# exists (won't fire in solo). Subject = currently picked tower's unit_id.
 	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F6:
@@ -218,6 +233,25 @@ func _spawn_base() -> void:
 	world.add_child(base)
 	if board.grid:
 		base.global_position = board.grid.grid_to_world(board.grid.core.x, board.grid.core.y)
+
+func _run_net_loopback_smoke_test() -> void:
+	print("--- C12 NetController loopback smoke ---")
+	print("net.state = %s" % str(net.state))
+	# Fake a remote PlaceUnit. With no map_source/topology hijack, this lands
+	# at a screen-space coord that will likely fail is_valid_placement —
+	# we're testing the apply path itself, not the placement outcome.
+	GameState.add_gold(50)  # ensure affordable
+	net.demo_loopback("backline_archer", Vector2(400, 300), 1)
+	# Bus history should now contain a PlaceUnit attempt.
+	var hist: Array = CommandBus.recent(5)
+	var seen: bool = false
+	for rec in hist:
+		if String(rec.get("type", "")) == "place_unit_command":
+			seen = true
+			print("loopback PlaceUnit  success=%s  reason=%s" % [rec.get("success"), rec.get("reason")])
+			break
+	if not seen:
+		print("FAIL: loopback did not produce a PlaceUnit command in history")
 
 func _run_outburst_gen_smoke_test() -> void:
 	print("--- C11 outburst generator smoke test (5 seeds) ---")
