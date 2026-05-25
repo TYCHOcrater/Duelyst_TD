@@ -1795,6 +1795,39 @@ A single helper centralizes the "any action available?" logic; the same function
 
 ---
 
+## 2026-05-25 — Outburst topology + Battleground map (Iteration C1 — Milestone C Starbase Co-op)
+**Decision:** Extend MapDef with a new `topology: "outburst"` variant — 1 shared spawn in the center, N player cores at the edges, explicit per-route `path_chain` arrays so the loader can validate branching from a single spawn point (the existing "single" topology rejects spawn-tile branching). Ship the new 4-core `battleground_test.json` that pairs with the user-supplied 1254×1254 background image.
+**Why "outburst" instead of the addendum's "Starbase" name:** Starbase in the addendum has each player owning their own spawn + route, all converging on a SHARED core. The user's design inverts this — single shared spawn, separate cores per player. "Outburst" describes the visual: enemies erupt from the center toward each player. Different topology, different mechanics implications (shared enemy budget vs per-route enemy budget). Keeping the name distinct so future Starbase work doesn't conflict.
+**Why explicit `path_chain` arrays instead of ASCII-derived connectivity:** The single-route validator walks neighbors from spawn and rejects any tile with > 2 path neighbors (a branch). For an outburst map the spawn HAS 4 path neighbors by design. We could special-case the spawn tile, but the cleaner path is "trust the data" — let the map author declare each route explicitly. The grid still has P tiles for visual rendering; the routes array carries the gameplay semantics.
+**Why backward-compat with the existing "single" topology:** Every shipped map (starter_neutral + procgen output + map_editor saves) is single-route. Default `topology = "single"` means the loader still produces a `path_chain` from connectivity for those. Outburst maps get an additional `routes: Array` field with per-route chains, plus `cores: Array` with all core positions. The existing `core` (Vector2i) and `path_chain` (Array) keys still resolve to the primary (first) core/route, so all consumers that read those continue to work without changes.
+**Why the spawn tile is included as `path_chain[0]` (not just as the implicit start point):** The grid-to-world conversion for Path2D's Curve2D walks the chain to build curve points. Including the spawn position as the first point means the existing `grid.build_path_curve()` produces a correct curve from the very first segment with no offset math.
+**Why solo gameplay uses route[0] only:** This iteration is C1 (schema + data), not C2 (multi-route enemy spawning). With one wave_spawner driving one enemy_path, only one route is active per run. The other 3 routes are visible as colored path tiles on the board but no enemies traverse them. C2 will add per-route spawners + per-slot core damage routing.
+**Why `background_image` is a per-map data field (not a code constant):** Different maps want different backgrounds. Hard-coding `battlemap3_background.png` in main.tscn worked when there was one map. With 2+ maps + procgen + map_editor saves, the map data should declare its visual. main.gd swaps the `BackgroundSprite.texture` after `_load_configured_map` if the map declares one.
+**Why `_battleground_override` CLI flag + `fixed_path` map_source:** Two ways to load the new map — `--use-battleground` CLI flag for headless smoke tests (same pattern as `--use-generated`), and "Battleground (4-core test)" entry in the main menu's map source dropdown (uses a new `fixed_path` source kind that carries an explicit res:// path in `custom_map_id`). The dropdown entry is the playable path; the CLI flag is for debugging.
+**Map design** (`data/maps/battleground_test.json`):
+- 20×20 tile grid at 64px = 1280×1280 (image is 1254×1254 — slight overlap is cosmetic).
+- Spawn at (10, 10) — exact center.
+- 4 cores at cardinal edges: north (10, 1), east (18, 10), south (10, 18), west (1, 10).
+- Each route has 1-2 jogs so it's not a perfect straight line. Route 0 = north, used for active gameplay until C2.
+**Impact:**
+- `scripts/map_loader.gd`: validate() now branches on `topology`. New return fields: `cores`, `routes`, `topology`, `background_image`.
+- `scripts/board.gd`: stores `routes`, `cores`, `topology`, `background_image_path` from loaded map. New `curve_for_route(route_id)` helper for future C2.
+- `scripts/main.gd`: `_apply_map_background()` swaps the Sprite2D texture. `BATTLEGROUND_MAP` constant + `_battleground_override` flag for CLI. New `fixed_path` branch in `_load_configured_map`.
+- `scripts/main_menu.gd`: MAP_OPTIONS gains the Battleground entry. `_apply_map_source_selection` stores the res:// path in `custom_map_id` for fixed_path entries. `_populate_map_sources` matches on id for fixed_path so the right entry highlights.
+- `data/maps/battleground_test.json` — the new map (45 lines).
+**Test:**
+- [ ] Main menu → Map dropdown → "Battleground (4-core test)" → New Run.
+- [ ] On load the new map background image appears (different from the default tile-based starter).
+- [ ] You see 4 visible cores at top/bottom/left/right edges, central spawn, 4 colored path lines branching out from spawn.
+- [ ] Place a tower near the north route → enemies spawn at center and walk to the north core.
+- [ ] Cores at east / south / west are decorative for now (no enemies path to them — that's C2).
+- [ ] Camera zoom + pan work since the map is bigger than the viewport.
+- [ ] Existing starter_neutral run still works unchanged (single-topology backward compat).
+- [ ] Procgen runs still work (single-topology output).
+- [ ] `godot --headless --path . res://scenes/main.tscn --use-battleground` loads cleanly.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

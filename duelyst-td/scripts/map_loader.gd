@@ -53,9 +53,13 @@ static func validate(map: Dictionary) -> Dictionary:
 	var tiles: Array = map["tiles"]
 	if tiles.size() != h:
 		return _err("tiles has %d rows, expected %d" % [tiles.size(), h])
-	# Tile content checks.
+	var topology: String = String(map.get("topology", "single"))
+	# Tile content checks. For "single" topology we expect 1 S + 1 C. For
+	# "outburst" topology (1 shared spawn → N player cores), 1 S + N C with
+	# explicit per-route path_chain data.
 	var spawn_pos: Vector2i = Vector2i(-1, -1)
 	var core_pos: Vector2i = Vector2i(-1, -1)
+	var core_positions: Array[Vector2i] = []
 	for r in h:
 		var row = tiles[r]
 		if typeof(row) != TYPE_STRING:
@@ -71,24 +75,56 @@ static func validate(map: Dictionary) -> Dictionary:
 					return _err("More than one 'S' (spawn) found")
 				spawn_pos = Vector2i(c, r)
 			elif ch == "C":
-				if core_pos != Vector2i(-1, -1):
-					return _err("More than one 'C' (core) found")
-				core_pos = Vector2i(c, r)
+				if topology == "single" and core_pos != Vector2i(-1, -1):
+					return _err("More than one 'C' (core) found — set topology to 'outburst' for multi-core maps")
+				if core_pos == Vector2i(-1, -1):
+					core_pos = Vector2i(c, r)  # first C is the primary for backward compat
+				core_positions.append(Vector2i(c, r))
 	if spawn_pos == Vector2i(-1, -1):
 		return _err("No spawn tile ('S') found")
-	if core_pos == Vector2i(-1, -1):
+	if core_positions.is_empty():
 		return _err("No core tile ('C') found")
-	# Path connectivity: BFS from spawn, must reach core, all path tiles reachable.
-	var connect := _check_path_connectivity(tiles, w, h, spawn_pos, core_pos)
-	if not connect.ok:
-		return _err(connect.error)
-	# Normalized output. Origin may arrive as Array (raw JSON) or Vector2 (already-validated dict).
+	# Origin normalization (Array or Vector2)
 	var origin_raw = map.get("origin", [0, 56])
 	var origin: Vector2
 	if origin_raw is Vector2:
 		origin = origin_raw
 	else:
 		origin = Vector2(float(origin_raw[0]), float(origin_raw[1]))
+	# Topology-specific validation
+	var path_chain: Array = []
+	var routes: Array = []
+	if topology == "single":
+		var connect := _check_path_connectivity(tiles, w, h, spawn_pos, core_pos)
+		if not connect.ok:
+			return _err(connect.error)
+		path_chain = connect.path_chain
+	else:
+		# Outburst: the map MUST declare explicit routes (path_chains can't be
+		# inferred from connectivity because the spawn branches).
+		var raw_routes: Array = map.get("routes", [])
+		if raw_routes.is_empty():
+			return _err("Outburst topology requires explicit 'routes' array")
+		for r_def in raw_routes:
+			var route: Dictionary = r_def
+			var chain_raw: Array = route.get("path_chain", [])
+			if chain_raw.size() < 2:
+				return _err("Route '%s' path_chain has < 2 points" % route.get("id", "?"))
+			var chain: Array[Vector2i] = []
+			for pt in chain_raw:
+				chain.append(Vector2i(int(pt[0]), int(pt[1])))
+			if chain[0] != spawn_pos:
+				return _err("Route '%s' path_chain[0] %s does not match spawn %s" % [route.get("id", "?"), chain[0], spawn_pos])
+			var end: Vector2i = chain[chain.size() - 1]
+			if not (end in core_positions):
+				return _err("Route '%s' last tile %s is not on a core" % [route.get("id", "?"), end])
+			routes.append({
+				"id": String(route.get("id", "")),
+				"core": end,
+				"path_chain": chain,
+			})
+		# Use the first route as the primary path_chain for backward-compat callers.
+		path_chain = routes[0]["path_chain"]
 	return {
 		"ok": true,
 		"map": {
@@ -101,8 +137,12 @@ static func validate(map: Dictionary) -> Dictionary:
 			"origin": origin,
 			"tiles": tiles,
 			"spawn": spawn_pos,
-			"core": core_pos,
-			"path_chain": connect.path_chain,  # ordered Array[Vector2i] from spawn to core
+			"core": core_pos,            # primary (first) core, backward-compat
+			"cores": core_positions,     # all cores (outburst topology)
+			"path_chain": path_chain,    # primary route (first one in outburst)
+			"routes": routes,            # all routes (outburst topology)
+			"topology": topology,
+			"background_image": String(map.get("background_image", "")),
 		},
 	}
 

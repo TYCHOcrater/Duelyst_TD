@@ -70,6 +70,7 @@ func _ready() -> void:
 const MAP_OPTIONS := [
 	{"label": "Starter (built-in)", "source": "fixed", "id": ""},
 	{"label": "Random (procgen)", "source": "generated", "id": ""},
+	{"label": "Battleground (4-core test)", "source": "fixed_path", "id": "res://data/maps/battleground_test.json"},
 ]
 const CUSTOM_MAP_DIR := "user://maps/"
 
@@ -95,9 +96,14 @@ func _populate_map_sources() -> void:
 	# Restore previous selection.
 	for i in map_source_option.item_count:
 		if i < MAP_OPTIONS.size():
-			if MAP_OPTIONS[i].source == RunConfig.map_source and (MAP_OPTIONS[i].source != "custom" or MAP_OPTIONS[i].id == RunConfig.custom_map_id):
-				map_source_option.selected = i
-				return
+			var opt: Dictionary = MAP_OPTIONS[i]
+			if opt.source != RunConfig.map_source:
+				continue
+			# For "fixed_path" entries match on id too (different .json files).
+			if opt.source == "fixed_path" and String(opt.get("id", "")) != RunConfig.custom_map_id:
+				continue
+			map_source_option.selected = i
+			return
 	# If saved was a custom map, find it.
 	if RunConfig.map_source == "custom":
 		for i in range(MAP_OPTIONS.size(), map_source_option.item_count):
@@ -110,8 +116,13 @@ func _populate_map_sources() -> void:
 func _apply_map_source_selection() -> void:
 	var idx: int = map_source_option.selected
 	if idx < MAP_OPTIONS.size():
-		RunConfig.map_source = MAP_OPTIONS[idx].source
-		RunConfig.custom_map_id = ""
+		var opt: Dictionary = MAP_OPTIONS[idx]
+		var source: String = opt.source
+		# "fixed_path" entries override the STARTER_MAP with an explicit
+		# res:// path. main.gd reads RunConfig.custom_map_id when
+		# map_source == "fixed_path" and loads that file directly.
+		RunConfig.map_source = source
+		RunConfig.custom_map_id = String(opt.get("id", ""))
 	else:
 		var label: String = map_source_option.get_item_text(idx)
 		# Strip the "Custom: " prefix.

@@ -1,0 +1,64 @@
+{
+  "id": "battleground_test",
+  "name": "Battleground (Test)",
+  "version": 2,
+  "topology": "outburst",
+  "width": 20,
+  "height": 20,
+  "tile_size": 64,
+  "origin": [0, 0],
+  "background_image": "res://assets/maps/td_map_battleground_test.png",
+  "_note": "4-player Starbase variant: 1 shared spawn in the center, 4 player cores at the cardinal edges. Routes branch out from spawn — each one has 1-2 bends so the path isn't a perfectly straight line. Topology=outburst lets the loader skip single-path connectivity checks and read explicit per-route path_chain arrays instead.",
+  "tiles": [
+    "BBBBBBBBBBBBBBBBBBBB",
+    "BBBBBBBBBBCBBBBBBBBB",
+    "BBBBBBBBBBPBBBBBBBBB",
+    "BBBBBBBBBPPBBBBBBBBB",
+    "BBBBBBBBBPBBBBBBBBBB",
+    "BBBBBBBBBPBBBBBBBBBB",
+    "BBBBBBBBBPBBBBBBBBBB",
+    "BBBBBBBBBPPBBBBBBBBB",
+    "BBBBBBBBBBPBBBBBBBBB",
+    "BBPPPPPBBBPBBBBBBBBB",
+    "BCPBBBPPPPSPPPBBBPCB",
+    "BBBBBBBBBBPBBPPPPPBB",
+    "BBBBBBBBBBPBBBBBBBBB",
+    "BBBBBBBBBBPPBBBBBBBB",
+    "BBBBBBBBBBBPBBBBBBBB",
+    "BBBBBBBBBBBPBBBBBBBB",
+    "BBBBBBBBBBBPBBBBBBBB",
+    "BBBBBBBBBBPPBBBBBBBB",
+    "BBBBBBBBBBCBBBBBBBBB",
+    "BBBBBBBBBBBBBBBBBBBB"
+  ],
+  "routes": [
+    {
+      "id": "north",
+      "core_label": "Player 1",
+      "path_chain": [
+        [10,10],[10,9],[10,8],[10,7],[9,7],[9,6],[9,5],[9,4],[9,3],[10,3],[10,2],[10,1]
+      ]
+    },
+    {
+      "id": "east",
+      "core_label": "Player 2",
+      "path_chain": [
+        [10,10],[11,10],[12,10],[13,10],[13,11],[14,11],[15,11],[16,11],[17,11],[17,10],[18,10]
+      ]
+    },
+    {
+      "id": "south",
+      "core_label": "Player 3",
+      "path_chain": [
+        [10,10],[10,11],[10,12],[10,13],[11,13],[11,14],[11,15],[11,16],[11,17],[10,17],[10,18]
+      ]
+    },
+    {
+      "id": "west",
+      "core_label": "Player 4",
+      "path_chain": [
+        [10,10],[9,10],[8,10],[7,10],[6,10],[6,9],[5,9],[4,9],[3,9],[2,9],[2,10],[1,10]
+      ]
+    }
+  ]
+}

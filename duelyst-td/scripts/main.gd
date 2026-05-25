@@ -7,8 +7,11 @@ const DEBUG_OVERLAY_SCENE := preload("res://scenes/debug_overlay.tscn")
 const MAP_GENERATOR := preload("res://scripts/map_generator.gd")
 
 const STARTER_MAP := "res://data/maps/starter_neutral.json"
+const BATTLEGROUND_MAP := "res://data/maps/battleground_test.json"
 const CUSTOM_MAP_DIR := "user://maps/"
 const STARTER_WAVE_SET := "act1"
+
+var _battleground_override: bool = false
 
 @onready var board: Node2D = $World/Board
 @onready var spawner: Node = $WaveSpawner
@@ -25,6 +28,10 @@ func _ready() -> void:
 	# --use-generated forces procgen for headless smoke tests.
 	if "--use-generated" in OS.get_cmdline_args():
 		RunConfig.map_source = "generated"
+	# --use-battleground loads the new 4-core outburst map for visual review.
+	if "--use-battleground" in OS.get_cmdline_args():
+		RunConfig.map_source = "fixed"
+		_battleground_override = true
 	GameState.reset()
 	PactManager.reset()
 	RelicManager.reset()
@@ -42,6 +49,7 @@ func _ready() -> void:
 		# Validation error already surfaced via the board's ErrorLabel.
 		# Halt the game cleanly so the user can read it.
 		return
+	_apply_map_background()
 	_spawn_base()
 	placement.bind_grid(board.grid)
 	placement.path = board.enemy_path
@@ -83,6 +91,20 @@ func _ready() -> void:
 	await get_tree().create_timer(0.4).timeout
 	phase_controller.start()
 
+func _apply_map_background() -> void:
+	# C1: if the loaded map declares a background_image, swap the static
+	# BackgroundSprite's texture. Falls back to the default battlemap3
+	# texture (already set in main.tscn) when the map doesn't override.
+	var path: String = String(board.background_image_path) if board != null else ""
+	if path == "" or not ResourceLoader.exists(path):
+		return
+	var tex: Texture2D = load(path)
+	if tex == null:
+		return
+	var bg_sprite: Sprite2D = $BackgroundLayer/BackgroundSprite
+	if bg_sprite:
+		bg_sprite.texture = tex
+
 func _load_configured_map() -> bool:
 	match RunConfig.map_source:
 		"generated":
@@ -97,7 +119,14 @@ func _load_configured_map() -> bool:
 				push_error("Custom map not found: %s" % path)
 				return board.load_map(STARTER_MAP)
 			return board.load_map(path)
+		"fixed_path":
+			# Menu picker can specify an explicit res:// map file.
+			if RunConfig.custom_map_id != "" and ResourceLoader.exists(RunConfig.custom_map_id):
+				return board.load_map(RunConfig.custom_map_id)
+			return board.load_map(STARTER_MAP)
 		_:
+			if _battleground_override:
+				return board.load_map(BATTLEGROUND_MAP)
 			return board.load_map(STARTER_MAP)
 
 func _input(event: InputEvent) -> void:

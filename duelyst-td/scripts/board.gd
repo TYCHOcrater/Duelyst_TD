@@ -5,6 +5,15 @@ extends Node2D
 signal map_loaded(map_id: String)
 signal map_load_failed(reason: String)
 
+# C1: when a multi-route map loads, the active route is enemy_path (curve
+# from route[0]). Additional routes are exposed here so the wave_spawner
+# can iterate them in C2 (multi-route spawning) without needing to query
+# GridController internals.
+var routes: Array = []          # Array of route dicts from the validated map
+var cores: Array = []           # Array of Vector2i — all core positions
+var topology: String = "single"
+var background_image_path: String = ""
+
 const TILE_RENDERER_SCRIPT := preload("res://scripts/tile_renderer.gd")
 const HOVER_SCRIPT := preload("res://scripts/hover_indicator.gd")
 
@@ -45,9 +54,39 @@ func _apply_loaded(map: Dictionary) -> bool:
 	grid.load_from(map)
 	tile_renderer.set_grid(grid)
 	hover_indicator.set_grid(grid)
+	# Multi-route metadata. For "single" topology these stay empty and the
+	# existing enemy_path/curve flow is unchanged.
+	topology = String(map.get("topology", "single"))
+	routes = map.get("routes", [])
+	cores = map.get("cores", [])
+	background_image_path = String(map.get("background_image", ""))
+	# Active curve = grid's primary path_chain (route[0] for outburst).
 	enemy_path.curve = grid.build_path_curve()
 	map_loaded.emit(map["id"])
 	return true
+
+# C1 helper for future C2 (multi-route enemy spawning): build a curve from
+# any of the loaded routes by id. Returns null if no match.
+func curve_for_route(route_id: String) -> Curve2D:
+	for r in routes:
+		if String(r.get("id", "")) != route_id:
+			continue
+		var chain: Array = r.get("path_chain", [])
+		if chain.size() < 2 or grid == null:
+			return null
+		var curve := Curve2D.new()
+		# Extend one tile outward at the spawn end so the enemy enters from
+		# off-grid, matching the single-route flow in GridController.
+		var first: Vector2i = chain[0]
+		var second: Vector2i = chain[1]
+		var entry_offset: Vector2i = first - second
+		var entry: Vector2 = grid.grid_to_world(first.x + entry_offset.x, first.y + entry_offset.y)
+		curve.add_point(entry)
+		for pt in chain:
+			curve.add_point(grid.grid_to_world(pt.x, pt.y))
+		curve.bake_interval = 5.0
+		return curve
+	return null
 
 func reload_map() -> bool:
 	if map_path == "":
