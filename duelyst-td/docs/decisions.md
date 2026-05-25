@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C11: simple generated Starbase maps (2-player outburst)
+**Decision:** `MapGenerator.generate_outburst(seed, player_count)` produces a deterministic 2-player outburst MapDef. 20×20 grid, spawn at (10, 10), cores at (10, 1) and (10, 18). Each route is a biased forward-walk (`OB_BEND_CHANCE = 0.28` chance of a 1-tile lateral bend, otherwise +y / -y toward the target row). North stays in y ≤ 9 after leaving spawn; south stays y ≥ 11 — they share only the spawn tile. Cross-adjacency check excludes the spawn from both sides (was the v1 bug that crashed every seed). `main._load_configured_map` routes to this generator when `RunConfig.map_source == "generated"` AND `player_count == 2` AND `session_topology == "outburst"`; falls back to the legacy single-route generator otherwise. `--test-outburst-gen-5` CLI flag prints PASS/FAIL + determinism check for 5 sequential seeds.
+**Why:** C11 acceptance: "same seed + player_count creates same map", "different seed changes route layout", "validator rejects invalid maps", "2-player generated map is playable". Validator already exists from C1; this is purely the carve + emit side. 4-player still routes to curated battleground_test (the gen logic generalizes, but tuning N>2 routes in a 20×20 grid needs another pass).
+**Impact:** `scripts/map_generator.gd` (+~130 lines: OB_* constants, `generate_outburst`, `_try_outburst_2p`, `_carve_outburst_route`, `_chain_to_arrays`), `scripts/main.gd` (CLI flag + smoke test runner + outburst routing branch in `_load_configured_map`).
+**Test:** `--test-outburst-gen-5` prints `seed=1..5 PASS` (route lengths 10–13 each), `determinism: seed=1 chain match = true`. Headless boots clean.
+
+---
+
 ## 2026-05-25 — Iter C10: 2-player balance pass — per-slot stat accounting
 **Decision:** Stat accounting per slot is now live: `session.add_slot_stat(slot_id, key, delta)` increments a slot's `stats` dict (`units_placed` / `leaks` / `core_damage_taken`). `SessionController.slot_for_route(rid)` looks up the slot that owns a given route_id (supports the comma-joined "all-routes" form solo uses). The leak handler in WaveSpawner now credits the right slot for each leak + any Core overflow. PlaceUnitCommand credits `units_placed` on the local slot. The EndPanel run summary renders a `[b]Per-player:[/b]` block when `slot_count > 1`, listing each slot's placed/leaks/core_damage. Solo runs are unchanged (the per-player block is hidden).
 **Why:** C10 acceptance — "Run summary shows per-player stats." Numbers had to actually count somewhere before the summary could show them. Tuning (Gate Shield HP, enemy budgets) needs real 2-player playtests, which I can't do autonomously — what I can ship is the data scaffolding so when you do 2-player runs the numbers tell you where things went wrong.

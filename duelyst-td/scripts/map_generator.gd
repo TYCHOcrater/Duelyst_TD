@@ -189,3 +189,149 @@ static func _check_quality(tiles: PackedStringArray, map: Dictionary) -> Diction
 	if ratio < MIN_BUILDABLE_RATIO:
 		return {"ok": false, "reason": "buildable ratio %.2f < %.2f" % [ratio, MIN_BUILDABLE_RATIO]}
 	return {"ok": true, "path_length": path_len, "turns": turns, "buildable": buildable}
+
+# -------------------------------------------------------------------------
+# C11: outburst (multi-route) generator. v1 supports player_count == 2.
+# 4-player still routes to the curated battleground_test map. 1-player keeps
+# the existing generate() flow.
+#
+# Layout for 2p:
+#   20×20 grid, spawn at (10, 10), cores at (10, 1) and (10, 18).
+#   Each route is a biased random walk (forward bias toward the target row,
+#   small chance of 1-tile lateral bend). North route stays in y ≤ 9,
+#   south route stays in y ≥ 11 — they share only the spawn tile and never
+#   cross-adjacency-touch.
+# -------------------------------------------------------------------------
+const OB_WIDTH := 20
+const OB_HEIGHT := 20
+const OB_SPAWN := Vector2i(10, 10)
+const OB_BEND_CHANCE := 0.28
+const OB_MAX_CARVE_STEPS := 80
+const OB_MIN_ROUTE_LENGTH := 10
+
+static func generate_outburst(seed_int: int, player_count: int) -> Dictionary:
+	if player_count != 2:
+		return {"ok": false, "error": "generate_outburst v1 supports player_count=2 only (got %d)" % player_count}
+	var last_carve_fail: int = 0
+	var last_val_err: String = ""
+	for attempt in MAX_ATTEMPTS:
+		var rng := RandomNumberGenerator.new()
+		rng.seed = (seed_int ^ (int(attempt) * 2654435761))
+		var dict := _try_outburst_2p(rng, seed_int, attempt)
+		if dict.is_empty():
+			last_carve_fail += 1
+			continue
+		var validation: Dictionary = MapLoader.validate(dict)
+		if validation.get("ok", false):
+			return {"ok": true, "map": validation["map"], "attempts": attempt + 1}
+		last_val_err = String(validation.get("error", "?"))
+	return {
+		"ok": false,
+		"error": "generate_outburst: no valid 2p map after %d attempts (carve_fails=%d, last_val_err=%s)" % [MAX_ATTEMPTS, last_carve_fail, last_val_err],
+	}
+
+static func _try_outburst_2p(rng: RandomNumberGenerator, seed_int: int, attempt: int) -> Dictionary:
+	var north_chain: Array = _carve_outburst_route(rng, OB_SPAWN, 1, -1)
+	var south_chain: Array = _carve_outburst_route(rng, OB_SPAWN, OB_HEIGHT - 2, 1)
+	if north_chain.is_empty() or south_chain.is_empty():
+		return {}
+	if north_chain.size() < OB_MIN_ROUTE_LENGTH or south_chain.size() < OB_MIN_ROUTE_LENGTH:
+		return {}
+	# Cross-adjacency check: no north tile (other than spawn) shares a
+	# cardinal neighbor with any south tile (other than spawn). Keeps the
+	# rendering clean and matches the curated battleground_test design.
+	var south_set: Dictionary = {}
+	for p in south_chain:
+		if p != OB_SPAWN:
+			south_set[p] = true
+	for p in north_chain:
+		if p == OB_SPAWN:
+			continue
+		for d in [Vector2i(1, 0), Vector2i(-1, 0), Vector2i(0, 1), Vector2i(0, -1)]:
+			if south_set.has((p as Vector2i) + d):
+				return {}
+	# Build ASCII tile grid.
+	var grid: Array = []
+	for r in OB_HEIGHT:
+		var row := PackedByteArray()
+		row.resize(OB_WIDTH)
+		for c in OB_WIDTH:
+			row[c] = ASCII_B
+		grid.append(row)
+	for p in north_chain:
+		grid[p.y][p.x] = ASCII_P
+	for p in south_chain:
+		grid[p.y][p.x] = ASCII_P
+	grid[OB_SPAWN.y][OB_SPAWN.x] = ASCII_S
+	var north_end: Vector2i = north_chain[north_chain.size() - 1]
+	var south_end: Vector2i = south_chain[south_chain.size() - 1]
+	grid[north_end.y][north_end.x] = ASCII_C
+	grid[south_end.y][south_end.x] = ASCII_C
+	var tiles := PackedStringArray()
+	for r in OB_HEIGHT:
+		tiles.append((grid[r] as PackedByteArray).get_string_from_ascii())
+	return {
+		"id": "rand_outburst_2p_%08x_%d" % [seed_int & 0xFFFFFFFF, attempt],
+		"name": "Co-op Storm · %08X" % (seed_int & 0xFFFFFFFF),
+		"version": 2,
+		"topology": "outburst",
+		"width": OB_WIDTH,
+		"height": OB_HEIGHT,
+		"tile_size": TILE_SIZE,
+		"origin": ORIGIN,
+		"tiles": Array(tiles),
+		"routes": [
+			{"id": "north", "core_label": "Player 1 (N)", "path_chain": _chain_to_arrays(north_chain)},
+			{"id": "south", "core_label": "Player 2 (S)", "path_chain": _chain_to_arrays(south_chain)},
+		],
+	}
+
+static func _carve_outburst_route(rng: RandomNumberGenerator, spawn: Vector2i, target_y: int, y_step: int) -> Array:
+	var chain: Array = [spawn]
+	var current: Vector2i = spawn
+	var visited: Dictionary = {spawn: true}
+	var safety: int = 0
+	while current.y != target_y:
+		safety += 1
+		if safety > OB_MAX_CARVE_STEPS:
+			return []
+		var fwd: Vector2i = Vector2i(0, y_step)
+		var lat: Vector2i = Vector2i(-1, 0) if rng.randi() % 2 == 0 else Vector2i(1, 0)
+		var pick: Vector2i = lat if rng.randf() < OB_BEND_CHANCE else fwd
+		var nxt: Vector2i = current + pick
+		# Bounds (keep 1-tile border free).
+		if nxt.x < 1 or nxt.x >= OB_WIDTH - 1:
+			pick = fwd
+			nxt = current + pick
+		# Half-plane: north stays y <= spawn.y - 1 after leaving the spawn.
+		# south stays y >= spawn.y + 1.
+		if current != spawn:
+			if y_step < 0 and nxt.y > spawn.y - 1:
+				return []
+			if y_step > 0 and nxt.y < spawn.y + 1:
+				return []
+		if visited.has(nxt):
+			# Lateral bent into an already-visited tile — force forward.
+			pick = fwd
+			nxt = current + pick
+			if visited.has(nxt):
+				return []
+		# Bounds + half-plane re-check after the forward-fallback.
+		if nxt.x < 1 or nxt.x >= OB_WIDTH - 1:
+			return []
+		if y_step < 0 and nxt.y < 1:
+			return []
+		if y_step > 0 and nxt.y > OB_HEIGHT - 2:
+			return []
+		chain.append(nxt)
+		visited[nxt] = true
+		current = nxt
+	return chain
+
+static func _chain_to_arrays(chain: Array) -> Array:
+	# MapLoader expects path_chain entries as [x,y] arrays (JSON-friendly),
+	# not Vector2i — the loader's validator converts on read.
+	var out: Array = []
+	for p in chain:
+		out.append([p.x, p.y])
+	return out

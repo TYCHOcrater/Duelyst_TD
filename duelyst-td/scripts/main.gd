@@ -34,6 +34,12 @@ func _ready() -> void:
 	if "--use-battleground" in OS.get_cmdline_args():
 		RunConfig.map_source = "fixed"
 		_battleground_override = true
+	# C11 smoke test: generate 5 outburst-2p maps from sequential seeds and
+	# print pass/fail. Exits before bringing up the rest of the scene.
+	if "--test-outburst-gen-5" in OS.get_cmdline_args():
+		_run_outburst_gen_smoke_test()
+		get_tree().quit(0)
+		return
 	GameState.reset()
 	PactManager.reset()
 	RelicManager.reset()
@@ -140,6 +146,14 @@ func _apply_map_background() -> void:
 func _load_configured_map() -> bool:
 	match RunConfig.map_source:
 		"generated":
+			# C11: outburst generator activates when player_count == 2 AND the
+			# session topology is "outburst". Otherwise fall through to the
+			# legacy single-route generator.
+			if RunConfig.player_count == 2 and RunConfig.session_topology == "outburst":
+				var ob: Dictionary = MAP_GENERATOR.generate_outburst(RunConfig.seed, 2)
+				if ob.get("ok", false):
+					return board.load_dict(ob["map"])
+				push_warning("generate_outburst failed: %s — falling back to single-route" % ob.get("error", "?"))
 			var gen: Dictionary = MAP_GENERATOR.generate_forgiving(RunConfig.seed)
 			if not gen.get("ok", false):
 				push_error("Generator failed: %s" % gen.get("error", "unknown"))
@@ -204,6 +218,25 @@ func _spawn_base() -> void:
 	world.add_child(base)
 	if board.grid:
 		base.global_position = board.grid.grid_to_world(board.grid.core.x, board.grid.core.y)
+
+func _run_outburst_gen_smoke_test() -> void:
+	print("--- C11 outburst generator smoke test (5 seeds) ---")
+	for s in range(1, 6):
+		var res: Dictionary = MAP_GENERATOR.generate_outburst(s, 2)
+		if res.get("ok", false):
+			var routes: Array = res["map"].get("routes", [])
+			var n_len: int = (routes[0].get("path_chain", []) as Array).size() if routes.size() > 0 else 0
+			var s_len: int = (routes[1].get("path_chain", []) as Array).size() if routes.size() > 1 else 0
+			print("seed=%d  PASS  attempts=%d  routes=%d  north_len=%d  south_len=%d" % [s, int(res.get("attempts", 0)), routes.size(), n_len, s_len])
+		else:
+			print("seed=%d  FAIL  %s" % [s, str(res.get("error", "?"))])
+	# Determinism check: seed=1 twice must produce identical path_chain[0].
+	var a: Dictionary = MAP_GENERATOR.generate_outburst(1, 2)
+	var b: Dictionary = MAP_GENERATOR.generate_outburst(1, 2)
+	if a.get("ok", false) and b.get("ok", false):
+		var a_chain: Array = a["map"]["routes"][0].get("path_chain", [])
+		var b_chain: Array = b["map"]["routes"][0].get("path_chain", [])
+		print("determinism: seed=1 chain match = %s (north_len %d == %d)" % [a_chain == b_chain, a_chain.size(), b_chain.size()])
 
 func _despawn_aid_units() -> void:
 	# C7: removes every aid-flagged temp tower so they only last one wave.
