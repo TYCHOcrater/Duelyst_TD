@@ -1702,6 +1702,32 @@ enemy.take_damage → RunLog.add_damage(dealt, source_id)               # existi
 
 ---
 
+## 2026-05-25 — Star upgrade prototype (Iteration A5 — Milestone A bake-off path)
+**Decision:** Shards (A4) are now spendable. `Tower.star_level` (1/2/3) advances via `Tower.promote_star()`; the inspect panel surfaces a "Promote to N★ (X/Y shards)" button visible in merge modes. Stat bumps per addendum line 528, mapped to TD: 2★ = +35% damage / +20% buff / +10% fire rate; 3★ = +80% damage / +40% buff / +21% fire rate (compounded).
+**Why sequential promotion only** (no skip from base → 3★): per-step gating makes the "1 more shard to next star" tension legible. Direct-jump skipping would need a UI ambiguity ("promote to 2★ or 3★?") for marginal benefit.
+**Why stat bumps apply as deltas, not absolutes:** the existing trait/flaw/upgrade pipeline already mutates `damage` / `buff_damage_mult` / `fire_rate`. Re-deriving from base at each promotion would forget those modifications. Multiplying compounds correctly with whatever the current values are.
+**Why the 3★ scaling factor is `(1.80 / 1.35) ≈ 1.33` from 2★:** the addendum spec is +35% at 2★ and +80% at 3★ relative to BASE. From 2★ to 3★, that's `(1.80 / 1.35) - 1 = +33.3%`. Same for buff: `1.40 / 1.20 = +16.7%`. Computed as multipliers, not absolute resets.
+**Why preload the command instead of `class_name PromoteUnitCommand`:** Godot 4.6 doesn't pick up new class_name'd scripts until an editor index pass. Headless boot fails with "Identifier ... not declared". Preload via `const _PROMOTE_CMD := preload(...)` sidesteps the issue. Existing class_name commands work because they've been indexed by earlier editor sessions; new ones need the preload pattern (or the dev opens Godot once before running headless).
+**Impact:**
+- `scripts/tower.gd`: new `star_level: int = 1`. New methods `star_promotion_cost()`, `can_promote_star()`, `promote_star()`. The latter consumes shards via `RunLog.consume_shards()` and applies the stat bumps.
+- `scripts/commands/promote_unit_command.gd` (new): mirrors UpgradeUnitCommand's structure (placement-bound, mode-gated, locked-during-combat). Dispatches via CommandBus.
+- `scenes/hud.tscn`: new `PromoteButton` in TowerPanel/VBox between Upgrade and Sell, hidden by default + gold-tinted modulate.
+- `scripts/hud.gd`:
+  - New `tp_promote` @onready ref + connect.
+  - Tower name line includes ★ rating (e.g. "Silverguard Knight (Lvl 2) ★★").
+  - Promote button visibility: only in merge modes, only when star_level < 3. Label shows current/needed shards; disabled if insufficient.
+  - Preload-based command dispatch.
+**Test:**
+- [ ] growth_mode = Merge Stars → place Silverguard Knight. Click it → inspect shows "Promote to 2★ (0/2 shards)" — disabled.
+- [ ] Buy 2 more Silverguard offers → "Promote to 2★ (2/2 shards)" enables.
+- [ ] Click Promote → tower name flips to "... ★★", damage jumps ~35%, shards drop to 0.
+- [ ] Inspect now shows "Promote to 3★ (0/3 shards)".
+- [ ] Buy 3 more Silverguard offers → "Promote to 3★ (3/3 shards)" enables → click → "... ★★★", damage jumps another ~33%. Button disappears (max).
+- [ ] Run summary's "Standout unit" still shows the promoted unit if it was the highest-damage instance.
+- [ ] `user://run_log_*.json` contains a `star_promoted` event with instance_id + star_level for each promotion.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

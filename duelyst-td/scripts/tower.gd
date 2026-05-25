@@ -48,6 +48,11 @@ var placed_at_wave: int = 0
 var waves_survived: int = 0
 var damage_dealt: int = 0  # mirrors RunLog instances[instance_id].damage; cheap accessor for inspect panel
 
+# A5 star levels. 1 = base, 2 = 2★ (consumed 2 shards), 3 = 3★ (consumed 5 total).
+var star_level: int = 1
+const SHARDS_FOR_2STAR := 2
+const SHARDS_FOR_3STAR := 3  # additional shards on top of the 2 spent for 2★
+
 const EVO_THRESHOLDS := [15, 40, 80]
 const EVO_NAMES := ["", "Tempered", "Veteran", "Legendary"]
 
@@ -177,6 +182,50 @@ func upgrade() -> void:
 		buff_radius *= 1.10
 	total_spent += upgrade_cost()
 	queue_redraw()
+
+func star_promotion_cost() -> int:
+	# Shards required to reach the next star, or 0 if at max (3★).
+	match star_level:
+		1: return SHARDS_FOR_2STAR
+		2: return SHARDS_FOR_3STAR
+		_: return 0
+
+func can_promote_star() -> bool:
+	if star_level >= 3:
+		return false
+	return RunLog.shard_count(unit_id) >= star_promotion_cost()
+
+func promote_star() -> bool:
+	# Consumes the required shards and applies the stat bonus.
+	# Stat scaling per addendum line 528 (mapped to TD context):
+	#   2★: +35% damage, +20% buff strength (for aura towers)
+	#   3★: +80% damage, +40% buff strength
+	# We apply the DELTA from current level, not the absolute multiplier.
+	if star_level >= 3:
+		return false
+	var cost: int = star_promotion_cost()
+	if not RunLog.consume_shards(unit_id, cost):
+		return false
+	var new_star: int = star_level + 1
+	match new_star:
+		2:
+			damage = int(round(damage * 1.35))
+			buff_damage_mult *= 1.20
+			fire_rate *= 1.10
+		3:
+			# +80% from base ≈ +33% from 2★ values (since 2★ is +35%).
+			damage = int(round(damage * (1.80 / 1.35)))
+			buff_damage_mult *= (1.40 / 1.20)
+			fire_rate *= 1.10
+	star_level = new_star
+	RunLog.record("star_promoted", {
+		"unit": unit_id,
+		"instance_id": instance_id,
+		"star_level": star_level,
+		"shards_consumed": cost,
+	})
+	queue_redraw()
+	return true
 
 func upgrade_cost() -> int:
 	var base_cost: float = cost * 0.75 * pow(1.4, level)

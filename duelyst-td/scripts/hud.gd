@@ -93,6 +93,7 @@ var _current_choice_kind: String = "pact"
 @onready var tp_name: Label = $TowerPanel/VBox/TowerName
 @onready var tp_stats: Label = $TowerPanel/VBox/TowerStats
 @onready var tp_upgrade: Button = $TowerPanel/VBox/UpgradeButton
+@onready var tp_promote: Button = $TowerPanel/VBox/PromoteButton
 @onready var tp_sell: Button = $TowerPanel/VBox/SellButton
 
 var placement: Node2D
@@ -155,6 +156,7 @@ func _ready() -> void:
 	menu_btn.pressed.connect(_on_main_menu)
 	share_btn.pressed.connect(_on_share)
 	tp_upgrade.pressed.connect(_on_upgrade)
+	tp_promote.pressed.connect(_on_promote)
 	tp_sell.pressed.connect(_on_sell)
 	end_panel.visible = false
 	tower_panel.visible = false
@@ -854,7 +856,10 @@ func _refresh_tower_panel() -> void:
 		hide_tower_panel()
 		return
 	var t = _shown_tower
-	var name_text: String = "%s  (Lvl %d)" % [t.display_name, t.level + 1]
+	var star_text: String = ""
+	if t.star_level >= 2:
+		star_text = "  " + "★".repeat(t.star_level)
+	var name_text: String = "%s  (Lvl %d)%s" % [t.display_name, t.level + 1, star_text]
 	if t.trait_id != "":
 		name_text += "  ·  %s" % t.trait_name
 	if t.flaw_id != "":
@@ -894,10 +899,23 @@ func _refresh_tower_panel() -> void:
 	var classic_allowed: bool = RunConfig.growth_mode in ["classic_upgrade", "merge_evolution_hybrid"]
 	tp_upgrade.visible = classic_allowed
 	tp_upgrade.disabled = GameState.gold < u_cost or t.level >= 4
+	# A5: star promotion button (visible in merge modes only)
+	var merge_mode: bool = RunConfig.growth_mode in ["merge_stars", "merge_evolution_hybrid"]
+	tp_promote.visible = merge_mode and t.star_level < 3
+	if tp_promote.visible:
+		var p_cost: int = t.star_promotion_cost()
+		var have: int = RunLog.shard_count(t.unit_id)
+		var next_star: int = t.star_level + 1
+		tp_promote.text = "Promote to %d★ (%d/%d shards)" % [next_star, have, p_cost]
+		tp_promote.disabled = have < p_cost
 	tp_sell.text = "Sell (+%dg)" % t.sell_value()
 
 func _on_upgrade() -> void:
 	CommandBus.dispatch(UpgradeUnitCommand.new())
+
+const _PROMOTE_CMD := preload("res://scripts/commands/promote_unit_command.gd")
+func _on_promote() -> void:
+	CommandBus.dispatch(_PROMOTE_CMD.new())
 
 func _on_sell() -> void:
 	CommandBus.dispatch(SellUnitCommand.new())

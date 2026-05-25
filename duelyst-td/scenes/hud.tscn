@@ -417,6 +417,12 @@ theme_override_font_sizes/font_size = 13
 text = "Upgrade"
 custom_minimum_size = Vector2(0, 36)
 
+[node name="PromoteButton" type="Button" parent="TowerPanel/VBox"]
+visible = false
+text = "Promote ★"
+custom_minimum_size = Vector2(0, 32)
+modulate = Color(1.0, 0.95, 0.6, 1)
+
 [node name="SellButton" type="Button" parent="TowerPanel/VBox"]
 text = "Sell"
 custom_minimum_size = Vector2(0, 32)
