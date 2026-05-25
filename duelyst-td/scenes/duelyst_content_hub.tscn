@@ -112,6 +112,10 @@ custom_minimum_size = Vector2(220, 36)
 text = "Build D6 — unit catalog"
 custom_minimum_size = Vector2(200, 36)
 
+[node name="GenerateShellsBtn" type="Button" parent="Root/ScanSection/VBox/ActionRow"]
+text = "Generate D7 — unit shells"
+custom_minimum_size = Vector2(200, 36)
+
 [node name="ResultLabel" type="RichTextLabel" parent="Root/ScanSection/VBox"]
 bbcode_enabled = true
 fit_content = true

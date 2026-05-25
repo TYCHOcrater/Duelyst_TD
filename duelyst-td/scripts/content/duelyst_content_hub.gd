@@ -9,6 +9,7 @@ const SCANNER_SCRIPT := preload("res://scripts/content/duelyst_raw_scanner.gd")
 const CATEGORIZER_SCRIPT := preload("res://scripts/content/duelyst_categorizer.gd")
 const IMPORTER_SCRIPT := preload("res://scripts/content/duelyst_importer.gd")
 const UNIT_CATALOG_SCRIPT := preload("res://scripts/content/duelyst_unit_catalog_builder.gd")
+const SHELL_GENERATOR_SCRIPT := preload("res://scripts/content/duelyst_unit_shell_generator.gd")
 
 @onready var source_field: LineEdit = $Root/SettingsSection/VBox/SourceRow/SourceField
 @onready var save_btn: Button = $Root/SettingsSection/VBox/SourceRow/SaveBtn
@@ -20,6 +21,7 @@ const UNIT_CATALOG_SCRIPT := preload("res://scripts/content/duelyst_unit_catalog
 @onready var open_browser_btn: Button = $Root/ScanSection/VBox/ActionRow/OpenBrowserBtn
 @onready var import_btn: Button = $Root/ScanSection/VBox/ActionRow/ImportBtn
 @onready var build_unit_catalog_btn: Button = $Root/ScanSection/VBox/ActionRow/BuildUnitCatalogBtn
+@onready var generate_shells_btn: Button = $Root/ScanSection/VBox/ActionRow/GenerateShellsBtn
 @onready var result_label: RichTextLabel = $Root/ScanSection/VBox/ResultLabel
 @onready var back_btn: Button = $Root/TopBar/BackBtn
 
@@ -36,6 +38,7 @@ func _ready() -> void:
 	open_browser_btn.pressed.connect(_on_open_browser)
 	import_btn.pressed.connect(_on_import)
 	build_unit_catalog_btn.pressed.connect(_on_build_unit_catalog)
+	generate_shells_btn.pressed.connect(_on_generate_shells)
 	back_btn.pressed.connect(_on_back)
 	# Auto-validate on entry so the user sees the current state.
 	_on_validate()
@@ -146,6 +149,35 @@ func _on_build_unit_catalog() -> void:
 		lines.append("  %-12s  %d" % [label, int(by_faction[k])])
 	lines.append("")
 	lines.append("[color=#a0a0a8]Output:[/color]  %s" % res.get("out_path", "?"))
+	result_label.text = "\n".join(lines)
+
+func _on_generate_shells() -> void:
+	result_label.text = "[i]Generating unit shells from D6 catalog …[/i]"
+	await get_tree().process_frame
+	var t0: int = Time.get_ticks_msec()
+	var res: Dictionary = SHELL_GENERATOR_SCRIPT.generate()
+	var elapsed: int = Time.get_ticks_msec() - t0
+	if not res.get("ok", false):
+		result_label.text = "[color=#ff8f8f][b]D7 generate failed.[/b][/color]  %s" % res.get("message", "?")
+		return
+	var lines: Array[String] = []
+	lines.append("[color=#8fff8f][b]D7 unit shells generated.[/b][/color]  %d shells in %d ms" % [int(res.get("total_shells", 0)), elapsed])
+	lines.append("[color=#a0a0a8]By role:[/color]")
+	var by_role: Dictionary = res.get("by_role", {})
+	var role_keys: Array = by_role.keys()
+	role_keys.sort_custom(func(a, b): return int(by_role[a]) > int(by_role[b]))
+	for k in role_keys:
+		lines.append("  %-18s  %d" % [k, int(by_role[k])])
+	lines.append("[color=#a0a0a8]By faction:[/color]")
+	var by_faction: Dictionary = res.get("by_faction", {})
+	var faction_keys: Array = by_faction.keys()
+	faction_keys.sort()
+	for k in faction_keys:
+		var label: String = k if k != "" else "(unset)"
+		lines.append("  %-12s  %d" % [label, int(by_faction[k])])
+	lines.append("")
+	lines.append("[color=#a0a0a8]Output:[/color]  %s" % res.get("out_path", "?"))
+	lines.append("[color=#7a7a82]All shells are debug-only (enabled_in_normal_runs=false). Promote to normal runs via the future D14 content pack manager.[/color]")
 	result_label.text = "\n".join(lines)
 
 func _render_last_run_summary() -> void:

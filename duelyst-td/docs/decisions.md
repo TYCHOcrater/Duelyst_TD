@@ -1244,6 +1244,59 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — Animation preview + unit catalog + shells (Iterations D5 + D6 + D7)
+**Decision:** Land D5 (animation preview inside the content browser), D6 (unit catalog builder), and D7 (unit shell generator) as one bundle. Full pipeline now runs end-to-end in ~2.4s and produces 696 debug-only `GeneratedUnitShell` records across 8 gameplay roles.
+**Why bundle D5-D7:** Each one alone is small but useful, and they form a tight chain: D6 reads D2's categorized catalog, D7 reads D6's unit catalog, D5 enhances the existing D4 browser by tapping into the same `assets/units/<id>/<id>.tres` SpriteFrames that the unit-shells will eventually reference. Bundling avoids three separate hub revisions adding a button each.
+**Why D6 parses .plist XML directly (not via Godot's XMLParser):** Each Duelyst .plist atlas is ~50KB and lists frames as `<key>name_anim_NNN.png</key>`. We only need the keys, not the dict values. A `RegEx.search_all` over the file text finds them all in <1ms per file. Full XML parsing would be ~10× slower with no benefit. The atlas frame names are NOT separate files on disk — they live inside the .plist — so scanning the filesystem alone (D2) found them as zero animations. D6 was failing the "with_animations" check until the plist-parser pass landed.
+**Why D7 shells write to `user://duelyst_content/unit_shells.json` (not `res://data/units/`):**
+- The existing `res://data/units/` is the *promoted, normal-run* content. D7 produces 696 debug-only shells with `balance_state = "generated_unbalanced"`.
+- Mixing the two would crash the existing `UnitFactory` autoload that loads everything in `res://data/units/` at boot.
+- The content pack manager (D14) is the right place to promote selected shells. Until then they exist as a side-channel JSON the future debug sandbox (D8) reads.
+**Why role inference uses visual_tags first, faction second:**
+- visual_tags (humanoid_armor, beast, dragon, construct_large, spirit, etc.) are derived from filename keywords in D6 — they reliably indicate visual identity.
+- Faction-default role (lyonar→blocker, vanar→control_unit, etc.) is the fallback for ambiguous units.
+- Bosses get `boss_body` regardless of tags; critters get `basic_melee`.
+**Why the existing tools/convert_units.py stays the path for `res://assets/units/<id>/<id>.tres` SpriteFrames:** That Python tool parses .plist via Python's stdlib `plistlib`, slices the .png via AtlasTexture sub-resources, and writes a proper Godot SpriteFrames .tres. Re-implementing it in GDScript would duplicate effort. D5's animation preview *consumes* what convert_units.py produces — when a Duelyst unit's SpriteFrames .tres exists, D5 plays it; when not, D5 shows a hint to run `python tools/convert_units.py <id>`.
+**Headless smoke test** (`--content-scan`):
+- D1: 6055 files in 1250 ms
+- D2: 6055 entries in 414 ms
+- D6: 696 units in 679 ms (with .plist parsing); 695 with animations, 38 with SpriteFrames already ready
+- D7: 696 shells in 57 ms
+- Role distribution: basic_melee 319, blocker 78, control_unit 67, splash_mage 64, artillery 56, assassin 56, boss_body 50, basic_ranged 6
+- Faction distribution: abyssian 66, lyonar 60, magmar 59, songhai 61, vanar 70, vetruvian 60, neutral 320
+**Impact:**
+- New `scripts/content/duelyst_unit_catalog_builder.gd` — D6 atlas grouping + .plist parser + visual-tag heuristic.
+- New `scripts/content/duelyst_unit_shell_generator.gd` — D7 role inference + stat templates.
+- `scripts/content/duelyst_content_browser.gd` — D5 animation playback via manual `_process` timer driving `TextureRect.texture` from `SpriteFrames.get_frame_texture(anim, frame)`.
+- `scenes/duelyst_content_browser.tscn` — new AnimRow (animation dropdown + Play/Stop + status).
+- `scenes/duelyst_content_hub.tscn` — new "Build D6 — unit catalog" and "Generate D7 — unit shells" action buttons.
+- `scripts/main_menu.gd` — `--content-scan` smoke test extended to run D6 + D7 end-to-end.
+**Test:** See "Manual Test Checklist - Iter D5+D6+D7" below.
+
+---
+
+### Manual Test Checklist - Iter D5+D6+D7
+
+**D5 (animation preview in browser):**
+- [ ] Main menu → Duelyst Content → Open browser. Select unit_sprite category, search "silverguard" or any existing 38 converted unit's name.
+- [ ] Select the entry → preview shows static PNG. AnimRow appears below with a dropdown listing animations ("idle", "breathing", "attack", "death", "run").
+- [ ] Click ▶ → animation plays at SpriteFrames-defined FPS (idle = 12fps typically). The TextureRect cycles through frames.
+- [ ] Click ■ → animation stops on current frame.
+- [ ] Change dropdown selection (e.g. idle → attack) → first frame of new animation shows; ▶ plays it.
+- [ ] Select a unit_sprite WITHOUT a converted SpriteFrames (e.g. `units/f5_ragnora.png`) → AnimRow shows "(no SpriteFrames yet — run `python tools/convert_units.py f5_ragnora`)" and Play is disabled.
+
+**D6 (unit catalog):**
+- [ ] In hub, click "Build D6 — unit catalog" → result panel shows ~696 units in ~600ms with `with_animations: 695, sprite_frames_ready: 38` and a faction breakdown.
+- [ ] Open `%APPDATA%\Godot\app_userdata\Duelyst_TD\duelyst_content\unit_catalog.json` → 696 unit records, each with `id`, `display_name`, `faction`, `animation_set`, `visual_tags`, `readiness_level`.
+
+**D7 (unit shells):**
+- [ ] In hub, click "Generate D7 — unit shells" → result panel shows 696 shells in <100ms with role + faction breakdowns.
+- [ ] Open `unit_shells.json` → 696 shell records with cost/range/damage/fire_rate/damage_type/tags/balance_state. Confirm `balance_state = "generated_unbalanced"` and `enabled_in_normal_runs = false` on every shell.
+- [ ] Start a normal run → confirm the 24 existing playable units are still in the shop, and NO generated shells appear (they should be debug-only).
+- [ ] Headless: `godot --headless --path . res://scenes/main_menu.tscn --content-scan` prints PASS for D1, D2, D6, D7 in sequence.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

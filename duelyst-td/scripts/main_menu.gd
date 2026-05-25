@@ -341,6 +341,17 @@ func _run_content_pipeline_smoke_test() -> void:
 		int(uc_res.get("with_animations", 0)), int(uc_res.get("sprite_frames_ready", 0)),
 	])
 	print("  by_faction: %s" % JSON.stringify(uc_res.get("by_faction", {})))
+	const ShellGenerator = preload("res://scripts/content/duelyst_unit_shell_generator.gd")
+	t0 = Time.get_ticks_msec()
+	var shell_res: Dictionary = ShellGenerator.generate()
+	var shell_ms: int = Time.get_ticks_msec() - t0
+	if not shell_res.get("ok", false):
+		print("D7 SHELLS FAIL: %s" % shell_res.get("message", "?"))
+		get_tree().quit(1)
+		return
+	print("D7 unit shells PASS: %d shells in %d ms" % [int(shell_res.get("total_shells", 0)), shell_ms])
+	print("  by_role: %s" % JSON.stringify(shell_res.get("by_role", {})))
+	print("  by_faction: %s" % JSON.stringify(shell_res.get("by_faction", {})))
 	get_tree().quit()
 
 func _on_quit() -> void:
