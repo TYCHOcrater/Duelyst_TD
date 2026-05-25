@@ -478,6 +478,10 @@ func _fire() -> void:
 	var proj: Node2D = PROJECTILE_SCENE.instantiate()
 	get_tree().current_scene.add_child(proj)
 	proj.global_position = global_position + Vector2(0, -20)
+	# Muzzle flash — small projectile-colored spark at the launch point.
+	var host := get_tree().current_scene
+	if host:
+		CombatFX.burst(host, proj.global_position, projectile_color, 6, 0.45)
 	var eff_slow_duration: float = slow_duration * ModifierTotals.product_float("slow_duration_mult")
 	proj.setup(
 		current_target,

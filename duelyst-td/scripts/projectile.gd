@@ -61,11 +61,16 @@ func _on_hit() -> void:
 				if slow_duration > 0.0:
 					e.apply_slow(slow_duration, slow_factor)
 	else:
+		var hit_pos2 := target.global_position
 		target.take_damage(damage, damage_type, source_unit_id, source_instance_id)
 		if target.dying:
 			_credit_kill()
 		if is_instance_valid(target) and not target.dying and slow_duration > 0.0:
 			target.apply_slow(slow_duration, slow_factor)
+		# Impact spark — small projectile-colored burst at the hit point.
+		var host := get_tree().current_scene
+		if host:
+			CombatFX.burst(host, hit_pos2, color, 5, 0.5)
 
 func _credit_kill() -> void:
 	if source_tower_ref == null:
