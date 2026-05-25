@@ -100,7 +100,8 @@ func _ready() -> void:
 		])
 	spawner.grid = board.grid
 	WaveEffects.set_grid(board.grid)
-	phase_controller.configure(spawner, draft_director, spawner.get_wave_count())
+	# C4: phase_controller needs session so wave-start can gate on all-ready.
+	phase_controller.configure(spawner, draft_director, spawner.get_wave_count(), session)
 	await get_tree().create_timer(0.4).timeout
 	phase_controller.start()
 
@@ -149,6 +150,12 @@ func _input(event: InputEvent) -> void:
 		if board.reload_map():
 			RunLog.record("map_reloaded", {"path": board.map_path})
 			print("Map reloaded.")
+	# C4: F5 = debug force-start the wave even if some slots aren't ready.
+	# Useful for solo testing of co-op-only flows.
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F5:
+		if phase_controller and phase_controller.has_method("debug_force_start_wave"):
+			phase_controller.debug_force_start_wave()
+			print("F5: debug force-start wave")
 
 func _spawn_base() -> void:
 	if base != null and is_instance_valid(base):

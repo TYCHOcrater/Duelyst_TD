@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C4: synced co-op phases
+**Decision:** PhaseController.confirm_start_wave is no longer the entry point — the new `set_slot_ready(slot_id, ready)` API per-slot gates wave start on all slots being ready. StartWaveCommand now marks the local slot ready instead of starting directly; in solo this is a 1-slot all-ready → wave starts (same UX as before). New `slot_ready_changed(slot_id, ready)` signal for HUDs to render a waiting indicator. F5 debug force-start bypasses the gate. Ready flags clear automatically on combat start.
+**Why:** C-track next step. The wave-start button is the central sync point of any co-op TD; building the gate now (before multiplayer presence) keeps solo behavior intact while letting C5+ render ready states and C12 wire it across the network.
+**Impact:** `scripts/phase_controller.gd` (session ref, set_slot_ready, debug_force_start_wave, _all_slots_ready, _clear_ready_flags, slot_ready_changed signal, configure() now takes optional session arg), `scripts/commands/start_wave_command.gd` (sets local slot ready, falls back to legacy if session missing), `scripts/main.gd` (passes session into phase_controller.configure + F5 keybind).
+**Test:** Headless boots both default and `--use-battleground` clean. Solo press of the wave button still starts the wave (1 slot → instant all-ready). In a future multi-slot scenario, the wave waits until every slot has readied; F5 forces.
+
+---
+
 ## 2026-05-25 — Iter C3: route ownership and placement zones
 **Decision:** PlayerSlot now carries an `owned_tiles: Dictionary` keyset of `Vector2i` coords it's allowed to build on. SessionController.assign_routes(board) seeds it at map-load: solo on a single-topology map = every buildable tile; solo on a multi-route (outburst) map = every tile within 3 of any route's chain (across all routes); multi-player = only tiles within 3 of *the slot's own* route. placement_controller.is_valid_placement gates by `local_slot.owns_tile(gp)`, so off-zone placement preview tints red.
 **Why:** C-track next step. Even though solo doesn't visibly enforce ownership, the zone data must exist so [[c4-synced-phases]] / multi-player can gate placement per slot. Doing the math at map-load (rather than per-frame) keeps placement validation O(1).

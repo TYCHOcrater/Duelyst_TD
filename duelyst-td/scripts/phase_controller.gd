@@ -26,11 +26,20 @@ var wave_leaks: int = 0
 var spawner: Node = null
 var draft: Node = null
 var max_waves: int = 0
+# C4: reference to SessionController so we can gate wave-start on every slot
+# marking ready. Solo runs (slot_count == 1) start the wave immediately when
+# the local slot readies up. Multi-player runs wait until every slot is ready.
+var session: Node = null
 
-func configure(_spawner: Node, _draft: Node, _max_waves: int) -> void:
+# C4: emitted whenever a slot's ready state changes so HUDs can render a
+# "waiting for P2..." style indicator.
+signal slot_ready_changed(slot_id: int, ready: bool)
+
+func configure(_spawner: Node, _draft: Node, _max_waves: int, _session: Node = null) -> void:
 	spawner = _spawner
 	draft = _draft
 	max_waves = _max_waves
+	session = _session
 
 func start() -> void:
 	current_wave = 0
@@ -67,10 +76,53 @@ func confirm_start_wave() -> void:
 	current_wave += 1
 	phase = Phase.COMBAT
 	wave_leaks = 0
+	# C4: every slot's ready flag clears when combat begins so the next
+	# planning phase needs fresh confirmations.
+	_clear_ready_flags()
 	GameState.set_wave(current_wave)
 	combat_started.emit(current_wave)
 	phase_changed.emit("combat")
 	spawner.start_wave(current_wave)
+
+# C4: a single slot signals "I'm ready". Wave starts only when all slots
+# in the session are ready. In solo this is the legacy 1-press path.
+func set_slot_ready(slot_id: int, ready: bool) -> void:
+	if phase != Phase.PLANNING:
+		return
+	if session == null:
+		# Backward compat: no session bound, treat as legacy single-press.
+		confirm_start_wave()
+		return
+	var slots: Array = session.player_slots
+	if slot_id < 0 or slot_id >= slots.size():
+		return
+	slots[slot_id].ready_for_wave = ready
+	slot_ready_changed.emit(slot_id, ready)
+	if ready and _all_slots_ready():
+		confirm_start_wave()
+
+# C4 debug: skip the all-ready gate and start the wave immediately.
+# Useful for solo testing of co-op-only flows.
+func debug_force_start_wave() -> void:
+	if phase != Phase.PLANNING:
+		return
+	confirm_start_wave()
+
+func _all_slots_ready() -> bool:
+	if session == null:
+		return true
+	for s in session.player_slots:
+		if not s.ready_for_wave:
+			return false
+	return true
+
+func _clear_ready_flags() -> void:
+	if session == null:
+		return
+	for s in session.player_slots:
+		if s.ready_for_wave:
+			s.ready_for_wave = false
+			slot_ready_changed.emit(s.slot_id, false)
 
 func notify_leak() -> void:
 	wave_leaks += 1
