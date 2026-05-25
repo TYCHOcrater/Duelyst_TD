@@ -150,6 +150,11 @@ text = "Mastery"
 custom_minimum_size = Vector2(0, 26)
 size_flags_horizontal = 3
 
+[node name="HistoryButton" type="Button" parent="CenterContainer/VBox/SecondaryRow"]
+text = "History"
+custom_minimum_size = Vector2(0, 26)
+size_flags_horizontal = 3
+
 [node name="DuelystContentButton" type="Button" parent="CenterContainer/VBox/SecondaryRow"]
 text = "Duelyst Content"
 custom_minimum_size = Vector2(0, 26)

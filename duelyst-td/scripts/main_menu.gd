@@ -14,6 +14,7 @@ extends Control
 @onready var determinism_btn: Button = $CenterContainer/VBox/SecondaryRow/DeterminismButton
 @onready var determinism_result: Label = $CenterContainer/VBox/DeterminismResult
 @onready var mastery_btn: Button = $CenterContainer/VBox/SecondaryRow/MasteryButton
+@onready var history_btn: Button = $CenterContainer/VBox/SecondaryRow/HistoryButton
 @onready var duelyst_content_btn: Button = $CenterContainer/VBox/SecondaryRow/DuelystContentButton
 @onready var quit_btn: Button = $CenterContainer/VBox/SecondaryRow/QuitButton
 @onready var mastery_panel: Panel = $MasteryPanel
@@ -59,6 +60,7 @@ func _ready() -> void:
 	quit_btn.pressed.connect(_on_quit)
 	map_editor_btn.pressed.connect(_on_open_editor)
 	duelyst_content_btn.pressed.connect(_on_open_duelyst_content)
+	history_btn.pressed.connect(_on_open_history)
 	mastery_panel.visible = false
 	_populate_map_sources()
 	_populate_growth_modes()
@@ -220,6 +222,9 @@ func _on_open_editor() -> void:
 
 func _on_open_duelyst_content() -> void:
 	get_tree().change_scene_to_file("res://scenes/duelyst_content_hub.tscn")
+
+func _on_open_history() -> void:
+	get_tree().change_scene_to_file("res://scenes/match_history.tscn")
 
 func _on_determinism_test() -> void:
 	const N := 200
