@@ -267,6 +267,11 @@ func upgrade() -> void:
 		buff_radius *= 1.10
 	total_spent += upgrade_cost()
 	queue_redraw()
+	# Visual confirmation — soft golden ring + small spark burst.
+	var host := get_tree().current_scene if is_inside_tree() else null
+	if host:
+		CombatFX.placement_pulse(host, global_position, Color(1.0, 0.85, 0.45, 0.9))
+		CombatFX.burst(host, global_position, Color(1.0, 0.9, 0.55), 8, 0.55)
 
 func star_promotion_cost() -> int:
 	# Shards required to reach the next star, or 0 if at max (3★).
@@ -303,6 +308,17 @@ func promote_star() -> bool:
 			buff_damage_mult *= (1.40 / 1.20)
 			fire_rate *= 1.10
 	star_level = new_star
+	# Star promotion celebration — brighter and bigger for higher tiers.
+	# 2★ = warm gold, 3★ = brilliant white-gold with a fuller burst.
+	var host := get_tree().current_scene if is_inside_tree() else null
+	if host:
+		if new_star == 3:
+			CombatFX.placement_pulse(host, global_position, Color(1.0, 0.95, 0.7, 1.0))
+			CombatFX.burst(host, global_position, Color(1.0, 0.95, 0.7), 20, 0.9)
+			CombatFX.burst(host, global_position, Color(1.0, 1.0, 0.85), 12, 0.55)
+		else:
+			CombatFX.placement_pulse(host, global_position, Color(1.0, 0.8, 0.35, 0.95))
+			CombatFX.burst(host, global_position, Color(1.0, 0.85, 0.45), 14, 0.7)
 	RunLog.record("star_promoted", {
 		"unit": unit_id,
 		"instance_id": instance_id,
