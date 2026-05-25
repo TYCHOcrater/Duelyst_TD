@@ -13,8 +13,10 @@ extends Node
 # C4 will gate phase transitions on all-ready.
 
 const PLAYER_SLOT_SCRIPT := preload("res://scripts/player_slot.gd")
+const AID_TOKENS_PER_RUN := 2          # C7: each slot starts the run with this many aid tokens
 
 signal slots_changed(slots: Array)
+signal aid_tokens_changed(slot_id: int, current: int)
 
 var player_slots: Array = []
 var local_slot_id: int = 0  # which slot the local player controls
@@ -28,11 +30,25 @@ func configure(n: int, topology: String) -> void:
 	player_slots.clear()
 	for i in clamped:
 		var slot = PLAYER_SLOT_SCRIPT.new(i)
+		# C7: seed aid tokens. Solo (clamped==1) keeps them for symmetry but
+		# can't actually use them — no ally route exists.
+		slot.aid_tokens = AID_TOKENS_PER_RUN
 		player_slots.append(slot)
-	print("SessionController: %d slot(s), topology=%s" % [clamped, topology])
+	print("SessionController: %d slot(s), topology=%s, aid_tokens/slot=%d" % [clamped, topology, AID_TOKENS_PER_RUN])
 	if RunLog.active:
 		RunLog.record_player_slots(summary_for_run_log())
 	slots_changed.emit(player_slots)
+
+# C7: spend one aid token from slot `from_slot_id`. Returns true on success.
+func consume_aid_token(from_slot_id: int) -> bool:
+	if from_slot_id < 0 or from_slot_id >= player_slots.size():
+		return false
+	var slot = player_slots[from_slot_id]
+	if slot.aid_tokens <= 0:
+		return false
+	slot.aid_tokens -= 1
+	aid_tokens_changed.emit(from_slot_id, slot.aid_tokens)
+	return true
 
 # C3: assign each slot the route it owns, and seed the slot's owned-tile
 # set so placement_controller can ask `local_slot.owns_tile(gp)`.

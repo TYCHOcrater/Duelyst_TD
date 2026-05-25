@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C7: Aid Token v1
+**Decision:** Each PlayerSlot starts the run with `AID_TOKENS_PER_RUN = 2`. `SendAidCommand(src_slot, unit_id, target_slot)` spends one token to spawn a temporary copy of `unit_id` on the target slot's owned-tile zone (chosen tile = closest buildable to the target route's chain midpoint). The temp tower is flagged `is_aid_unit=true` so it (a) skips RunLog instance registration, (b) gets a violet placement pulse instead of cyan, and (c) is added to the `aid_units` group for one-shot cleanup. `main._despawn_aid_units` (connected to `WaveSpawner.wave_cleared`) frees every aid unit at wave end with a small fade burst. F6 debug hotkey sends aid from the picked tower to slot 1 (no-op in solo).
+**Why:** C-track next milestone. Co-op tension mechanic — players can lend their build to a struggling ally without sacrificing their own board. Aid expiring at wave end keeps it a moment-of-help, not a permanent transfer.
+**Impact:** new `scripts/commands/send_aid_command.gd`, `scripts/session_controller.gd` (AID_TOKENS_PER_RUN const, `consume_aid_token()`, `aid_tokens_changed` signal, slot init), `scripts/player_slot.gd` (comment update), `scripts/tower.gd` (is_aid_unit / aid_source_slot fields + branch in `_ready`), `scripts/main.gd` (preload SEND_AID_CMD, wave_cleared → _despawn_aid_units, F6 hotkey).
+**Test:** Headless `--use-battleground` prints `SessionController: 1 slot(s), topology=solo, aid_tokens/slot=2` and boots clean. Solo F6 prints `F6: needs >= 2 player slots (currently 1)`. Wave-end cleanup verified via the group-walk in `_despawn_aid_units`.
+
+---
+
 ## 2026-05-25 — Combat feel: death bursts, placement pulse, Core damage flash
 **Decision:** New `scripts/combat_fx.gd` exposes two static helpers: `burst(host, pos, color, count, speed_scale)` for outward particle bursts and `placement_pulse(host, pos, color)` for expanding ring sprites. Wired into `enemy._die()` (14-particle burst at the enemy's last position, ×1.6 scale for elites/bosses) and `tower._ready()` (cyan placement ring at the tower's tile). HUD `LivesBox` now flashes red and pulses the lives label on Core damage to mirror the C6 gate-shield-row flash.
 **Why:** Combat needed micro-feedback. Enemies just popped out of existence; towers appeared with no plant-down beat; Core damage was silently arithmetic. The user has been steering toward visible atmosphere/polish — these complete that loop: spawn → place (pulse) → attack → kill (burst) → leak (gate flash + core flash). All procedural, no new assets.

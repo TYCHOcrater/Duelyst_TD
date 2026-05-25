@@ -6,6 +6,7 @@ const DRAFT_SCRIPT := preload("res://scripts/draft_director.gd")
 const DEBUG_OVERLAY_SCENE := preload("res://scenes/debug_overlay.tscn")
 const MAP_GENERATOR := preload("res://scripts/map_generator.gd")
 const AMBIENT_FX_SCRIPT := preload("res://scripts/ambient_fx.gd")
+const _SEND_AID_CMD := preload("res://scripts/commands/send_aid_command.gd")
 
 const STARTER_MAP := "res://data/maps/starter_neutral.json"
 const BATTLEGROUND_MAP := "res://data/maps/battleground_test.json"
@@ -92,6 +93,8 @@ func _ready() -> void:
 	phase_controller.run_ended.connect(_on_run_ended)
 	spawner.wave_cleared.connect(phase_controller.notify_wave_cleared)
 	spawner.wave_cleared.connect(_credit_tower_wave_survival)
+	# C7: clean up Aid Token temp units at wave end.
+	spawner.wave_cleared.connect(_despawn_aid_units)
 	GameState.game_over.connect(_on_game_over_safety)
 	var wave_set: Dictionary = EnemyFactory.get_wave_set(STARTER_WAVE_SET)
 	if wave_set.is_empty():
@@ -170,6 +173,17 @@ func _input(event: InputEvent) -> void:
 		if phase_controller and phase_controller.has_method("debug_force_start_wave"):
 			phase_controller.debug_force_start_wave()
 			print("F5: debug force-start wave")
+	# C7: F6 = debug send aid. Source = local slot, target = slot 1 if it
+	# exists (won't fire in solo). Subject = currently picked tower's unit_id.
+	elif event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_F6:
+		var picked = placement.picked_tower if placement else null
+		if picked == null or not is_instance_valid(picked):
+			print("F6: pick a tower first")
+		elif session.player_slots.size() < 2:
+			print("F6: needs >= 2 player slots (currently %d)" % session.player_slots.size())
+		else:
+			var target_id: int = 1 if session.local_slot_id != 1 else 0
+			CommandBus.dispatch(_SEND_AID_CMD.new(session.local_slot_id, picked.unit_id, target_id))
 
 func _spawn_ambient_fx() -> void:
 	# Atmospheric layer: drifting dust + pulsing core glow + spawn portal.
@@ -189,6 +203,18 @@ func _spawn_base() -> void:
 	world.add_child(base)
 	if board.grid:
 		base.global_position = board.grid.grid_to_world(board.grid.core.x, board.grid.core.y)
+
+func _despawn_aid_units() -> void:
+	# C7: removes every aid-flagged temp tower so they only last one wave.
+	# Spawns a small fade-out burst at each location for clarity.
+	for t in get_tree().get_nodes_in_group("aid_units"):
+		if not is_instance_valid(t):
+			continue
+		var pos: Vector2 = t.global_position
+		var host: Node = get_tree().current_scene
+		if host:
+			CombatFX.burst(host, pos, Color(0.85, 0.9, 1.0), 8, 0.55)
+		t.queue_free()
 
 func _credit_tower_wave_survival() -> void:
 	# A2: every tower still standing at wave-clear gets +1 to its

@@ -31,6 +31,10 @@ var current_target: Node2D = null
 var show_range: bool = false
 var show_target_line: bool = false
 var is_preview: bool = false
+# C7: aid copies are temporary towers placed on an ally route. They skip
+# RunLog instance registration and get cleaned up at wave end.
+var is_aid_unit: bool = false
+var aid_source_slot: int = -1
 var level: int = 0
 var total_spent: int = 0
 var trait_id: String = ""
@@ -162,11 +166,16 @@ func _ensure_decorative_sprites() -> void:
 func _ready() -> void:
 	if not is_preview:
 		add_to_group("towers")
-		_register_instance()
-		# Placement pulse — quick outward ring at the new tower's tile.
+		# Aid copies (C7) don't get a RunLog instance — they aren't part of the
+		# player's persistent roster and they vanish at wave end.
+		if not is_aid_unit:
+			_register_instance()
+		# Placement pulse — cyan for normal placement, gold-tinted for aid drops
+		# so the assist read is unmistakable.
 		var host := get_tree().current_scene if is_inside_tree() else null
 		if host:
-			CombatFX.placement_pulse(host, global_position, Color(0.7, 0.95, 1.0, 0.85))
+			var pulse_col: Color = Color(0.9, 0.85, 1.0, 0.95) if is_aid_unit else Color(0.7, 0.95, 1.0, 0.85)
+			CombatFX.placement_pulse(host, global_position, pulse_col)
 	if total_spent == 0:
 		total_spent = cost
 	_apply_sprite_frames()

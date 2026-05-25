@@ -24,7 +24,7 @@ var color: Color = Color.WHITE
 var route_id: String = ""        # populated by C1 once CoopMapDef exists; C3 may join multiple ids with ","
 var gate_shield: int = 0         # populated by C6
 var ready_for_wave: bool = false  # C4 uses this for synced phases
-var aid_tokens: int = 0          # C7
+var aid_tokens: int = 0          # C7 — granted by SessionController.configure
 # C3: keyset of Vector2i tile coordinates this slot is allowed to build on.
 # Populated by SessionController.assign_routes() at map-load time.
 # Empty dict => no zone yet known (caller should treat as "everywhere ok").
