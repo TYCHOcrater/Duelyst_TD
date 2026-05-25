@@ -1647,6 +1647,36 @@ Curated baseline: 24
 
 ---
 
+## 2026-05-25 — Unit instance identity (Iteration A2 — Milestone A continued)
+**Decision:** Each placed tower now gets a stable `instance_id` (string of form `<base_unit_id>#<n>`), and RunLog tracks per-instance damage / kills / waves_survived alongside the existing per-base-type aggregates. The run summary surfaces a "Standout unit" line showing the single highest-damage instance with placement context. Tower inspect panel shows `N dmg this run · M waves survived` per individual unit.
+**Why now:** A2 is the foundational step before A4 (duplicate shard system) and A5 (star upgrades). Both need to identify "which specific Silverguard Knight got upgraded" — the existing `damage_by_unit` dict can't disambiguate two copies of the same base type.
+**Why deterministic `<base>#<n>` ids instead of UUIDs:** Human-readable in logs ("lyonar_friends_guard#3" vs "a91f-3c..."). Deterministic across same-seed replays (counter resets in start_run; SessionRng not consumed). No collision risk since counter is monotonic per run.
+**Why projectile caches `source_instance_id` at fire-time** (not at hit-time): Tower may be sold between firing and projectile landing — caching the id means stats still attribute correctly. The existing `source_tower_ref: WeakRef` is kept for the `_credit_kill` flow which actually needs the live tower for `add_kill()`.
+**Why `notify_wave_survived` fires on wave_cleared** (not on planning_started): planning_started fires for wave 1 too — that would falsely credit towers placed during wave-1 planning with 1 wave of survival before the wave runs. wave_cleared only fires after combat completes, which is the correct semantic point.
+**Damage attribution flow** (one extra parameter through the chain):
+```
+tower._fire → projectile.setup(..., source_tower=self)
+            → projectile.source_instance_id = src_tower.instance_id  (cached)
+projectile._on_hit → enemy.take_damage(amount, dtype, source_id, source_instance_id)
+enemy.take_damage → RunLog.add_damage(dealt, source_id)               # existing aggregator
+                  → RunLog.add_damage_to_instance(source_instance_id, dealt)  # NEW
+```
+**Impact:**
+- `scripts/tower.gd`: new `instance_id`, `placed_at_wave`, `waves_survived`, `damage_dealt` fields. `_register_instance()` in `_ready` (non-preview only). `add_kill()` and new `notify_wave_survived()` call into RunLog. `_exit_tree()` finalizes instance with "removed" state.
+- `scripts/projectile.gd`: new `source_instance_id` field cached from source_tower at setup. Passed to `enemy.take_damage()`.
+- `scripts/enemy.gd`: `take_damage()` signature gains `source_instance_id` parameter; forwards to `RunLog.add_damage_to_instance`.
+- `scripts/run_log.gd`: new `stats.instances` dict + `stats._instance_counter`. New API: `register_unit_instance`, `add_damage_to_instance`, `add_kill_to_instance`, `bump_waves_survived`, `finalize_unit_instance`, `top_instance_by_damage`.
+- `scripts/main.gd`: `_credit_tower_wave_survival()` connected to `spawner.wave_cleared`; iterates "towers" group, calls `notify_wave_survived()` on each living tower.
+- `scripts/hud.gd`: run-summary "Highlights" now appends a "Standout unit" line via `RunLog.top_instance_by_damage()`. Tower inspect panel appends `N dmg this run · M waves survived` from the live instance's RunLog entry.
+**Test:**
+- [ ] Start a run. Place two Silverguard Knights at different tiles. Click each → both inspect panels show their own (different) damage and waves-survived numbers.
+- [ ] One Knight kills 5 enemies, the other kills 1 → kill counts differ in the inspect; evolution progress respects each one's independent count.
+- [ ] Sell one Knight → its `_exit_tree` calls finalize with "removed"; the RunLog entry persists for end-of-run summary.
+- [ ] End the run → end panel "Highlights" section has both "Top damage" (by base type) and "Standout unit" (the specific instance) lines. They may or may not agree depending on whether one carry did most of the work or damage spread across the team.
+- [ ] Open the saved `user://run_log_*.json` → `stats.instances` dict has per-id entries with damage / kills / waves_survived / placed_at_wave / final_state.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

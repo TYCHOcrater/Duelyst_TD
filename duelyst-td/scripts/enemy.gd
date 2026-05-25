@@ -150,7 +150,7 @@ func apply_slow(duration: float, factor: float) -> void:
 	if new_until > _slow_until:
 		_slow_until = new_until
 
-func take_damage(amount: int, damage_type: String = "strike", source_id: String = "") -> void:
+func take_damage(amount: int, damage_type: String = "strike", source_id: String = "", source_instance_id: String = "") -> void:
 	if dying:
 		return
 	# Apply type-based mitigation.
@@ -174,6 +174,8 @@ func take_damage(amount: int, damage_type: String = "strike", source_id: String 
 	hp -= applied
 	var dealt: int = min(pre_hp, applied) + absorbed_by_shield
 	RunLog.add_damage(dealt, source_id)
+	if source_instance_id != "":
+		RunLog.add_damage_to_instance(source_instance_id, dealt)
 	_refresh_hp_bar()
 	if dealt >= 15:
 		_spawn_damage_popup(dealt, damage_type)

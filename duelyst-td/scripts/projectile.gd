@@ -11,6 +11,7 @@ var splash_radius: float = 0.0
 var slow_duration: float = 0.0
 var slow_factor: float = 1.0
 var source_unit_id: String = ""
+var source_instance_id: String = ""
 var source_tower_ref: WeakRef = null
 
 func setup(t: Node2D, dmg: int, spd: float, col: Color = color,
@@ -26,6 +27,10 @@ func setup(t: Node2D, dmg: int, spd: float, col: Color = color,
 	slow_factor = slow_f
 	damage_type = dmg_type
 	source_unit_id = src_id
+	# Cache the source instance id at fire time. Tower may be sold/destroyed
+	# before the projectile lands — instance stats still attribute correctly.
+	if src_tower != null and "instance_id" in src_tower:
+		source_instance_id = src_tower.instance_id
 	source_tower_ref = weakref(src_tower) if src_tower != null else null
 	queue_redraw()
 
@@ -50,13 +55,13 @@ func _on_hit() -> void:
 			if e.dying:
 				continue
 			if hit_pos.distance_to(e.global_position) <= splash_radius:
-				e.take_damage(damage, damage_type, source_unit_id)
+				e.take_damage(damage, damage_type, source_unit_id, source_instance_id)
 				if e.dying:
 					_credit_kill()
 				if slow_duration > 0.0:
 					e.apply_slow(slow_duration, slow_factor)
 	else:
-		target.take_damage(damage, damage_type, source_unit_id)
+		target.take_damage(damage, damage_type, source_unit_id, source_instance_id)
 		if target.dying:
 			_credit_kill()
 		if is_instance_valid(target) and not target.dying and slow_duration > 0.0:

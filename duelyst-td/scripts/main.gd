@@ -70,6 +70,7 @@ func _ready() -> void:
 	phase_controller.income_granted.connect(hud.show_income_breakdown)
 	phase_controller.run_ended.connect(_on_run_ended)
 	spawner.wave_cleared.connect(phase_controller.notify_wave_cleared)
+	spawner.wave_cleared.connect(_credit_tower_wave_survival)
 	GameState.game_over.connect(_on_game_over_safety)
 	var wave_set: Dictionary = EnemyFactory.get_wave_set(STARTER_WAVE_SET)
 	if wave_set.is_empty():
@@ -114,6 +115,13 @@ func _spawn_base() -> void:
 	world.add_child(base)
 	if board.grid:
 		base.global_position = board.grid.grid_to_world(board.grid.core.x, board.grid.core.y)
+
+func _credit_tower_wave_survival() -> void:
+	# A2: every tower still standing at wave-clear gets +1 to its
+	# waves_survived counter (both local field + RunLog.instances).
+	for t in get_tree().get_nodes_in_group("towers"):
+		if is_instance_valid(t) and t.has_method("notify_wave_survived"):
+			t.notify_wave_survived()
 
 func _on_planning_started(wave: int) -> void:
 	placement.set_locked(false)

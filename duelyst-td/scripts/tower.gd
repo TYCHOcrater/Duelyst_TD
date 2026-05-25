@@ -40,6 +40,14 @@ var flaw_name: String = ""
 var kills_count: int = 0
 var evolution_tier: int = 0   # 0 = vanilla; 1 = Tempered; 2 = Veteran; 3 = Legendary
 
+# A2 unit-instance identity. Each placed tower gets a unique instance_id
+# so RunLog can track per-instance stats (damage / kills / waves survived)
+# rather than aggregating by base unit type only.
+var instance_id: String = ""
+var placed_at_wave: int = 0
+var waves_survived: int = 0
+var damage_dealt: int = 0  # mirrors RunLog instances[instance_id].damage; cheap accessor for inspect panel
+
 const EVO_THRESHOLDS := [15, 40, 80]
 const EVO_NAMES := ["", "Tempered", "Veteran", "Legendary"]
 
@@ -79,9 +87,27 @@ func _apply_sprite_frames() -> void:
 func _ready() -> void:
 	if not is_preview:
 		add_to_group("towers")
+		_register_instance()
 	if total_spent == 0:
 		total_spent = cost
 	_apply_sprite_frames()
+
+func _register_instance() -> void:
+	# Lazy-register with RunLog after the tower is actually placed (not the
+	# placement-preview ghost). RunLog returns the assigned instance_id and
+	# tracks per-instance damage/kills/waves from this point on.
+	if RunLog == null or not RunLog.has_method("register_unit_instance"):
+		return
+	placed_at_wave = int(RunLog.stats.get("wave_reached", 0))
+	if placed_at_wave <= 0:
+		placed_at_wave = 1  # placement during planning of wave N is recorded as wave N
+	instance_id = RunLog.register_unit_instance(unit_id, placed_at_wave, trait_id, flaw_id)
+
+func _exit_tree() -> void:
+	# Sold OR died; the placement controller emits sell_unit before queue_free,
+	# so anything reaching here without a prior unregister is a "lost" instance.
+	if instance_id != "" and RunLog != null and RunLog.has_method("finalize_unit_instance"):
+		RunLog.finalize_unit_instance(instance_id, "removed")
 
 func apply_trait(def: Dictionary) -> void:
 	# Used for both traits and flaws; the caller writes trait_id/flaw_id.
@@ -161,7 +187,15 @@ func sell_value() -> int:
 
 func add_kill() -> void:
 	kills_count += 1
+	if instance_id != "" and RunLog != null and RunLog.has_method("add_kill_to_instance"):
+		RunLog.add_kill_to_instance(instance_id)
 	_check_evolution()
+
+func notify_wave_survived() -> void:
+	# Called by main.gd at wave-clear for every tower still alive.
+	waves_survived += 1
+	if instance_id != "" and RunLog != null and RunLog.has_method("bump_waves_survived"):
+		RunLog.bump_waves_survived(instance_id)
 
 func _check_evolution() -> void:
 	var new_tier: int = evolution_tier

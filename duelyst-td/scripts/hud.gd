@@ -309,13 +309,25 @@ func _total_waves() -> int:
 
 func _format_highlights(s: Dictionary) -> String:
 	var lines: Array[String] = []
-	# Top damage unit.
+	# Top damage unit (by base type — sums all copies of e.g. Silverguard Knight).
 	var by_unit: Dictionary = s.get("damage_by_unit", {})
 	var top_unit := _argmax_str(by_unit)
 	if top_unit != "":
 		var def: Dictionary = UnitFactory.get_def(top_unit)
 		var name_text: String = def.get("display_name", top_unit)
 		lines.append("[color=#ffce6c]Top damage[/color]  %s  -  [b]%d[/b]" % [name_text, int(by_unit[top_unit])])
+	# A2: Standout INDIVIDUAL unit (one specific placed instance).
+	var top_inst: Dictionary = RunLog.top_instance_by_damage()
+	if not top_inst.is_empty():
+		var inst_def: Dictionary = UnitFactory.get_def(String(top_inst.get("base_unit_id", "")))
+		var inst_name: String = inst_def.get("display_name", String(top_inst.get("base_unit_id", "?")))
+		var placed_wave: int = int(top_inst.get("placed_at_wave", 0))
+		var waves_alive: int = int(top_inst.get("waves_survived", 0))
+		var kills: int = int(top_inst.get("kills", 0))
+		var dmg: int = int(top_inst.get("damage", 0))
+		lines.append("[color=#9cb8ff]Standout unit[/color]  %s  -  [b]%d[/b] dmg / %d kills (placed W%d, %d waves)" % [
+			inst_name, dmg, kills, placed_wave, waves_alive,
+		])
 	# Most kills by enemy type.
 	var kills: Dictionary = s.get("kills_by_enemy", {})
 	var top_kill := _argmax_str(kills)
@@ -809,6 +821,12 @@ func hide_tower_panel() -> void:
 	_shown_tower = null
 	tower_panel.visible = false
 
+func _instance_damage_for(instance_id: String) -> int:
+	var instances: Dictionary = RunLog.stats.get("instances", {})
+	if not instances.has(instance_id):
+		return 0
+	return int((instances[instance_id] as Dictionary).get("damage", 0))
+
 func _refresh_tower_panel() -> void:
 	if not _shown_tower or not is_instance_valid(_shown_tower):
 		hide_tower_panel()
@@ -829,8 +847,14 @@ func _refresh_tower_panel() -> void:
 			evo_line = "\n★%d  %s (%d kills)" % [int(evo.tier), evo.name, int(evo.kills)]
 		elif int(evo.next_threshold) > 0:
 			evo_line = "\n%d / %d kills to Tempered" % [int(evo.kills), int(evo.next_threshold)]
-		tp_stats.text = "Dmg %d  ·  Range %d  ·  %.1f/s%s" % [
-			t.effective_damage(), int(t.range_radius), t.fire_rate, evo_line
+		# A2 instance stats: damage dealt / kills / waves survived
+		# (kills_count == evo.kills already shown above, so only show damage + waves here).
+		var inst_line: String = ""
+		if t.instance_id != "":
+			var inst_damage: int = _instance_damage_for(t.instance_id)
+			inst_line = "\n%d dmg this run  ·  %d waves survived" % [inst_damage, int(t.waves_survived)]
+		tp_stats.text = "Dmg %d  ·  Range %d  ·  %.1f/s%s%s" % [
+			t.effective_damage(), int(t.range_radius), t.fire_rate, evo_line, inst_line
 		]
 	var u_cost: int = t.upgrade_cost()
 	tp_upgrade.text = "Upgrade (%dg)" % u_cost

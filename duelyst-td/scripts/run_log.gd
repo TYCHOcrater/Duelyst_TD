@@ -51,6 +51,11 @@ func start_run(seed_value: int) -> void:
 		"traits_taken": {},
 		"flaws_taken": {},
 		"evolutions_by_tier": {"1": 0, "2": 0, "3": 0},
+		# A2 per-unit-instance tracking. Each placed tower gets an entry keyed
+		# by its instance_id; values record per-instance damage, kills, waves
+		# survived, traits/flaws, and a final disposition.
+		"instances": {},
+		"_instance_counter": 0,
 	}
 	active = true
 	record("run_start", {"seed": seed_value})
@@ -153,6 +158,87 @@ func record(event_type: String, data: Dictionary = {}) -> void:
 				stats["max_gold_floated"] = floated
 	event_recorded.emit(e)
 	stats_changed.emit(stats)
+
+# --- A2 unit-instance API ---
+
+func register_unit_instance(base_unit_id: String, placed_wave: int, trait_id: String = "", flaw_id: String = "") -> String:
+	# Generate a deterministic, human-readable id: "<base>#<n>". Counter
+	# survives across waves within the run; resets at start_run.
+	if not active:
+		return ""
+	var n: int = int(stats.get("_instance_counter", 0)) + 1
+	stats["_instance_counter"] = n
+	var id: String = "%s#%d" % [base_unit_id, n]
+	var instances: Dictionary = stats.get("instances", {})
+	instances[id] = {
+		"base_unit_id": base_unit_id,
+		"placed_at_wave": placed_wave,
+		"trait_id": trait_id,
+		"flaw_id": flaw_id,
+		"damage": 0,
+		"kills": 0,
+		"waves_survived": 0,
+		"final_state": "active",
+	}
+	stats["instances"] = instances
+	stats_changed.emit(stats)
+	return id
+
+func add_damage_to_instance(instance_id: String, amount: int) -> void:
+	if not active or amount <= 0 or instance_id == "":
+		return
+	var instances: Dictionary = stats.get("instances", {})
+	if not instances.has(instance_id):
+		return
+	var inst: Dictionary = instances[instance_id]
+	inst["damage"] = int(inst.get("damage", 0)) + amount
+
+func add_kill_to_instance(instance_id: String) -> void:
+	if not active or instance_id == "":
+		return
+	var instances: Dictionary = stats.get("instances", {})
+	if not instances.has(instance_id):
+		return
+	var inst: Dictionary = instances[instance_id]
+	inst["kills"] = int(inst.get("kills", 0)) + 1
+
+func bump_waves_survived(instance_id: String) -> void:
+	if not active or instance_id == "":
+		return
+	var instances: Dictionary = stats.get("instances", {})
+	if not instances.has(instance_id):
+		return
+	var inst: Dictionary = instances[instance_id]
+	inst["waves_survived"] = int(inst.get("waves_survived", 0)) + 1
+
+func finalize_unit_instance(instance_id: String, reason: String) -> void:
+	# reason: "sold", "removed", "victory_alive" — recorded so the summary
+	# can distinguish a unit that was sold for refund vs one that survived.
+	if not active or instance_id == "":
+		return
+	var instances: Dictionary = stats.get("instances", {})
+	if not instances.has(instance_id):
+		return
+	var inst: Dictionary = instances[instance_id]
+	inst["final_state"] = reason
+	inst["ended_at_wave"] = int(stats.get("wave_reached", 0))
+
+func top_instance_by_damage() -> Dictionary:
+	# Returns the single highest-damage instance entry plus its id, or {} if
+	# no instances. Used by the run-summary panel.
+	var best_id: String = ""
+	var best_damage: int = -1
+	var instances: Dictionary = stats.get("instances", {})
+	for id in instances:
+		var d: int = int((instances[id] as Dictionary).get("damage", 0))
+		if d > best_damage:
+			best_damage = d
+			best_id = String(id)
+	if best_id == "":
+		return {}
+	var out: Dictionary = (instances[best_id] as Dictionary).duplicate()
+	out["instance_id"] = best_id
+	return out
 
 func record_player_slots(slots: Array) -> void:
 	# Called once by SessionController after it configures the slot list.
