@@ -1627,6 +1627,26 @@ Curated baseline: 24
 
 ---
 
+## 2026-05-25 — Content validator (Iteration D15)
+**Decision:** D15 validator now runs automatically at boot via `PackManager._boot_validate()` and is reachable from a "Validate all packs" button in the hub. With 6 packs in flight, manually catching every typo across 36 shells is impractical — the validator surfaces broken refs / missing fields / out-of-range stats as console errors + warnings.
+**Why automatic-at-boot, not just on-demand:** Boot validation catches issues *before* the user hits them in a draft. A typo'd asset_profile_id would crash unit placement; better to red-flag at boot when the dev sees the console.
+**Why errors vs warnings:**
+- **Error** = broken reference that will crash gameplay (missing SpriteFrames, unresolvable defender_unit_id, duplicate shell id, promotion-gate violation).
+- **Warning** = unusual stat value or missing-but-non-fatal reference (cost outside 1-25, enemy_shell_id not in D8 output).
+**Caught real bug**: Vetruvian pack's `defender_unit_ids` referenced `dune_caster` which doesn't exist in `data/units/`. Validator surfaced this immediately on first boot run. Removed the dead reference.
+**Promotion gate enforcement**: Any pack with `enabled_in_normal_runs=true` AND `balance_state="generated_unbalanced"` errors out. This is the milestone doc's content promotion rule (§12) — playtested + reviewed balance is required before normal-run enablement.
+**Impact:**
+- New `scripts/content/duelyst_content_validator.gd` — pure data validation, no side effects, returns `{ok, errors, warnings, stats}`.
+- `scripts/pack_manager.gd`: `_boot_validate()` runs after pack load; emits push_error/push_warning per issue.
+- `scenes/duelyst_content_hub.tscn`: new ValidateRow under the PacksSection hint (Validate button + result label).
+- `scripts/content/duelyst_content_hub.gd`: `_on_validate_packs()` dumps full results into the existing result panel.
+**Test:**
+- [ ] Boot the project. Console shows `PackManager: validated 6 pack(s) / 36 shell(s) — 0 errors, 0 warnings`.
+- [ ] Hub → click "D15 — Validate all packs" → result label flips green with `0 errors · 0 warnings`. Right panel shows "All packs validate cleanly."
+- [ ] Manually break a pack JSON (rename one shell's asset_profile_id to something invalid) → re-run validator → error appears in console + hub result label turns red + specific error listed in the right panel.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

@@ -142,5 +142,17 @@ text = "Toggle a pack on → its defender shells appear in the draft shop on the
 theme_override_font_sizes/font_size = 11
 modulate = Color(0.7, 0.7, 0.78, 1)
 
+[node name="ValidateRow" type="HBoxContainer" parent="Root/PacksSection/VBox"]
+theme_override_constants/separation = 8
+
+[node name="ValidateBtn" type="Button" parent="Root/PacksSection/VBox/ValidateRow"]
+text = "D15 — Validate all packs"
+custom_minimum_size = Vector2(220, 30)
+
+[node name="ValidateResult" type="Label" parent="Root/PacksSection/VBox/ValidateRow"]
+text = ""
+modulate = Color(0.75, 0.85, 0.95, 1)
+theme_override_font_sizes/font_size = 12
+
 [node name="PackList" type="VBoxContainer" parent="Root/PacksSection/VBox"]
 theme_override_constants/separation = 4

@@ -26,6 +26,10 @@ const ENEMY_SHELL_GENERATOR_SCRIPT := preload("res://scripts/content/duelyst_ene
 @onready var generate_enemy_shells_btn: Button = $Root/ScanSection/VBox/ActionRow/GenerateEnemyShellsBtn
 @onready var result_label: RichTextLabel = $Root/ScanSection/VBox/ResultLabel
 @onready var pack_list: VBoxContainer = $Root/PacksSection/VBox/PackList
+@onready var validate_packs_btn: Button = $Root/PacksSection/VBox/ValidateRow/ValidateBtn
+@onready var validate_packs_result: Label = $Root/PacksSection/VBox/ValidateRow/ValidateResult
+
+const VALIDATOR_SCRIPT := preload("res://scripts/content/duelyst_content_validator.gd")
 @onready var back_btn: Button = $Root/TopBar/BackBtn
 
 var _settings: RefCounted
@@ -49,6 +53,36 @@ func _ready() -> void:
 	_render_last_run_summary()
 	_render_pack_list()
 	PackManager.packs_changed.connect(_render_pack_list)
+	validate_packs_btn.pressed.connect(_on_validate_packs)
+
+func _on_validate_packs() -> void:
+	var res: Dictionary = VALIDATOR_SCRIPT.validate_all()
+	var stats: Dictionary = res.get("stats", {})
+	var summary: String = "%d packs · %d shells · %d errors · %d warnings" % [
+		int(stats.get("packs_checked", 0)),
+		int(stats.get("shells_checked", 0)),
+		int(stats.get("errors", 0)),
+		int(stats.get("warnings", 0)),
+	]
+	validate_packs_result.text = summary
+	if res.get("ok", false):
+		validate_packs_result.modulate = Color(0.55, 1.0, 0.65, 1)
+	else:
+		validate_packs_result.modulate = Color(1.0, 0.65, 0.65, 1)
+	# Dump details to the right-hand result panel so users see specifics.
+	var lines: Array[String] = []
+	lines.append("[b]Pack validator (D15) — %s[/b]" % summary)
+	if res.get("errors", []).size() > 0:
+		lines.append("[color=#ff8f8f][b]Errors:[/b][/color]")
+		for e in res["errors"]:
+			lines.append("  ✗ %s" % e)
+	if res.get("warnings", []).size() > 0:
+		lines.append("[color=#ffce6c][b]Warnings:[/b][/color]")
+		for w in res["warnings"]:
+			lines.append("  ! %s" % w)
+	if res.get("errors", []).is_empty() and res.get("warnings", []).is_empty():
+		lines.append("[color=#8fff8f]All packs validate cleanly.[/color]")
+	result_label.text = "\n".join(lines)
 
 func _render_pack_list() -> void:
 	for child in pack_list.get_children():

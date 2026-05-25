@@ -17,9 +17,32 @@ const STATE_PATH := "user://pack_state.json"
 var packs: Dictionary = {}            # pack_id -> pack_dict
 var enabled_ids: Dictionary = {}      # pack_id -> bool
 
+const VALIDATOR_SCRIPT := preload("res://scripts/content/duelyst_content_validator.gd")
+
 func _ready() -> void:
 	_load_packs()
 	_load_enabled_state()
+	_boot_validate()
+
+func _boot_validate() -> void:
+	# D15: surface any pack issues at boot so typos in pack JSONs don't ambush
+	# the user during a draft. Errors go to push_error (red in console);
+	# warnings to push_warning (yellow). Nothing blocks the boot — bad packs
+	# just won't appear in offers if their refs don't resolve.
+	if packs.is_empty():
+		return
+	var res: Dictionary = VALIDATOR_SCRIPT.validate_all()
+	var stats: Dictionary = res.get("stats", {})
+	print("PackManager: validated %d pack(s) / %d shell(s) — %d errors, %d warnings" % [
+		int(stats.get("packs_checked", 0)),
+		int(stats.get("shells_checked", 0)),
+		int(stats.get("errors", 0)),
+		int(stats.get("warnings", 0)),
+	])
+	for e in res.get("errors", []):
+		push_error("PackValidator: %s" % e)
+	for w in res.get("warnings", []):
+		push_warning("PackValidator: %s" % w)
 
 func _load_packs() -> void:
 	packs.clear()
