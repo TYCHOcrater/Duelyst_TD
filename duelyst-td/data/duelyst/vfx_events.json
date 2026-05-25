@@ -1,0 +1,18 @@
+{
+  "_schema": "Per-event VFX routing config. Each event_id maps to a vfx_archetype (string id; null = planned-but-no-asset-yet). priority + cooldown_ms + max_simultaneous follow the same gate logic as sfx_events.json. The router's play_event() is a no-op for null archetypes — call sites can wire it now and the visual fires when the asset lands.",
+  "events": {
+    "attack_projectile": { "vfx_id": null, "priority": 20, "cooldown_ms":  20, "max_simultaneous": 12 },
+    "hit_impact":        { "vfx_id": null, "priority": 25, "cooldown_ms":  20, "max_simultaneous": 10 },
+    "enemy_death":       { "vfx_id": null, "priority": 30, "cooldown_ms":  30, "max_simultaneous":  8 },
+    "slow_applied":      { "vfx_id": null, "priority": 40, "cooldown_ms":  80, "max_simultaneous":  6 },
+    "burn_applied":      { "vfx_id": null, "priority": 40, "cooldown_ms":  80, "max_simultaneous":  6 },
+    "poison_applied":    { "vfx_id": null, "priority": 40, "cooldown_ms":  80, "max_simultaneous":  6 },
+    "shield_hit":        { "vfx_id": null, "priority": 35, "cooldown_ms":  40, "max_simultaneous":  6 },
+    "heal":              { "vfx_id": null, "priority": 50, "cooldown_ms": 120, "max_simultaneous":  4 },
+    "unit_evolve":       { "vfx_id": null, "priority": 80, "cooldown_ms": 500, "max_simultaneous":  1 },
+    "boss_warning":      { "vfx_id": null, "priority": 95, "cooldown_ms":1000, "max_simultaneous":  1 },
+    "leak":              { "vfx_id": null, "priority": 80, "cooldown_ms": 100, "max_simultaneous":  2 },
+    "core_damage":       { "vfx_id": null, "priority": 90, "cooldown_ms":  80, "max_simultaneous":  2 },
+    "wave_start":        { "vfx_id": null, "priority": 70, "cooldown_ms": 800, "max_simultaneous":  1 }
+  }
+}

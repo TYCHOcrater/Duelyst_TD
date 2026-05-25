@@ -32,6 +32,8 @@ FlawManager="*res://scripts/flaw_manager.gd"
 Daily="*res://scripts/daily.gd"
 Mastery="*res://scripts/mastery.gd"
 WaveEffects="*res://scripts/wave_effects.gd"
+VfxRouter="*res://scripts/vfx_router.gd"
+PackManager="*res://scripts/pack_manager.gd"
 
 [display]
 

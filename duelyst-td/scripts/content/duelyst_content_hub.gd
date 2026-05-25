@@ -25,6 +25,7 @@ const ENEMY_SHELL_GENERATOR_SCRIPT := preload("res://scripts/content/duelyst_ene
 @onready var generate_shells_btn: Button = $Root/ScanSection/VBox/ActionRow/GenerateShellsBtn
 @onready var generate_enemy_shells_btn: Button = $Root/ScanSection/VBox/ActionRow/GenerateEnemyShellsBtn
 @onready var result_label: RichTextLabel = $Root/ScanSection/VBox/ResultLabel
+@onready var pack_list: VBoxContainer = $Root/PacksSection/VBox/PackList
 @onready var back_btn: Button = $Root/TopBar/BackBtn
 
 var _settings: RefCounted
@@ -46,6 +47,44 @@ func _ready() -> void:
 	# Auto-validate on entry so the user sees the current state.
 	_on_validate()
 	_render_last_run_summary()
+	_render_pack_list()
+	PackManager.packs_changed.connect(_render_pack_list)
+
+func _render_pack_list() -> void:
+	for child in pack_list.get_children():
+		child.queue_free()
+	var pack_ids: Array = PackManager.all_pack_ids()
+	if pack_ids.is_empty():
+		var lbl := Label.new()
+		lbl.text = "  No packs found in res://data/content_packs/duelyst/"
+		lbl.modulate = Color(0.7, 0.7, 0.78, 1)
+		pack_list.add_child(lbl)
+		return
+	pack_ids.sort()
+	for pid in pack_ids:
+		pack_list.add_child(_make_pack_row(String(pid)))
+
+func _make_pack_row(pack_id: String) -> Control:
+	var pack: Dictionary = PackManager.get_pack(pack_id)
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 8)
+	var toggle := CheckBox.new()
+	toggle.text = ""
+	toggle.button_pressed = PackManager.is_enabled(pack_id)
+	toggle.toggled.connect(func(state: bool): PackManager.set_enabled(pack_id, state))
+	row.add_child(toggle)
+	var name_lbl := Label.new()
+	name_lbl.text = pack.get("display_name", pack_id)
+	name_lbl.custom_minimum_size = Vector2(220, 0)
+	row.add_child(name_lbl)
+	var counts := Label.new()
+	var n_def: int = int(pack.get("defender_unit_ids", []).size()) + int(pack.get("defender_shells", []).size())
+	var n_enemy: int = int(pack.get("enemy_shell_ids", []).size())
+	counts.text = "%d defenders · %d enemies · %s" % [n_def, n_enemy, pack.get("balance_state", "?")]
+	counts.modulate = Color(0.75, 0.75, 0.82, 1)
+	counts.add_theme_font_size_override("font_size", 11)
+	row.add_child(counts)
+	return row
 
 func _on_save_settings() -> void:
 	_settings.source_root = source_field.text.strip_edges()

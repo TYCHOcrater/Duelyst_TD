@@ -124,6 +124,23 @@ custom_minimum_size = Vector2(210, 36)
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
-custom_minimum_size = Vector2(0, 320)
+custom_minimum_size = Vector2(0, 240)
 text = "[i]No scan run yet.[/i]"
 size_flags_vertical = 3
+
+[node name="PacksSection" type="PanelContainer" parent="Root"]
+
+[node name="VBox" type="VBoxContainer" parent="Root/PacksSection"]
+theme_override_constants/separation = 6
+
+[node name="SectionTitle" type="Label" parent="Root/PacksSection/VBox"]
+text = "D14  Content Pack Manager"
+theme_override_font_sizes/font_size = 16
+
+[node name="Hint" type="Label" parent="Root/PacksSection/VBox"]
+text = "Toggle a pack on → its defender shells appear in the draft shop on the next run. Off → they disappear."
+theme_override_font_sizes/font_size = 11
+modulate = Color(0.7, 0.7, 0.78, 1)
+
+[node name="PackList" type="VBoxContainer" parent="Root/PacksSection/VBox"]
+theme_override_constants/separation = 4

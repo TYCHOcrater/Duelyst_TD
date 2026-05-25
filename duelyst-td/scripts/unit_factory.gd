@@ -44,7 +44,13 @@ func _load_units() -> void:
 	print("UnitFactory: loaded %d units from %s" % [units.size(), UNITS_DIR])
 
 func get_def(id: String) -> Dictionary:
-	return units.get(id, {})
+	if units.has(id):
+		return units[id]
+	# Fall back to enabled-pack shells (D14 PackManager integration).
+	for shell in PackManager.enabled_defender_shells():
+		if String(shell.get("id", "")) == id:
+			return shell
+	return {}
 
 func sprite_frames_for(id: String) -> SpriteFrames:
 	var def := get_def(id)
@@ -88,7 +94,17 @@ func effective_cost(id: String, trait_id: String = "", flaw_id: String = "") -> 
 	return int(round(base * mult))
 
 func all_ids() -> Array[String]:
-	return unit_ids
+	# Curated res://data/units/ ids + any defender_shells from enabled content
+	# packs (D14). Packs are debug-only by default — they only flow into the
+	# shop after the dev toggles them on in the Content Pack Manager.
+	var out: Array[String] = []
+	for u in unit_ids:
+		out.append(u)
+	for shell in PackManager.enabled_defender_shells():
+		var id: String = String(shell.get("id", ""))
+		if id != "" and not (id in out):
+			out.append(id)
+	return out
 
 func ids_by_filter(filter: Dictionary) -> Array[String]:
 	# Optional filter keys: factions (Array[String]), tags (Array[String]),

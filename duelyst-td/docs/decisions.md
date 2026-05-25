@@ -1473,6 +1473,95 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — VFX router + Lyonar Foundation Pack + Pack Manager (Iterations D10 + D13 + D14)
+**Decision:** Land three iterations as one bundle that together deliver the first new playable content through the Duelyst pipeline:
+- **D10** event-routed VFX dispatcher (mirrors D9's SFX router).
+- **D13** Lyonar Foundation Pack: data manifest for 6 new defender units + enemy refs + relic + trait + flaw + wave modifier + balance notes.
+- **D14** PackManager autoload + Content Pack Manager UI: toggle packs on/off; enabled packs' defender_shells flow into UnitFactory.all_ids() and become draft-shop eligible.
+
+**Why bundle D10 + D13 + D14:** D13 needs D14 to be useful (a pack manifest with no enablement system is just sitting JSON). D10 sets up the parallel infrastructure to D9 so future packs can reference vfx_event_overrides cleanly. The three together deliver "first new content through the pipeline" as one milestone.
+
+**Why skip D11 + D12 in this bundle:** D11 (HUD/UI skin ingestion) and D12 (Map/arena ingestion) are visible-polish iterations that don't block content packs. The Lyonar pack functions today without faction UI frames or map themes — those are nice-to-haves that can ship later without re-touching the pack manifest.
+
+**Why bulk-convert 6 more Lyonar atlases (`tools/convert_units.py`):**
+- We had 38 Duelyst units with converted SpriteFrames pre-D13, but only 6 of those were Lyonar (silverguard_squire, azurite_lion, sunbreaker, archdeacon, backlinearcher, windbladecommander).
+- A "Foundation Pack" needs 8-12 units per the milestone doc. With 6 it's a thin pack and the 3 curated Lyonar (azurite_lion, silverguard_knight, windblade_adept) overlap with the converted-but-curated set.
+- Converted 6 more: f1_ironcliffeguardian, f1_caster, f1_grandmasterzir, f1_auroralioness, f1_kingsguard, f1_friendsguard. Lyonar set is now 12 sprite-ready atlases.
+- The convert_units.py output (per-unit subdir under `assets/units/<id>/`) adds ~360KB total. Committed.
+
+**Why pack defender_shells live inline in the manifest (not as separate `data/units/generated/*.json`):**
+- A pack is a *cohesive unit of content* — all the shells, relic, trait, etc. ship and are toggled together.
+- Inline shells let the pack manifest fully express the intended balance (cost, range, damage) without scattering files.
+- UnitFactory.get_def() falls back to pack shells when an id isn't in `data/units/` — same lookup surface for curated units and pack content, so the draft director needs no changes.
+
+**Why PackManager.enabled state persists to `user://pack_state.json`:**
+- The dev toggles packs in the Content Pack Manager. Without persistence, every project reload would reset to all-disabled (the JSON default).
+- user:// keeps the dev's choices machine-local; if the team wants a shipped default, they can edit the JSON manifest's `enabled_in_normal_runs` field.
+
+**Why UnitFactory falls back to packs in get_def() *and* in all_ids():**
+- all_ids() makes the shells appear in the draft shop offer pool.
+- get_def() resolves shell ids during placement/upgrade flow.
+- Both needed — without get_def(), buying a pack offer would fail to find the unit's stats.
+
+**End-to-end verification** (`godot --headless --path . res://scenes/main_menu.tscn --test-packs`):
+- Curated baseline: 24 units (existing `data/units/*.json`).
+- Enable lyonar_foundation: 30 units (+6 pack shells).
+- Every pack shell resolves through get_def() with correct cost/range/damage/asset_profile_id.
+- Sprite check: all 6 asset_profile_ids correspond to res://assets/units/ dirs that exist on disk → SpriteFrames load successfully.
+
+**Lyonar Foundation Pack contents** (`data/content_packs/duelyst/lyonar_foundation.json`):
+- **Defenders** (9 total): 3 curated (azurite_lion, silverguard_knight, windblade_adept) + 6 new shells (Ironcliffe Guardian, Lightblade Caster, Grandmaster Zir, Aurora Lioness, Kingsguard, Sentry of the Sun).
+- **Enemy refs** (6 ids from D8 generated enemy shells).
+- **Trait** "Steadfast" (Lyonar-only, -10% fire rate +1 armor pierce).
+- **Flaw** "Pious" (Lyonar-only, -15% cost / -15% fire rate).
+- **Relic** "Aegis Banner" (+15% Lyonar damage, +1 armor pierce, first-leak-per-wave absorbed).
+- **Wave modifier** "Armored March" (wave 6 hint, force_family=armored, +1 armor / +10% phys resist).
+- **VFX/SFX overrides** (data-only for now; D11 will pick them up).
+- **Challenge seed** SHARD-1Y0N4RPP for repeatable testing.
+
+**Impact:**
+- New `data/duelyst/vfx_events.json` — 13 VFX events with priority/cooldown/max_simultaneous (D10).
+- New `scripts/vfx_router.gd` — autoload Node with play_event(event_id, world_pos, parent) + register_archetype(vfx_id, PackedScene) (D10).
+- New `data/content_packs/duelyst/lyonar_foundation.json` — pack manifest (D13).
+- New `scripts/pack_manager.gd` — autoload that loads packs + tracks enabled state + persists to user://pack_state.json (D14).
+- `scripts/unit_factory.gd`: get_def() and all_ids() now consult enabled packs' defender_shells.
+- `scenes/duelyst_content_hub.tscn`: new "D14 Content Pack Manager" PanelContainer with PackList VBox.
+- `scripts/content/duelyst_content_hub.gd`: renders one row per pack with CheckBox + display_name + counts. Subscribes to PackManager.packs_changed for live refresh.
+- `project.godot`: VfxRouter + PackManager registered as autoloads.
+- `assets/units/`: 6 new converted SpriteFrames directories.
+- `scripts/main_menu.gd`: `--test-packs` CLI smoke test.
+
+**Test:** See checklist below.
+
+---
+
+### Manual Test Checklist - Iter D10+D13+D14
+
+**Pack toggling and draft integration:**
+- [ ] Main menu → Duelyst Content. Bottom "D14 Content Pack Manager" section shows "Lyonar Foundation Pack" with `9 defenders · 6 enemies · needs_playtest` summary and an unchecked CheckBox.
+- [ ] Check the box → close the hub → New Run. Open the draft shop. Within a few rerolls, you should see at least one of the 6 new Lyonar shells: Ironcliffe Guardian, Lightblade Caster, Grandmaster Zir, Aurora Lioness, Kingsguard, Sentry of the Sun.
+- [ ] Buy one of the new units → it places with a real Duelyst sprite + idle animation.
+- [ ] Uncheck the box → New Run → only 24 curated units appear in the shop pool again.
+- [ ] Quit and relaunch Godot → pack enabled state persists (toggle remembered).
+
+**Lyonar pack content sanity:**
+- [ ] Ironcliffe Guardian: cost 10, melee blocker, slow attack.
+- [ ] Lightblade Caster: splash arcane, cost 8.
+- [ ] Grandmaster Zir: long-range splash, cost 11, slowest fire rate.
+- [ ] Aurora Lioness: fast melee, cost 7, 1.2/s attack rate.
+- [ ] Kingsguard: mid-tier blocker, cost 9.
+- [ ] Sentry of the Sun: 0 damage, +18% damage aura over 112px radius, cost 7.
+
+**VFX router (D10):**
+- [ ] Boot prints "VfxRouter: loaded" implicitly via no warnings.
+- [ ] Godot console at runtime: `VfxRouter.play_event("attack_projectile", Vector2(100, 100))` returns `true` and silently no-ops (no archetypes registered yet).
+- [ ] `VfxRouter.play_event("nonexistent_event")` returns `false` + prints unknown-event warning.
+
+**Headless:**
+- [ ] `godot --headless --path . res://scenes/main_menu.tscn --test-packs` prints "Curated units (pack disabled): 24", then "After enabling lyonar_foundation: 30 (delta +6)", and each of the 6 shells shows `present: true` with valid stats.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

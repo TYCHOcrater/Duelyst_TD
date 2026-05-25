@@ -1,0 +1,213 @@
+{
+  "id": "lyonar_foundation",
+  "display_name": "Lyonar Foundation Pack",
+  "faction": "lyonar",
+  "type": "faction_pack",
+  "version": 1,
+  "description": "Disciplined armored frontline. Beam casters, ironclad blockers, holy support. Weak to anti-armor and silence; strong against unarmored swarm waves.",
+  "fantasy": "Formation, armor, protection, banners, beams, righteous impact.",
+  "balance_state": "needs_playtest",
+  "enabled_in_debug": true,
+  "enabled_in_normal_runs": false,
+
+  "defender_unit_ids": [
+    "azurite_lion",
+    "silverguard_knight",
+    "windblade_adept"
+  ],
+
+  "defender_shells": [
+    {
+      "id": "lyonar_ironcliffe_guardian",
+      "source_duelyst_unit_id": "f1_ironcliffeguardian",
+      "display_name": "Ironcliffe Guardian",
+      "asset_profile_id": "f1_ironcliffeguardian",
+      "faction": "lyonar",
+      "role": "blocker",
+      "rarity": "rare",
+      "cost": 10,
+      "range": 80,
+      "damage": 5,
+      "fire_rate": 0.7,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [1.0, 0.85, 0.4],
+      "tags": ["lyonar", "blocker", "humanoid_armor", "armored", "formation"],
+      "description": "Heavy frontline blocker. Slow attack, soaks damage."
+    },
+    {
+      "id": "lyonar_lightblade_caster",
+      "source_duelyst_unit_id": "f1_caster",
+      "display_name": "Lightblade Caster",
+      "asset_profile_id": "f1_caster",
+      "faction": "lyonar",
+      "role": "splash_mage",
+      "rarity": "common",
+      "cost": 8,
+      "range": 160,
+      "damage": 6,
+      "fire_rate": 0.7,
+      "damage_type": "arcane",
+      "targeting": "first",
+      "projectile_speed": 420,
+      "projectile_color": [1.0, 0.95, 0.6],
+      "splash_radius": 48,
+      "tags": ["lyonar", "splash_mage", "humanoid_caster", "holy"],
+      "description": "Splash holy caster. Solid wave-clear."
+    },
+    {
+      "id": "lyonar_grandmaster_zir",
+      "source_duelyst_unit_id": "f1_grandmasterzir",
+      "display_name": "Grandmaster Zir",
+      "asset_profile_id": "f1_grandmasterzir",
+      "faction": "lyonar",
+      "role": "splash_mage",
+      "rarity": "rare",
+      "cost": 11,
+      "range": 192,
+      "damage": 8,
+      "fire_rate": 0.6,
+      "damage_type": "arcane",
+      "targeting": "strongest",
+      "projectile_speed": 460,
+      "projectile_color": [1.0, 1.0, 0.85],
+      "splash_radius": 56,
+      "tags": ["lyonar", "splash_mage", "humanoid_caster", "holy", "elite"],
+      "description": "Elder caster. Long range, big splash, slow rate."
+    },
+    {
+      "id": "lyonar_aurora_lioness",
+      "source_duelyst_unit_id": "f1_auroralioness",
+      "display_name": "Aurora Lioness",
+      "asset_profile_id": "f1_auroralioness",
+      "faction": "lyonar",
+      "role": "basic_melee",
+      "rarity": "uncommon",
+      "cost": 7,
+      "range": 96,
+      "damage": 7,
+      "fire_rate": 1.2,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [1.0, 0.85, 0.45],
+      "tags": ["lyonar", "basic_melee", "beast", "fast_melee"],
+      "description": "Fast melee striker. Good for pursuing wounded enemies."
+    },
+    {
+      "id": "lyonar_kingsguard",
+      "source_duelyst_unit_id": "f1_kingsguard",
+      "display_name": "Kingsguard",
+      "asset_profile_id": "f1_kingsguard",
+      "faction": "lyonar",
+      "role": "blocker",
+      "rarity": "uncommon",
+      "cost": 9,
+      "range": 88,
+      "damage": 5,
+      "fire_rate": 0.85,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [1.0, 0.85, 0.4],
+      "tags": ["lyonar", "blocker", "humanoid_armor", "armored"],
+      "description": "Mid-tier armored frontline."
+    },
+    {
+      "id": "lyonar_friends_guard",
+      "source_duelyst_unit_id": "f1_friendsguard",
+      "display_name": "Sentry of the Sun",
+      "asset_profile_id": "f1_friendsguard",
+      "faction": "lyonar",
+      "role": "support_aura",
+      "rarity": "rare",
+      "cost": 7,
+      "range": 112,
+      "damage": 0,
+      "fire_rate": 1.0,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [1.0, 0.85, 0.45],
+      "buff_damage_mult": 0.18,
+      "buff_radius": 112,
+      "tags": ["lyonar", "support_aura", "humanoid_armor", "formation"],
+      "description": "Aura tower. Buffs adjacent allies' damage by 18%."
+    }
+  ],
+
+  "enemy_shell_ids": [
+    "f1_ironcliffeguardian_enemy",
+    "f1_kingsguard_enemy",
+    "f1_caster_enemy",
+    "f1_grandmasterzir_enemy",
+    "f1_auroralioness_enemy",
+    "f1_friendsguard_enemy"
+  ],
+
+  "trait": {
+    "id": "lyonar_steadfast",
+    "display_name": "Steadfast",
+    "rarity": "uncommon",
+    "applies_to_factions": ["lyonar"],
+    "stat_mods": {"damage_mult": 1.0, "fire_rate_mult": 0.9, "armor_pierce": 1},
+    "description": "Attacks are slightly slower but pierce 1 armor."
+  },
+
+  "flaw": {
+    "id": "lyonar_pious",
+    "display_name": "Pious",
+    "applies_to_factions": ["lyonar"],
+    "stat_mods": {"cost_mult": 0.85, "fire_rate_mult": 0.85},
+    "description": "Cheaper to deploy but pauses to pray (slower attacks)."
+  },
+
+  "relic": {
+    "id": "lyonar_aegis_banner",
+    "display_name": "Aegis Banner",
+    "category": "support",
+    "boon": "All Lyonar defenders gain +15% damage and +1 armor pierce. First leak per wave is absorbed.",
+    "effects": [
+      {"type": "faction_damage_mult", "faction": "lyonar", "value": 1.15},
+      {"type": "faction_armor_pierce", "faction": "lyonar", "value": 1},
+      {"type": "first_leak_per_wave_absorb", "value": 1}
+    ]
+  },
+
+  "wave_modifier": {
+    "id": "armored_march",
+    "display_name": "Armored March",
+    "wave_index_hint": 6,
+    "description": "Wave is entirely armored enemies. Anti-armor required.",
+    "tags": ["armored", "formation"],
+    "spawn_overrides": {
+      "force_family": "armored",
+      "armor_bonus": 1,
+      "physical_resist_bonus": 0.10
+    }
+  },
+
+  "vfx_event_overrides": {
+    "attack_projectile": "lyonar_holy_beam",
+    "hit_impact":        "lyonar_holy_impact",
+    "unit_evolve":       "lyonar_ascend_burst"
+  },
+
+  "sfx_event_overrides": {
+    "unit_place":   "place_tower",
+    "tower_shoot":  "tower_archer_shoot",
+    "tower_cast":   "tower_caster_shoot",
+    "enemy_death":  "enemy_death"
+  },
+
+  "challenge_seed": "SHARD-1Y0N4RPP",
+
+  "balance_notes": [
+    "Most Lyonar defenders are above-average cost — pack is balanced around expensive durable boards rather than cheap swarm.",
+    "Aurora Lioness is the only fast melee; provides pursuit option that armored Lyonar otherwise lacks.",
+    "Sentry of the Sun + 2-3 damage units in its 112px radius is the intended core build.",
+    "Without the relic, anti-armor enemy waves (vetruvian constructs, magmar tanks) hard-counter the pack.",
+    "Aegis Banner relic should be available in the pact/relic pool when this pack is enabled."
+  ]
+}

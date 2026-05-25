@@ -35,6 +35,12 @@ func _ready() -> void:
 	if "--test-offers" in OS.get_cmdline_args():
 		_run_offers_smoke_test()
 		return
+	# --test-packs verifies PackManager → UnitFactory integration:
+	# enables Lyonar pack and checks that its defender_shells flow into
+	# UnitFactory.all_ids().
+	if "--test-packs" in OS.get_cmdline_args():
+		_run_pack_smoke_test()
+		return
 	# Fresh seed each time we land on the menu (after a run, between launches, etc.).
 	# RunConfig._ready only fires once per process; without this, returning to the
 	# menu post-run would reuse the same seed → identical first-wave offers. The
@@ -419,6 +425,36 @@ func _run_offers_smoke_test() -> void:
 		var fmt: String = ", ".join(offers as PackedStringArray)
 		print("seed=0x%08x  wave1 offers: %s" % [s & 0xFFFFFFFF, fmt])
 	dd.queue_free()
+	get_tree().quit()
+
+func _run_pack_smoke_test() -> void:
+	var before: int = UnitFactory.all_ids().size()
+	print("Curated units (pack disabled): %d" % before)
+	print("Packs available: %s" % str(PackManager.all_pack_ids()))
+	PackManager.set_enabled("lyonar_foundation", true)
+	var enabled: int = UnitFactory.all_ids().size()
+	print("After enabling lyonar_foundation: %d (delta +%d)" % [enabled, enabled - before])
+	# Verify new shell ids are present.
+	var ids: Array = UnitFactory.all_ids()
+	var lyonar_pack_ids: Array[String] = [
+		"lyonar_ironcliffe_guardian",
+		"lyonar_lightblade_caster",
+		"lyonar_grandmaster_zir",
+		"lyonar_aurora_lioness",
+		"lyonar_kingsguard",
+		"lyonar_friends_guard",
+	]
+	for nid in lyonar_pack_ids:
+		print("  %s present: %s" % [nid, nid in ids])
+		var def: Dictionary = UnitFactory.get_def(nid)
+		print("    cost=%d range=%d damage=%d asset=%s" % [
+			int(def.get("cost", -1)),
+			int(def.get("range", -1)),
+			int(def.get("damage", -1)),
+			str(def.get("asset_profile_id", "?")),
+		])
+	# Toggle back off, cleanup.
+	PackManager.set_enabled("lyonar_foundation", false)
 	get_tree().quit()
 
 func _on_quit() -> void:
