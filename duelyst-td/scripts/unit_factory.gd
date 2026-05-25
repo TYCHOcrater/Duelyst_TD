@@ -42,6 +42,24 @@ func _load_units() -> void:
 		units[uid] = parsed
 		unit_ids.append(uid)
 	print("UnitFactory: loaded %d units from %s" % [units.size(), UNITS_DIR])
+	_warn_short_range_units()
+
+# Diagonal-adjacent placement around a path tile lands ~90.5 px from the
+# tile's center (sqrt(2) * 32 = 45.25 from each side, * 2). Any attacking
+# unit with `range < 100` therefore cannot engage when placed on a diagonal
+# tile, which violates the design rule that *every* legal placement should
+# yield at least one shot. Warn loudly at load so it's caught before play.
+const _MIN_VIABLE_ATTACK_RANGE := 100.0
+func _warn_short_range_units() -> void:
+	for uid in unit_ids:
+		var def: Dictionary = units[uid]
+		var r: float = float(def.get("range", 0))
+		var dmg: float = float(def.get("damage", 0))
+		# range==0 + damage==0 are aura/utility units — skip them.
+		if r <= 0.0 or dmg <= 0.0:
+			continue
+		if r < _MIN_VIABLE_ATTACK_RANGE:
+			push_warning("UnitFactory: '%s' has range=%s (< %s). Diagonal-adjacent placements cannot fire." % [uid, r, _MIN_VIABLE_ATTACK_RANGE])
 
 func get_def(id: String) -> Dictionary:
 	if units.has(id):

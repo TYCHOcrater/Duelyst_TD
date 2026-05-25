@@ -17,7 +17,7 @@
     "physical"
   ],
   "cost": 5,
-  "range": 90,
+  "range": 110,
   "damage": 8,
   "fire_rate": 1.6,
   "damage_type": "strike",

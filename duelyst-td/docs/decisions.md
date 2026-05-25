@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Balance: minimum-viable attack range = 100
+**Decision:** Bumped `young_silithar` and `windblade_adept` from range=90 → 110. Added a UnitFactory load-time warning for any attacking unit (range>0 AND damage>0) with `range < 100`.
+**Why:** User feedback — saw a unit with low fire rate + small attack radius that wouldn't reliably hit. Diagonal-adjacent placement around a 64-px tile lands ~90.5 px from the path tile center; range=90 means the unit cannot fire at all from diagonal-adjacent positions. range=100 covers every legal adjacency (cardinal and diagonal), guaranteeing every legitimate placement yields at least one shot.
+**Impact:** `data/units/young_silithar.json`, `data/units/windblade_adept.json`, `scripts/unit_factory.gd` (new `_warn_short_range_units` called at end of `_load_units`).
+**Test:** Headless boot prints zero warnings. Place either unit on a diagonal tile from the path on the default map → unit now engages enemies.
+
+---
+
 ## 2026-05-25 — Iter C6: Gate Shield + route leak routing
 **Decision:** Each route on a multi-route map now has its own Gate Shield (default 3 HP, configurable per route). Leaks damage the shield first; overflow falls through to the shared Core (existing `GameState.lives`). HUD lazily builds a per-route strip (colored label + colored ProgressBar) anchored under the TopBar, flashes on hit, dims when broken. Single-topology maps never instantiate the strip and behave exactly as before.
 **Why:** Closes the C2 leak-routing leftover and lands the C6 acceptance criteria: per-route UI, damage flash, distinct Core hit. With shields visible, the player can read at a glance which lane is bleeding — essential for any multi-lane co-op TD even in solo battleground testing.
