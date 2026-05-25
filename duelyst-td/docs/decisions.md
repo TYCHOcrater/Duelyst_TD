@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C8: Breach Tunnel v1
+**Decision:** When a route accumulates `BREACH_TRIGGER_LEAKS = 3` leaks in a single wave, the spawner drops a **breach_packet** elite (HP 80, speed 45, scale 1.2, red tint, leak_damage 3) at that route's start. If towers kill it before it reaches the Core, `GameState.grant_breach_saves(route_id, 2)` banks two leak-saves on that route — each future leak on that lane is fully absorbed (no shield/core damage). If the breach reaches the Core, it leaks like any elite but heavier. One breach max per route per wave.
+**Why:** C8 acceptance — give a collapsing lane a last-chance save moment. The 3-leak trigger means it only appears when a lane is actually breaking; the 2-save reward gives clear payoff without trivializing the lane.
+**Impact:** new `data/enemies/breach_packet.json`, `scripts/game_state.gd` (breach_saves dict + grant_breach_saves + take_leak_damage now short-circuits on saved leaks + breach_save_changed signal + breach_saves cleared in reset), `scripts/wave_spawner.gd` (per-route leak counter + once-per-wave breach trigger + `_spawn_breach_packet` with red burst + boss_warning SFX cue + RunLog `breach_spawned` / `breach_killed`).
+**Test:** `--use-battleground` boots clean, EnemyFactory now loads 14 enemies (was 13). In-game: force 3+ leaks on a route → breach packet spawns with a red burst + boss SFX → kill it before the gate → next 2 leaks on that route show `"saved": true` in RunLog and deal zero shield/core damage.
+
+---
+
 ## 2026-05-25 — Iter C7: Aid Token v1
 **Decision:** Each PlayerSlot starts the run with `AID_TOKENS_PER_RUN = 2`. `SendAidCommand(src_slot, unit_id, target_slot)` spends one token to spawn a temporary copy of `unit_id` on the target slot's owned-tile zone (chosen tile = closest buildable to the target route's chain midpoint). The temp tower is flagged `is_aid_unit=true` so it (a) skips RunLog instance registration, (b) gets a violet placement pulse instead of cyan, and (c) is added to the `aid_units` group for one-shot cleanup. `main._despawn_aid_units` (connected to `WaveSpawner.wave_cleared`) frees every aid unit at wave end with a small fade burst. F6 debug hotkey sends aid from the picked tower to slot 1 (no-op in solo).
 **Why:** C-track next milestone. Co-op tension mechanic — players can lend their build to a struggling ally without sacrificing their own board. Aid expiring at wave end keeps it a moment-of-help, not a permanent transfer.

@@ -23,6 +23,15 @@ var spawning: bool = false
 var current_wave_index: int = 0
 var stopped: bool = false
 var _first_leak_consumed_this_wave: bool = false
+# C8: per-route leak counter for this wave, and a flag so a breach packet
+# only spawns once per route per wave (no infinite chain).
+const BREACH_TRIGGER_LEAKS := 3
+var _leaks_this_wave_by_route: Dictionary = {}
+var _breach_fired_this_wave_by_route: Dictionary = {}
+# Set when a breach packet is spawned so _on_enemy_died can credit the
+# correct route once that packet is killed. Single-shot since breaches
+# don't fire concurrently per route.
+var _last_breach_route: String = ""
 
 func configure(_path: Path2D, _wave_set: Dictionary, _phase_ctrl: Node) -> void:
 	path = _path
@@ -69,6 +78,8 @@ func start_wave(wave_num: int) -> void:
 	current_wave_index = wave_num
 	stopped = false
 	_first_leak_consumed_this_wave = false
+	_leaks_this_wave_by_route.clear()
+	_breach_fired_this_wave_by_route.clear()
 	var def := get_wave_def(wave_num)
 	if def.is_empty():
 		push_warning("Wave %d out of range" % wave_num)
@@ -183,6 +194,18 @@ func _on_enemy_died(reward: int, enemy_id: String) -> void:
 	var bonus: int = ModifierTotals.sum_int("kill_gold_bonus")
 	var total: int = reward + bonus
 	GameState.add_gold(total)
+	# C8: killing a breach packet banks leak-saves on its route. We don't
+	# know the route from `died` alone; the per-enemy bind in _spawn_at_progress_on
+	# stores it on the enemy as the connection's bound arg for reached_end,
+	# but for died() we walk the towers' last-kill credit via groups instead.
+	# Simpler: track by scanning live enemies of family=elite at death time.
+	# (Practically, breach packets carry enemy_id == "breach_packet".)
+	if enemy_id == "breach_packet":
+		var rid: String = String(_last_breach_route)
+		if rid != "":
+			GameState.grant_breach_saves(rid)
+			RunLog.record("breach_killed", {"route_id": rid, "saves_granted": GameState.BREACH_SAVES_PER_KILL, "wave": current_wave_index})
+			_last_breach_route = ""
 	RunLog.record("enemy_killed", {
 		"enemy_id": enemy_id,
 		"reward": reward,
@@ -214,7 +237,30 @@ func _on_enemy_reached_end(damage: int, enemy_id: String, route_id: String) -> v
 			"route_id": route_id,
 			"shield_hits": breakdown.get("shield_hits", 0),
 			"core_hits": breakdown.get("core_hits", 0),
+			"saved": breakdown.get("saved", false),
 		})
+		# C8: track per-route leak count. When the threshold is crossed (and
+		# we haven't already spawned a breach this wave on this route), drop
+		# a breach packet at the start of that route.
+		_leaks_this_wave_by_route[route_id] = int(_leaks_this_wave_by_route.get(route_id, 0)) + 1
+		if int(_leaks_this_wave_by_route[route_id]) >= BREACH_TRIGGER_LEAKS \
+				and not bool(_breach_fired_this_wave_by_route.get(route_id, false)):
+			_breach_fired_this_wave_by_route[route_id] = true
+			_spawn_breach_packet(route_id)
+
+func _spawn_breach_packet(route_id: String) -> void:
+	var spawn_path: Path2D = _path_by_route.get(route_id, path)
+	if spawn_path == null:
+		return
+	_last_breach_route = route_id
+	_spawn_at_progress_on("breach_packet", 0.0, spawn_path, route_id)
+	# Wave banner-style attention cue — heavy red vignette at the gate.
+	var host: Node = get_tree().current_scene
+	if host and spawn_path.curve and spawn_path.curve.point_count > 0:
+		var spawn_pos: Vector2 = spawn_path.to_global(spawn_path.curve.get_point_position(0))
+		CombatFX.burst(host, spawn_pos, Color(1.0, 0.3, 0.3), 24, 1.2)
+	AudioManager.play_event("boss_warning")
+	RunLog.record("breach_spawned", {"route_id": route_id, "wave": current_wave_index, "trigger_leaks": BREACH_TRIGGER_LEAKS})
 
 func _spawn_leak_fx(route_id: String, shield_hits: int, core_hits: int) -> void:
 	var gate_path: Path2D = _path_by_route.get(route_id, path)

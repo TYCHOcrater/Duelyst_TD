@@ -1,0 +1,21 @@
+{
+  "id": "breach_packet",
+  "display_name": "Breach Packet",
+  "asset_profile_id": "boss_wraith",
+  "family": "elite",
+  "tags": ["breach", "elite", "abyssian"],
+  "hp": 80,
+  "speed": 45.0,
+  "armor": 0,
+  "physical_resist": 0.15,
+  "magic_resist": 0.0,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 12,
+  "leak_damage": 3,
+  "scale": 1.2,
+  "tint": [1.0, 0.4, 0.4],
+  "hp_bar_offset": -42,
+  "hp_bar_width": 48,
+  "description": "Spawns when a lane is collapsing. Kill it before it reaches Core to bank a leak-save."
+}
