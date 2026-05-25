@@ -63,8 +63,27 @@ stretch_mode = 5
 text = "20"
 theme_override_font_sizes/font_size = 22
 
+[node name="GroupDivider1" type="ColorRect" parent="TopBar/HBox"]
+custom_minimum_size = Vector2(2, 28)
+color = Color(0.45, 0.45, 0.5, 0.45)
+
+[node name="WaveLabel" type="Label" parent="TopBar/HBox"]
+text = "Wave 0"
+theme_override_fonts/font = ExtResource("4_tgp")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.95, 0.92, 0.78, 1)
+
 [node name="Spacer" type="Control" parent="TopBar/HBox"]
 size_flags_horizontal = 3
+
+[node name="SeedLabel" type="Label" parent="TopBar/HBox"]
+text = "SHARD-00000000"
+theme_override_font_sizes/font_size = 13
+modulate = Color(0.75, 0.78, 0.85, 1)
+
+[node name="GroupDivider2" type="ColorRect" parent="TopBar/HBox"]
+custom_minimum_size = Vector2(2, 20)
+color = Color(0.45, 0.45, 0.5, 0.4)
 
 [node name="GrowthLabel" type="Label" parent="TopBar/HBox"]
 text = "Classic Upgrade"
@@ -76,15 +95,6 @@ visible = false
 text = "Co-op 1/2"
 theme_override_font_sizes/font_size = 12
 modulate = Color(1.0, 0.85, 0.45, 1)
-
-[node name="SeedLabel" type="Label" parent="TopBar/HBox"]
-text = "SHARD-00000000"
-theme_override_font_sizes/font_size = 14
-modulate = Color(0.8, 0.8, 0.85, 1)
-
-[node name="WaveLabel" type="Label" parent="TopBar/HBox"]
-text = "Wave 0"
-theme_override_font_sizes/font_size = 22
 
 [node name="Spacer2" type="Control" parent="TopBar/HBox"]
 custom_minimum_size = Vector2(12, 0)
