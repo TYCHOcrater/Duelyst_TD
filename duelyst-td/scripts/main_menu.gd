@@ -386,6 +386,19 @@ func _run_content_pipeline_smoke_test() -> void:
 	print("D7 unit shells PASS: %d shells in %d ms" % [int(shell_res.get("total_shells", 0)), shell_ms])
 	print("  by_role: %s" % JSON.stringify(shell_res.get("by_role", {})))
 	print("  by_faction: %s" % JSON.stringify(shell_res.get("by_faction", {})))
+	const EnemyShellGenerator = preload("res://scripts/content/duelyst_enemy_shell_generator.gd")
+	t0 = Time.get_ticks_msec()
+	var en_res: Dictionary = EnemyShellGenerator.generate()
+	var en_ms: int = Time.get_ticks_msec() - t0
+	if not en_res.get("ok", false):
+		print("D8 ENEMY SHELLS FAIL: %s" % en_res.get("message", "?"))
+		get_tree().quit(1)
+		return
+	print("D8 enemy shells PASS: %d shells (%d sprite-ready) in %d ms" % [
+		int(en_res.get("total_shells", 0)), int(en_res.get("spawn_ready_count", 0)), en_ms,
+	])
+	print("  by_family: %s" % JSON.stringify(en_res.get("by_family", {})))
+	print("  by_faction: %s" % JSON.stringify(en_res.get("by_faction", {})))
 	get_tree().quit()
 
 func _run_offers_smoke_test() -> void:

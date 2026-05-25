@@ -10,6 +10,7 @@ const CATEGORIZER_SCRIPT := preload("res://scripts/content/duelyst_categorizer.g
 const IMPORTER_SCRIPT := preload("res://scripts/content/duelyst_importer.gd")
 const UNIT_CATALOG_SCRIPT := preload("res://scripts/content/duelyst_unit_catalog_builder.gd")
 const SHELL_GENERATOR_SCRIPT := preload("res://scripts/content/duelyst_unit_shell_generator.gd")
+const ENEMY_SHELL_GENERATOR_SCRIPT := preload("res://scripts/content/duelyst_enemy_shell_generator.gd")
 
 @onready var source_field: LineEdit = $Root/SettingsSection/VBox/SourceRow/SourceField
 @onready var save_btn: Button = $Root/SettingsSection/VBox/SourceRow/SaveBtn
@@ -22,6 +23,7 @@ const SHELL_GENERATOR_SCRIPT := preload("res://scripts/content/duelyst_unit_shel
 @onready var import_btn: Button = $Root/ScanSection/VBox/ActionRow/ImportBtn
 @onready var build_unit_catalog_btn: Button = $Root/ScanSection/VBox/ActionRow/BuildUnitCatalogBtn
 @onready var generate_shells_btn: Button = $Root/ScanSection/VBox/ActionRow/GenerateShellsBtn
+@onready var generate_enemy_shells_btn: Button = $Root/ScanSection/VBox/ActionRow/GenerateEnemyShellsBtn
 @onready var result_label: RichTextLabel = $Root/ScanSection/VBox/ResultLabel
 @onready var back_btn: Button = $Root/TopBar/BackBtn
 
@@ -39,6 +41,7 @@ func _ready() -> void:
 	import_btn.pressed.connect(_on_import)
 	build_unit_catalog_btn.pressed.connect(_on_build_unit_catalog)
 	generate_shells_btn.pressed.connect(_on_generate_shells)
+	generate_enemy_shells_btn.pressed.connect(_on_generate_enemy_shells)
 	back_btn.pressed.connect(_on_back)
 	# Auto-validate on entry so the user sees the current state.
 	_on_validate()
@@ -178,6 +181,36 @@ func _on_generate_shells() -> void:
 	lines.append("")
 	lines.append("[color=#a0a0a8]Output:[/color]  %s" % res.get("out_path", "?"))
 	lines.append("[color=#7a7a82]All shells are debug-only (enabled_in_normal_runs=false). Promote to normal runs via the future D14 content pack manager.[/color]")
+	result_label.text = "\n".join(lines)
+
+func _on_generate_enemy_shells() -> void:
+	result_label.text = "[i]Generating enemy shells from D6 catalog …[/i]"
+	await get_tree().process_frame
+	var t0: int = Time.get_ticks_msec()
+	var res: Dictionary = ENEMY_SHELL_GENERATOR_SCRIPT.generate()
+	var elapsed: int = Time.get_ticks_msec() - t0
+	if not res.get("ok", false):
+		result_label.text = "[color=#ff8f8f][b]D8 generate failed.[/b][/color]  %s" % res.get("message", "?")
+		return
+	var lines: Array[String] = []
+	lines.append("[color=#8fff8f][b]D8 enemy shells generated.[/b][/color]  %d shells in %d ms" % [int(res.get("total_shells", 0)), elapsed])
+	lines.append("  Sprite-frames ready (spawnable in debug):  [b]%d[/b]" % int(res.get("spawn_ready_count", 0)))
+	lines.append("[color=#a0a0a8]By family:[/color]")
+	var by_family: Dictionary = res.get("by_family", {})
+	var fam_keys: Array = by_family.keys()
+	fam_keys.sort_custom(func(a, b): return int(by_family[a]) > int(by_family[b]))
+	for k in fam_keys:
+		lines.append("  %-12s  %d" % [k, int(by_family[k])])
+	lines.append("[color=#a0a0a8]By faction:[/color]")
+	var by_faction: Dictionary = res.get("by_faction", {})
+	var fac_keys: Array = by_faction.keys()
+	fac_keys.sort()
+	for k in fac_keys:
+		var label: String = k if k != "" else "(unset)"
+		lines.append("  %-12s  %d" % [label, int(by_faction[k])])
+	lines.append("")
+	lines.append("[color=#a0a0a8]Output:[/color]  %s" % res.get("out_path", "?"))
+	lines.append("[color=#7a7a82]Press F4 in a run to spawn a random sprite-ready enemy at the path start.[/color]")
 	result_label.text = "\n".join(lines)
 
 func _render_last_run_summary() -> void:

@@ -98,3 +98,22 @@ func make_enemy(id: String) -> Node:
 	var e: Node = template.instantiate()
 	e.apply_def(def)
 	return e
+
+# Debug-only: build an enemy directly from a generated-shell dict (no entry in
+# the EnemyDef registry needed). Used by the D8 debug spawn keybind.
+func make_enemy_from_shell(shell: Dictionary) -> Node:
+	if shell.is_empty():
+		push_error("EnemyFactory: empty shell")
+		return null
+	var template := load(ENEMY_TEMPLATE) as PackedScene
+	var e: Node = template.instantiate()
+	e.apply_def(shell)
+	return e
+
+# Returns true iff the shell's asset_profile_id maps to a converted
+# SpriteFrames .tres. Lets the debug picker show only "spawnable" shells.
+func shell_has_sprite(shell: Dictionary) -> bool:
+	var asset_id: String = shell.get("asset_profile_id", "")
+	if asset_id == "":
+		return false
+	return ResourceLoader.exists("res://assets/units/%s/%s.tres" % [asset_id, asset_id])

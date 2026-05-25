@@ -34,7 +34,10 @@ func _ready() -> void:
 	RunLog.start_run(RunConfig.seed)
 	session.configure(RunConfig.player_count, RunConfig.session_topology)
 	CommandBus.bind_main(self)
-	add_child(DEBUG_OVERLAY_SCENE.instantiate())
+	var dbg := DEBUG_OVERLAY_SCENE.instantiate()
+	add_child(dbg)
+	if dbg.has_method("bind_spawner"):
+		dbg.bind_spawner(spawner)
 	if not _load_configured_map():
 		# Validation error already surfaced via the board's ErrorLabel.
 		# Halt the game cleanly so the user can read it.

@@ -116,6 +116,10 @@ custom_minimum_size = Vector2(200, 36)
 text = "Generate D7 — unit shells"
 custom_minimum_size = Vector2(200, 36)
 
+[node name="GenerateEnemyShellsBtn" type="Button" parent="Root/ScanSection/VBox/ActionRow"]
+text = "Generate D8 — enemy shells"
+custom_minimum_size = Vector2(210, 36)
+
 [node name="ResultLabel" type="RichTextLabel" parent="Root/ScanSection/VBox"]
 bbcode_enabled = true
 fit_content = true

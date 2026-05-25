@@ -1395,6 +1395,53 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — Defender/enemy dual-use conversion (Iteration D8)
+**Decision:** Generate `EnemyShell` records from the D6 unit catalog: same Duelyst sprite assets, but with enemy-tinted stats (HP/speed/armor/resist/regen/shield/reward/leak-damage). 696 shells produced, 38 spawn-ready (those with a converted SpriteFrames .tres). New F4 debug keybind spawns a random sprite-ready shell at the path start mid-run.
+**Why family templates instead of inferring per-unit:** Each family (swarm/fast/armored/tank/shielded/regen/caster/boss) has a fixed stat block. Visual tags + faction default decide which template a unit lands in. This keeps the generated content "boring but functional" per the milestone doc — interesting enemies emerge once they're promoted into curated faction packs (D13) where stats can be hand-tuned.
+**Why `sprite_frames_ready` is a per-shell flag, not a filter:** All 696 shells get written so the data is complete for D13+ pack-builder work. The debug spawn UI uses the flag to filter to the ~38 currently spawnable; the rest become spawnable as `tools/convert_units.py` is run on more atlases.
+**Why F4 instead of an in-game menu:** D8 is plumbing — proving generated shells actually spawn as enemies on the live board. F4 is the simplest hook that takes one keystroke from "in game" to "spawned." A proper enemy picker UI is a D13/D16 concern.
+**Why debug spawns count toward `active_enemies`:** `wave_spawner.debug_spawn_shell()` wires the same signal connections as the regular spawn path (`died`, `reached_end`, `tree_exited`, `wants_to_spawn`). If a debug-spawned enemy is the last alive when a wave naturally ends, `wave_cleared` still fires correctly. Without this, debug spawning during combat could deadlock the wave-clear check.
+**Why `_spawner.has_method("debug_spawn_shell")` in debug_overlay:** Defensive — the overlay loads before main has finished wiring everything in `_ready`. The method check + early-return prevents F4 from crashing if pressed during the brief moment before spawner is bound.
+**Family inference rules** (visual_tag wins over faction default):
+- `humanoid_armor` → armored, `humanoid_ranged` → swarm, `humanoid_caster` → caster, `humanoid_agile` → fast
+- `beast` → fast, `reptile` → regen, `dragon` → tank, `construct_large` → tank, `construct` → armored
+- `demon_small` → swarm, `spirit` → shielded
+- `boss_*` prefix → boss (overrides everything)
+- Faction default fallback: lyonar→armored, songhai→fast, vetruvian→armored, abyssian→swarm, magmar→tank, vanar→shielded, neutral→swarm
+**Smoke test (`--content-scan` extended)**:
+- D1→D8 full chain runs in ~2.4s.
+- D8: 696 enemy shells in 45ms, 38 sprite-ready.
+- Family split: swarm 306, armored 129, fast 69, shielded 67, tank 59, boss 50, caster 13, regen 3.
+**Impact:**
+- New `scripts/content/duelyst_enemy_shell_generator.gd` (~140 lines): 8 family templates, visual-tag-to-family mapping, faction-default fallback, faction tints.
+- `scripts/enemy_factory.gd`: new `make_enemy_from_shell(shell)` + `shell_has_sprite(shell)` helpers (no changes to existing `make_enemy` path).
+- `scripts/wave_spawner.gd`: new public `debug_spawn_shell(shell)` method that builds an enemy from a generated-shell dict and attaches all the same signals as regular spawns.
+- `scripts/debug_overlay.gd`: F4 keybind → `_debug_spawn_random_shell()`. Lazy-loads `enemy_shells.json` on first F4 press (so the overlay doesn't pay the IO cost until needed). Spawner reference wired by `main.gd` via `dbg.bind_spawner(spawner)`.
+- `scripts/main.gd`: passes `spawner` reference into debug overlay after instantiation.
+- `scenes/duelyst_content_hub.tscn`: new "Generate D8 — enemy shells" action button.
+**Test:** See checklist below.
+
+---
+
+### Manual Test Checklist - Iter D8 (Defender/enemy dual-use)
+
+**Generation:**
+- [ ] Hub → Generate D6 (if not already), then Generate D8. Result panel shows ~696 enemy shells with family/faction breakdowns + ~38 sprite-ready.
+- [ ] `%APPDATA%\Godot\app_userdata\Duelyst_TD\duelyst_content\enemy_shells.json` exists and contains 696 entries with `sprite_frames_ready` flags.
+- [ ] Each shell has full enemy stats: hp, speed, armor, physical_resist, magic_resist, regen_per_sec, shield_hp, gold_reward, leak_damage, scale, tint.
+
+**Debug spawning:**
+- [ ] Start a normal run. Press F4 — a Duelyst-tinted enemy spawns at the path start and walks the path, takes damage from towers, dies → gold reward goes to player (verify in F1 stats).
+- [ ] Press F4 several times in succession → multiple unique enemies appear (random pick from the 38 sprite-ready shells).
+- [ ] If F4 spawned enemy reaches the core, leak damage is applied normally.
+- [ ] Spawn an F4 enemy as the last alive in a wave → enemy dying still triggers wave clear.
+- [ ] Press F4 BEFORE enemy_shells.json has been generated → silently no-ops (no crash).
+
+**Headless:**
+- [ ] `godot --headless --path . res://scenes/main_menu.tscn --content-scan` adds a "D8 enemy shells PASS" line with 696 shells + spawn_ready_count + family/faction breakdowns.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

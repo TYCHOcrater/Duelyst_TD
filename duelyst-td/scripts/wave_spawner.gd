@@ -90,6 +90,24 @@ func _run_wave_async(def: Dictionary) -> void:
 func _spawn_one(enemy_id: String) -> void:
 	_spawn_at_progress(enemy_id, 0.0)
 
+# Debug-only: spawn an enemy directly from a generated shell dict at the
+# path start. Used by the D8 debug F4 keybind. Counts toward active_enemies
+# so wave_cleared still fires correctly if the user spawns during combat.
+func debug_spawn_shell(shell: Dictionary) -> bool:
+	if not is_inside_tree() or path == null or shell.is_empty():
+		return false
+	var enemy = EnemyFactory.make_enemy_from_shell(shell)
+	if enemy == null:
+		return false
+	path.add_child(enemy)
+	enemy.progress = 0.0
+	enemy.died.connect(_on_enemy_died)
+	enemy.reached_end.connect(_on_enemy_reached_end)
+	enemy.tree_exited.connect(_on_enemy_removed)
+	enemy.wants_to_spawn.connect(_on_enemy_wants_to_spawn)
+	active_enemies += 1
+	return true
+
 func _spawn_at_progress(enemy_id: String, at_progress: float) -> void:
 	var enemy = EnemyFactory.make_enemy(enemy_id)
 	if enemy == null:
