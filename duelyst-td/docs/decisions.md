@@ -1677,6 +1677,31 @@ enemy.take_damage → RunLog.add_damage(dealt, source_id)               # existi
 
 ---
 
+## 2026-05-25 — Classic upgrade gating + duplicate shards (Iterations A3 + A4)
+**Decision:** A3 gates classic per-unit upgrades by `RunConfig.growth_mode` (visible/usable in `classic_upgrade` and `merge_evolution_hybrid`, hidden in `merge_stars`). A4 routes duplicate offer purchases into the new shard inventory when in a merge mode: spend gold, +1 shard, consume offer — no placement preview.
+**Why A3 was a small change:** Per-unit upgrade scaling (+50% dmg, +15% range, +10% fire rate per level) was already implemented; A3 just needed mode-gating in the inspect UI + command. Two small edits.
+**Why duplicate detection walks the `towers` group:** Cheapest reliable check that doesn't require new state. Alternatives (track owned base ids in RunLog, query instances dict) work but add coupling. Walking the scene group is O(n) where n = current tower count, typically 5-15.
+**Why shard purchases are committed-on-click (no placement preview):** A shard isn't placed on a tile, so there's no preview phase to cancel through. Click = commit. The cost feedback is immediate (gold deducted, shard count bumps in inspect on next tower-click).
+**Shard thresholds** (per addendum line 511):
+- 2 shards → 2-star (A5 will consume)
+- 5 shards total → 3-star (A5)
+- Both A5 thresholds are tracked but no consumption happens yet — that's A5's deliverable.
+**Why first buy of a base type still places normally:** "First prototype" simplification per the addendum. Once a player has at least one placed copy of a unit, all subsequent buys of that base type become shards. No need for a UI prompt asking "place new copy or convert to shard" yet.
+**Why the shop card uses plain-text shard progress:** `OfferDesc` is a `Label`, not `RichTextLabel`. BBCode wouldn't render. Format: `0/2★ · +1 shard\n<description>`. Hidden entirely in `classic_upgrade` mode.
+**Impact:**
+- `scripts/commands/upgrade_unit_command.gd`: rejects if `growth_mode` is `merge_stars`.
+- `scripts/commands/buy_offer_command.gd`: `_is_merge_mode()` + `_already_owns_base()` checks; `_execute_shard_buy()` spends gold, calls `RunLog.add_shard()`, consumes offer, records event.
+- `scripts/run_log.gd`: new `stats.shards: Dictionary`. API: `add_shard`, `shard_count`, `consume_shards`. `shard_purchased` event recorded for analytics.
+- `scripts/hud.gd`: offer-card desc now prepends shard progress + "places first" / "+1 shard" hint in merge modes. Tower inspect appends `Shards: N (next: 2★)` line. Upgrade button hidden in `merge_stars`. New `_player_owns_base()` helper.
+**Test:**
+- [ ] Set growth_mode = "Classic Upgrade" → New Run → upgrade button works as before; buying duplicates places multiple copies; no shard text appears.
+- [ ] Set growth_mode = "Merge Stars" → New Run → upgrade button hidden in inspect panel. Buy Silverguard, place it. Buy another Silverguard offer → gold spent, no placement preview, shard count +1. Click your placed Silverguard → inspect shows "Shards: 1 (next: 2★)".
+- [ ] Buy a third Silverguard → shards = 2, threshold flips to "5★★".
+- [ ] Set growth_mode = "Merge + Evolution" → both upgrade button AND shard accumulation work side-by-side.
+- [ ] F2 debug overlay → confirm "shard_added" + "shard_purchased" events fire.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

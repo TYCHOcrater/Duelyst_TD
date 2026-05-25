@@ -56,6 +56,9 @@ func start_run(seed_value: int) -> void:
 		# survived, traits/flaws, and a final disposition.
 		"instances": {},
 		"_instance_counter": 0,
+		# A4 duplicate-shard system. base_unit_id -> shard count. Shards
+		# accumulate from duplicate purchases and (A5) feed star upgrades.
+		"shards": {},
 	}
 	active = true
 	record("run_start", {"seed": seed_value})
@@ -239,6 +242,35 @@ func top_instance_by_damage() -> Dictionary:
 	var out: Dictionary = (instances[best_id] as Dictionary).duplicate()
 	out["instance_id"] = best_id
 	return out
+
+# --- A4 duplicate-shard system ---
+
+func add_shard(base_unit_id: String, amount: int = 1) -> int:
+	# Returns the new shard count for this base unit. No-op (returns 0) if
+	# the run isn't active.
+	if not active or base_unit_id == "":
+		return 0
+	var shards: Dictionary = stats.get("shards", {})
+	var current: int = int(shards.get(base_unit_id, 0)) + amount
+	shards[base_unit_id] = current
+	stats["shards"] = shards
+	record("shard_added", {"unit": base_unit_id, "count": current})
+	return current
+
+func shard_count(base_unit_id: String) -> int:
+	var shards: Dictionary = stats.get("shards", {})
+	return int(shards.get(base_unit_id, 0))
+
+func consume_shards(base_unit_id: String, amount: int) -> bool:
+	if not active:
+		return false
+	var shards: Dictionary = stats.get("shards", {})
+	var current: int = int(shards.get(base_unit_id, 0))
+	if current < amount:
+		return false
+	shards[base_unit_id] = current - amount
+	stats["shards"] = shards
+	return true
 
 func record_player_slots(slots: Array) -> void:
 	# Called once by SessionController after it configures the slot list.

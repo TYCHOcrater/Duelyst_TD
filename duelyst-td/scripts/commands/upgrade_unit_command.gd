@@ -16,6 +16,11 @@ func execute(main: Node) -> bool:
 	if t.level >= 4:
 		reason = "tower at max level"
 		return false
+	# A3: gate classic upgrades by growth_mode. merge_stars mode promotes
+	# via shards instead; merge_evolution_hybrid still allows classic.
+	if not (RunConfig.growth_mode in ["classic_upgrade", "merge_evolution_hybrid"]):
+		reason = "classic upgrades disabled in growth_mode '%s'" % RunConfig.growth_mode
+		return false
 	var cost: int = int(t.upgrade_cost())
 	if GameState.gold < cost:
 		reason = "insufficient gold (have %d, need %d)" % [GameState.gold, cost]

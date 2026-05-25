@@ -700,7 +700,22 @@ func show_draft_offers(offers: Array) -> void:
 				fac.capitalize(),
 				_role_summary(def),
 			]
-			desc.text = def.get("description", "")
+			# A4: prepend shard progress line if in merge mode and unit is owned/has shards
+			# (OfferDesc is a plain Label — no BBCode here; just terse text).
+			var desc_text: String = def.get("description", "")
+			if RunConfig.growth_mode in ["merge_stars", "merge_evolution_hybrid"]:
+				var shards: int = RunLog.shard_count(offers[i])
+				var owns: bool = _player_owns_base(offers[i])
+				if owns or shards > 0:
+					var progress: String
+					if shards < 2:
+						progress = "%d/2★" % shards
+					elif shards < 5:
+						progress = "%d/5★★" % shards
+					else:
+						progress = "★★★"
+					desc_text = "%s · %s\n%s" % [progress, "+1 shard" if owns else "places first", desc_text]
+			desc.text = desc_text
 			_set_type_chip(chip, def)
 			_set_trait_chip(trait_chip, trait_id, flaw_id)
 			portrait.texture = _portrait_for(offers[i])
@@ -710,6 +725,13 @@ func show_draft_offers(offers: Array) -> void:
 			offer_boxes[i].visible = false
 	_refresh_offers_affordability()
 	_refresh_reroll_label()
+
+func _player_owns_base(base_unit_id: String) -> bool:
+	# A4: helper for shard-progress chip in offer cards.
+	for t in get_tree().get_nodes_in_group("towers"):
+		if is_instance_valid(t) and "unit_id" in t and t.unit_id == base_unit_id:
+			return true
+	return false
 
 func _portrait_for(unit_id: String) -> Texture2D:
 	var sf: SpriteFrames = UnitFactory.sprite_frames_for(unit_id)
@@ -853,11 +875,24 @@ func _refresh_tower_panel() -> void:
 		if t.instance_id != "":
 			var inst_damage: int = _instance_damage_for(t.instance_id)
 			inst_line = "\n%d dmg this run  ·  %d waves survived" % [inst_damage, int(t.waves_survived)]
-		tp_stats.text = "Dmg %d  ·  Range %d  ·  %.1f/s%s%s" % [
-			t.effective_damage(), int(t.range_radius), t.fire_rate, evo_line, inst_line
+		# A4: shard count for this base type, if in merge mode.
+		var shard_line: String = ""
+		if RunConfig.growth_mode in ["merge_stars", "merge_evolution_hybrid"]:
+			var shards: int = RunLog.shard_count(t.unit_id)
+			if shards > 0:
+				var threshold: String = "2★" if shards < 2 else ("5★★" if shards < 5 else "max")
+				shard_line = "\nShards: %d (next: %s)" % [shards, threshold]
+		tp_stats.text = "Dmg %d  ·  Range %d  ·  %.1f/s%s%s%s" % [
+			t.effective_damage(), int(t.range_radius), t.fire_rate, evo_line, inst_line, shard_line
 		]
 	var u_cost: int = t.upgrade_cost()
 	tp_upgrade.text = "Upgrade (%dg)" % u_cost
+	# A3: classic upgrades are only available in modes that include the
+	# classic upgrade path. merge_stars mode replaces them with star levels
+	# (A5); the upgrade button hides so the inspect panel doesn't lie about
+	# what's possible.
+	var classic_allowed: bool = RunConfig.growth_mode in ["classic_upgrade", "merge_evolution_hybrid"]
+	tp_upgrade.visible = classic_allowed
 	tp_upgrade.disabled = GameState.gold < u_cost or t.level >= 4
 	tp_sell.text = "Sell (+%dg)" % t.sell_value()
 
