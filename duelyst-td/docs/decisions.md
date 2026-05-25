@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Combat feel: death bursts, placement pulse, Core damage flash
+**Decision:** New `scripts/combat_fx.gd` exposes two static helpers: `burst(host, pos, color, count, speed_scale)` for outward particle bursts and `placement_pulse(host, pos, color)` for expanding ring sprites. Wired into `enemy._die()` (14-particle burst at the enemy's last position, ×1.6 scale for elites/bosses) and `tower._ready()` (cyan placement ring at the tower's tile). HUD `LivesBox` now flashes red and pulses the lives label on Core damage to mirror the C6 gate-shield-row flash.
+**Why:** Combat needed micro-feedback. Enemies just popped out of existence; towers appeared with no plant-down beat; Core damage was silently arithmetic. The user has been steering toward visible atmosphere/polish — these complete that loop: spawn → place (pulse) → attack → kill (burst) → leak (gate flash + core flash). All procedural, no new assets.
+**Impact:** `scripts/combat_fx.gd` (new), `scripts/enemy.gd` (call into `CombatFX.burst` from `_die`), `scripts/tower.gd` (call into `CombatFX.placement_pulse` from non-preview `_ready`), `scripts/hud.gd` (Core damage flash already committed separately).
+**Test:** Headless boots clean on both default and `--use-battleground`. In-engine: place a tower → soft cyan ring expands; kill enemies → small dot burst; let one leak → LivesBox flashes red and the lives label pulses.
+
+---
+
 ## 2026-05-25 — Atmosphere: ambient FX layer (dust + core glow + spawn portal)
 **Decision:** New `scripts/ambient_fx.gd` (a Node2D parented to `World` after map load) generates three procedural atmospheric effects: ~70 drifting dust motes filling the viewport via `CPUParticles2D`, a soft golden pulse at each Core position, and a slow-spinning purple pulse at the central spawn tile on multi-route maps. All visuals use code-generated soft-edge circle textures — no new assets are required.
 **Why:** User asked for small VFX/atmosphere wins to lift the visual style. Procedural + universally applied = the effects work on every existing map (default, generated, battleground) and on every map added later, with zero data-side work.

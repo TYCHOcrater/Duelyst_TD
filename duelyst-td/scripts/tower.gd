@@ -163,6 +163,10 @@ func _ready() -> void:
 	if not is_preview:
 		add_to_group("towers")
 		_register_instance()
+		# Placement pulse — quick outward ring at the new tower's tile.
+		var host := get_tree().current_scene if is_inside_tree() else null
+		if host:
+			CombatFX.placement_pulse(host, global_position, Color(0.7, 0.95, 1.0, 0.85))
 	if total_spent == 0:
 		total_spent = cost
 	_apply_sprite_frames()

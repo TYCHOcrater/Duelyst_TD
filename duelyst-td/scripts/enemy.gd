@@ -240,6 +240,13 @@ func _die() -> void:
 	died.emit(gold_reward, enemy_id)
 	hp_bar.visible = false
 	AudioManager.play("enemy_death", 0.08)
+	# Death burst — color matches the family for a tiny readability boost.
+	var burst_color := _DAMAGE_TYPE_COLOR.get("strike", Color(1.0, 0.85, 0.5)) if _DAMAGE_TYPE_COLOR.is_empty() else Color(1.0, 0.95, 0.65)
+	# Stronger burst for elites/bosses.
+	var scale_mult: float = 1.6 if family == "elite" or family == "boss" else 1.0
+	var host := get_tree().current_scene if is_inside_tree() else null
+	if host:
+		CombatFX.burst(host, global_position, burst_color, 14, scale_mult)
 	_process_on_death_events()
 	if sprite.sprite_frames and sprite.sprite_frames.has_animation("death"):
 		sprite.play("death")
