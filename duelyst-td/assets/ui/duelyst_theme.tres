@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=11 format=3]
+[gd_resource type="Theme" load_steps=12 format=3]
 
 [ext_resource type="FontFile" path="res://assets/fonts/Lato-Regular.ttf" id="1_lato"]
 [ext_resource type="FontFile" path="res://assets/fonts/Lato-Bold.ttf" id="2_lato_bold"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/ui/frames/button_normal.png" id="4_btn_n"]
 [ext_resource type="Texture2D" path="res://assets/ui/frames/button_hover.png" id="5_btn_h"]
 [ext_resource type="Texture2D" path="res://assets/ui/frames/button_pressed.png" id="6_btn_p"]
+[ext_resource type="Texture2D" path="res://assets/ui/frames/card_normal.png" id="7_card_n"]
 
 [sub_resource type="StyleBoxFlat" id="panel_box"]
 bg_color = Color(0.08, 0.1, 0.15, 0.94)
@@ -30,21 +31,17 @@ border_color = Color(0.65, 0.55, 0.3, 0.78)
 corner_radius_top_left = 8
 corner_radius_top_right = 8
 
-[sub_resource type="StyleBoxFlat" id="card_box"]
-bg_color = Color(0.12, 0.13, 0.18, 0.88)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.55, 0.5, 0.35, 0.55)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-content_margin_left = 6.0
-content_margin_top = 6.0
-content_margin_right = 6.0
-content_margin_bottom = 6.0
+[sub_resource type="StyleBoxTexture" id="card_box"]
+texture = ExtResource("7_card_n")
+texture_margin_left = 40.0
+texture_margin_top = 40.0
+texture_margin_right = 40.0
+texture_margin_bottom = 40.0
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+modulate_color = Color(0.95, 0.95, 1.0, 1.0)
 
 [sub_resource type="StyleBoxTexture" id="btn_normal"]
 texture = ExtResource("4_btn_n")

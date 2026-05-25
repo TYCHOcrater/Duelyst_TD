@@ -129,12 +129,29 @@ const TYPE_COLORS := {
 	"true":   Color(1.0, 1.0, 1.0),
 }
 
+var _pact_card_labels: Array = []  # RichTextLabel overlays for colored boon/curse text
+
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_load_counters()
 	for i in pact_cards.size():
 		var idx := i
 		pact_cards[idx].pressed.connect(func(): _on_pact_card_pressed(idx))
+		# Overlay a RichTextLabel on each card so we can render BBCode-colored
+		# boon/curse/evolution text (Button.text is plain only). Mouse-ignore
+		# so clicks pass through to the Button.
+		var rtl := RichTextLabel.new()
+		rtl.bbcode_enabled = true
+		rtl.fit_content = true
+		rtl.scroll_active = false
+		rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
+		rtl.offset_left = 12
+		rtl.offset_top = 14
+		rtl.offset_right = -12
+		rtl.offset_bottom = -12
+		pact_cards[idx].add_child(rtl)
+		_pact_card_labels.append(rtl)
 	pact_panel.visible = false
 	PactManager.pacts_changed.connect(_refresh_active_pacts)
 	RelicManager.relics_changed.connect(_refresh_active_pacts)
@@ -582,14 +599,17 @@ func _show_choice_modal(options: Array, kind: String) -> void:
 			pact_panel_subtitle.text = "Boon and curse. Active for the rest of the run."
 	for i in pact_cards.size():
 		var btn := pact_cards[i]
+		var rtl: RichTextLabel = _pact_card_labels[i] if i < _pact_card_labels.size() else null
+		# Plain-text fallback in the Button.text stays empty — the RichTextLabel
+		# overlay carries the visible text with BBCode coloring.
+		btn.text = ""
 		if i < options.size():
 			# Evolution mode: options is Array of EvolutionDef dicts (not ids).
 			if kind == "evolution":
 				var def: Dictionary = options[i]
-				btn.text = "%s\n\n%s" % [
-					def.get("display_name", "?"),
-					def.get("description", ""),
-				]
+				if rtl:
+					rtl.text = "[center][b]" + String(def.get("display_name", "?")) + "[/b][/center]\n\n" \
+						+ "[color=#a0c8ff]" + String(def.get("description", "")) + "[/color]"
 				btn.visible = true
 				btn.set_meta("choice_id", def.get("id", ""))
 				continue
@@ -597,22 +617,25 @@ func _show_choice_modal(options: Array, kind: String) -> void:
 			var def: Dictionary
 			if kind == "relic":
 				def = RelicManager.get_def(id)
-				btn.text = "%s\n\nBoon:\n%s" % [
-					def.get("display_name", id),
-					def.get("boon", ""),
-				]
+				if rtl:
+					rtl.text = "[center][b]" + String(def.get("display_name", id)) + "[/b][/center]\n\n" \
+						+ "[color=#8fff8f][b]Boon:[/b][/color]\n" \
+						+ "[color=#cfe8cf]" + String(def.get("boon", "")) + "[/color]"
 			else:
 				def = PactManager.get_def(id)
-				btn.text = "%s\n\nBoon:\n%s\n\nCurse:\n%s" % [
-					def.get("display_name", id),
-					def.get("boon", ""),
-					def.get("curse", ""),
-				]
+				if rtl:
+					rtl.text = "[center][b]" + String(def.get("display_name", id)) + "[/b][/center]\n\n" \
+						+ "[color=#8fff8f][b]Boon:[/b][/color]\n" \
+						+ "[color=#cfe8cf]" + String(def.get("boon", "")) + "[/color]\n\n" \
+						+ "[color=#ff8f8f][b]Curse:[/b][/color]\n" \
+						+ "[color=#f0c0c0]" + String(def.get("curse", "")) + "[/color]"
 			btn.visible = true
 			btn.set_meta("choice_id", id)
 		else:
 			btn.visible = false
 			btn.set_meta("choice_id", "")
+			if rtl:
+				rtl.text = ""
 	pact_panel.visible = true
 
 func hide_pact_choice() -> void:

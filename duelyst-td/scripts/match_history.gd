@@ -85,9 +85,9 @@ func _bakeoff_section(runs: Array) -> String:
 		b["gold_rerolls"] += int(r.get("gold_spent_on_rerolls", 0))
 		b["damage_sum"] += int(r.get("damage_dealt", 0))
 	var lines: Array[String] = []
-	lines.append("[color=#a0a0a8][b]Growth bake-off  ·  per-mode aggregate across recorded runs[/b][/color]")
-	lines.append("[color=#5a5a62]" + "─".repeat(110) + "[/color]")
-	lines.append("[color=#a0a0a8]" + _pad("Mode", 12) + "  Runs   Win  AvgWave  Bought  DupSee  DupBuy  Upgrd  Star★  G:Unit  G:Grow[/color]")
+	lines.append("[color=#cdd6e3][font_size=18][b]Growth bake-off[/b][/font_size][/color]  [color=#8a93a6]per-mode aggregate across all recorded runs[/color]")
+	lines.append("[color=#3a3f4a]" + "═".repeat(110) + "[/color]")
+	lines.append("[color=#8a93a6]" + _pad("Mode", 12) + "  Runs   Win   AvgWave  Bought  DupSee  DupBuy  Upgrd  Star★  G:Unit  G:Grow[/color]")
 	for m in MODES:
 		var b: Dictionary = by_mode[m]
 		var runs_n: int = int(b["runs"])
@@ -127,13 +127,21 @@ func _bakeoff_section(runs: Array) -> String:
 	return "\n".join(lines)
 
 func _header_row() -> String:
-	return "[color=#a0a0a8][b]Date · Result · Seed · Wave · Map · Growth · Top damage · Kills · Gold[/b][/color]\n[color=#5a5a62]" + "─".repeat(110) + "[/color]"
+	return "\n[color=#cdd6e3][font_size=15][b]  Run log  ·  newest first[/b][/font_size][/color]\n[color=#3a3f4a]" + "═".repeat(110) + "[/color]"
+
+const RESULT_GLYPH := {
+	"victory":     "✓",
+	"defeat":      "✗",
+	"abandoned":   "·",
+	"in_progress": "…",
+}
 
 func _run_row(s: Dictionary) -> String:
 	var ended_unix: float = float(s.get("ended_at", s.get("started_at", 0.0)))
 	var when_text: String = _format_date(ended_unix)
 	var result: String = String(s.get("result", "in_progress"))
 	var hex: String = RESULT_COLOR.get(result, "#aaaaaa")
+	var glyph: String = RESULT_GLYPH.get(result, "·")
 	var seed_val: int = int(s.get("seed", 0)) & 0xFFFFFFFF
 	var seed_text: String = "SHARD-%08X" % seed_val
 	var wave: int = int(s.get("wave_reached", 0))
@@ -148,28 +156,26 @@ func _run_row(s: Dictionary) -> String:
 	var top_dmg_amt: int = int(s.get("damage_by_unit", {}).get(top_dmg_id, 0))
 	var top_dmg_text: String = ""
 	if top_dmg_id != "":
-		top_dmg_text = "%s (%d)" % [_display_name_for(top_dmg_id), top_dmg_amt]
-	else:
-		top_dmg_text = "—"
+		top_dmg_text = "%s (%d dmg)" % [_display_name_for(top_dmg_id), top_dmg_amt]
 	var kills: int = int(s.get("enemies_killed", 0))
 	var gold: int = int(s.get("gold_earned", 0))
 	var name_text: String = String(s.get("run_name", ""))
-	# Build BBCode line. Use fixed-ish column widths via spaces (RichTextLabel
-	# isn't a true monospace grid but Lato is close enough for human reading).
-	var head: String = "%s  [color=%s][b]%s[/b][/color]  %s  W%2d  %s  %s  %s  %s  %dg" % [
-		when_text,
-		hex, result.capitalize(),
-		seed_text,
-		wave,
-		_pad(_trunc(map_text, 18), 18),
-		_pad(growth_short, 10),
-		_pad(_trunc(top_dmg_text, 26), 26),
-		_pad("%d" % kills, 6),
-		gold,
+	# Two-line entry. Line 1: result glyph + headline. Line 2: indented detail.
+	var line1: String = "  [color=%s][b]%s  %s[/b][/color]  [color=#9ca5b8]%s  ·  Wave %d  ·  %s[/color]" % [
+		hex, glyph, result.capitalize(),
+		when_text, wave, _growth_short(growth),
 	]
+	var detail_bits: Array[String] = []
+	detail_bits.append("[color=#7a8294]%s[/color]" % seed_text)
+	detail_bits.append("[color=#7a8294]%s[/color]" % _trunc(map_text, 30))
+	if top_dmg_text != "":
+		detail_bits.append("[color=#ffce6c]%s[/color]" % top_dmg_text)
+	detail_bits.append("[color=#9ca5b8]%d kills  ·  %d g[/color]" % [kills, gold])
+	var line2: String = "    " + "  ·  ".join(detail_bits)
+	var out: String = line1 + "\n" + line2
 	if name_text != "":
-		head += "\n          [color=#ffce6c][i]%s[/i][/color]" % name_text
-	return head
+		out += "\n    [color=#ffce6c][i]" + name_text + "[/i][/color]"
+	return out + "\n[color=#2a2e36]" + "─".repeat(108) + "[/color]"
 
 func _format_date(unix: float) -> String:
 	if unix <= 0.0:

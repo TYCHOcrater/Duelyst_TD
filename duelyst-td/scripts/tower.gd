@@ -122,8 +122,11 @@ func _ensure_decorative_sprites() -> void:
 		_highlight_sprite = AnimatedSprite2D.new()
 		_highlight_sprite.sprite_frames = sprite.sprite_frames
 		_highlight_sprite.z_index = -1
-		_highlight_sprite.scale = Vector2(1.10, 1.10)
-		_highlight_sprite.modulate = Color(1.0, 0.85, 0.4, 0.0)  # invisible until pulse
+		# Bigger halo + brighter base so the player notices it from across
+		# the board. Was 1.10x with alpha 0.35-0.65 — too subtle on small
+		# Duelyst sprites.
+		_highlight_sprite.scale = Vector2(1.20, 1.20)
+		_highlight_sprite.modulate = Color(1.0, 0.92, 0.45, 0.0)
 		_highlight_sprite.visible = false
 		_highlight_sprite.play(sprite.animation)
 		add_child(_highlight_sprite)
@@ -523,9 +526,11 @@ func _update_upgrade_halo() -> void:
 		_highlight_sprite.visible = false
 		return
 	_highlight_sprite.visible = true
-	var pulse: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() / 320.0)
-	var alpha: float = 0.35 + 0.30 * pulse
-	_highlight_sprite.modulate = Color(1.0, 0.88, 0.42, alpha)
+	# Stronger pulse + higher base alpha so the highlight reads from a few
+	# tiles away. Range was 0.35-0.65; now 0.65-0.95.
+	var pulse: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() / 280.0)
+	var alpha: float = 0.65 + 0.30 * pulse
+	_highlight_sprite.modulate = Color(1.0, 0.92, 0.45, alpha)
 
 func _draw_unit_shadow() -> void:
 	# Squashed ellipse approximated via two stacked circles to avoid needing a
