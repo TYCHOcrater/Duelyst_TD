@@ -52,11 +52,17 @@ func _update_hover_tower() -> void:
 func _set_hover_tower(t: Node) -> void:
 	if t == hover_tower:
 		return
+	# Leaving the previous hover: drop the target line, and drop the range
+	# ring unless this tower is also the picked one (then the click-state
+	# wins).
 	if hover_tower and is_instance_valid(hover_tower):
 		hover_tower.set_show_target_line(false)
+		if hover_tower != picked_tower:
+			hover_tower.set_show_range(false)
 	hover_tower = t
 	if hover_tower and is_instance_valid(hover_tower):
 		hover_tower.set_show_target_line(true)
+		hover_tower.set_show_range(true)
 
 func _snap_to_grid(world_pos: Vector2) -> Vector2:
 	if grid == null:
@@ -136,7 +142,10 @@ func _try_pick_tower(pos: Vector2) -> void:
 
 func _clear_picked_tower() -> void:
 	if picked_tower and is_instance_valid(picked_tower):
-		picked_tower.set_show_range(false)
+		# If the picked tower is still being hovered, keep the range ring
+		# visible via the hover-state branch instead of toggling it off.
+		if picked_tower != hover_tower:
+			picked_tower.set_show_range(false)
 	picked_tower = null
 	tower_deselected.emit()
 
