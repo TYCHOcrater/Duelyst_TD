@@ -90,6 +90,7 @@ func record(event_type: String, data: Dictionary = {}) -> void:
 		"buy_offer":
 			stats["units_bought"] += 1
 			stats["gold_spent"] += int(data.get("cost", 0))
+			stats["gold_spent_on_units"] = int(stats.get("gold_spent_on_units", 0)) + int(data.get("cost", 0))
 			var unit_id := String(data.get("unit", ""))
 			if unit_id != "":
 				var by_unit: Dictionary = stats["placements_by_unit"]
@@ -112,9 +113,21 @@ func record(event_type: String, data: Dictionary = {}) -> void:
 		"upgrade_unit":
 			stats["units_upgraded"] += 1
 			stats["gold_spent"] += int(data.get("cost", 0))
+			stats["gold_spent_on_growth"] = int(stats.get("gold_spent_on_growth", 0)) + int(data.get("cost", 0))
 		"reroll":
 			stats["rerolls"] += 1
 			stats["gold_spent"] += int(data.get("cost", 0))
+			stats["gold_spent_on_rerolls"] = int(stats.get("gold_spent_on_rerolls", 0)) + int(data.get("cost", 0))
+		"shard_purchased":
+			# A4 shard buy: BuyOfferCommand calls GameState.spend_gold directly
+			# (not through buy_offer), so neither gold_spent nor the per-bucket
+			# breakdown was updating. Mirror both here.
+			stats["gold_spent"] = int(stats.get("gold_spent", 0)) + int(data.get("cost", 0))
+			stats["gold_spent_on_growth"] = int(stats.get("gold_spent_on_growth", 0)) + int(data.get("cost", 0))
+		"star_promoted":
+			stats["star_promotions"] = int(stats.get("star_promotions", 0)) + 1
+		"evolution_chosen":
+			stats["evolutions_chosen"] = int(stats.get("evolutions_chosen", 0)) + 1
 		"enemy_killed":
 			stats["enemies_killed"] += 1
 			stats["gold_earned"] += int(data.get("reward", 0))
