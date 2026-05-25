@@ -39,6 +39,25 @@ func configure(n: int, topology: String) -> void:
 		RunLog.record_player_slots(summary_for_run_log())
 	slots_changed.emit(player_slots)
 
+# C10: find the slot that owns route_id, or -1 if none. Solo slot 0 owns the
+# joined "rid1,rid2,..." string so any rid in that list returns 0.
+func slot_for_route(route_id: String) -> int:
+	if route_id == "":
+		return -1
+	for i in player_slots.size():
+		var ids: PackedStringArray = String(player_slots[i].route_id).split(",")
+		if route_id in ids:
+			return i
+	return -1
+
+# C10: bump a stat for the given slot. Stats dict has integer counters
+# (units_placed / leaks / core_damage_taken).
+func add_slot_stat(slot_id: int, key: String, delta: int = 1) -> void:
+	if slot_id < 0 or slot_id >= player_slots.size():
+		return
+	var slot = player_slots[slot_id]
+	slot.stats[key] = int(slot.stats.get(key, 0)) + delta
+
 # C7: spend one aid token from slot `from_slot_id`. Returns true on success.
 func consume_aid_token(from_slot_id: int) -> bool:
 	if from_slot_id < 0 or from_slot_id >= player_slots.size():

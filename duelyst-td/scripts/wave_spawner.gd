@@ -227,6 +227,15 @@ func _on_enemy_reached_end(damage: int, enemy_id: String, route_id: String) -> v
 		# C6: route the damage through Gate Shield first; overflow hits Core.
 		var breakdown: Dictionary = GameState.take_leak_damage(route_id, effective_damage)
 		AudioManager.play("base_hit", 0.1)
+		# C10: per-slot accounting. Whoever owns this route eats the leak;
+		# Core hits are credited to the same slot (their lane bled through).
+		var session_node: Node = get_tree().current_scene.get_node_or_null("SessionController") if is_inside_tree() else null
+		if session_node:
+			var slot_id: int = session_node.slot_for_route(route_id)
+			session_node.add_slot_stat(slot_id, "leaks", 1)
+			var core_hits: int = int(breakdown.get("core_hits", 0))
+			if core_hits > 0:
+				session_node.add_slot_stat(slot_id, "core_damage_taken", core_hits)
 		# Burst at the gate tile so the leak reads on the map too. Color +
 		# size shift on whether the shield absorbed it or the Core took it.
 		_spawn_leak_fx(route_id, int(breakdown.get("shield_hits", 0)), int(breakdown.get("core_hits", 0)))

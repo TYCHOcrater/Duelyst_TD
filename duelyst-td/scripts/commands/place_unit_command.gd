@@ -38,6 +38,11 @@ func execute(main: Node) -> bool:
 	tower.global_position = position
 	placement.add_child(tower)
 	AudioManager.play("place_tower")
+	# C10: credit the placement to the local slot so per-player run summary
+	# numbers add up correctly.
+	var session = main.session if "session" in main else null
+	if session != null and session.has_method("add_slot_stat"):
+		session.add_slot_stat(session.local_slot_id, "units_placed", 1)
 	placement.cancel_selection()
 	RunLog.record("buy_offer", {
 		"unit": unit_id,

@@ -239,6 +239,12 @@ func bind_phase(pc: Node, dd: Node) -> void:
 	phase_controller = pc
 	draft_director = dd
 
+# C10: gives the HUD a session reference so the end-of-run summary can
+# render per-player stats when slot_count > 1.
+var session_ref: Node = null
+func bind_session(s: Node) -> void:
+	session_ref = s
+
 func set_seed_label(s: String) -> void:
 	seed_label.text = s
 	end_seed.text = s
@@ -338,6 +344,20 @@ func _populate_run_summary() -> void:
 	end_coach.visible = end_coach.text != ""
 	end_pacts.text = _format_pacts(s)
 	end_relics.text = _format_relics(s)
+	# C10: per-slot block, only when multi-player. Folds into the existing
+	# highlights label since the EndPanel doesn't have a dedicated slot grid.
+	if session_ref != null and session_ref.slot_count() > 1:
+		var lines: Array[String] = []
+		lines.append("[b]Per-player:[/b]")
+		for slot in session_ref.player_slots:
+			lines.append("  %s: %d placed · %d leaks · %d core dmg" % [
+				slot.display_name,
+				int(slot.stats.get("units_placed", 0)),
+				int(slot.stats.get("leaks", 0)),
+				int(slot.stats.get("core_damage_taken", 0)),
+			])
+		var existing: String = end_highlights.text
+		end_highlights.text = existing + ("\n\n" if existing != "" else "") + "\n".join(lines)
 
 func _growth_mode_short(mode: String) -> String:
 	match mode:

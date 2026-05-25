@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C10: 2-player balance pass — per-slot stat accounting
+**Decision:** Stat accounting per slot is now live: `session.add_slot_stat(slot_id, key, delta)` increments a slot's `stats` dict (`units_placed` / `leaks` / `core_damage_taken`). `SessionController.slot_for_route(rid)` looks up the slot that owns a given route_id (supports the comma-joined "all-routes" form solo uses). The leak handler in WaveSpawner now credits the right slot for each leak + any Core overflow. PlaceUnitCommand credits `units_placed` on the local slot. The EndPanel run summary renders a `[b]Per-player:[/b]` block when `slot_count > 1`, listing each slot's placed/leaks/core_damage. Solo runs are unchanged (the per-player block is hidden).
+**Why:** C10 acceptance — "Run summary shows per-player stats." Numbers had to actually count somewhere before the summary could show them. Tuning (Gate Shield HP, enemy budgets) needs real 2-player playtests, which I can't do autonomously — what I can ship is the data scaffolding so when you do 2-player runs the numbers tell you where things went wrong.
+**Impact:** `scripts/session_controller.gd` (slot_for_route, add_slot_stat), `scripts/wave_spawner.gd` (leak handler credits the owning slot), `scripts/commands/place_unit_command.gd` (credits units_placed), `scripts/hud.gd` (bind_session + per-player block in _populate_run_summary), `scripts/main.gd` (hud.bind_session call).
+**Test:** Headless boots clean. The per-player block is hidden in solo (1 slot). In a future debug 2-player run, the EndPanel highlights block will append per-slot totals.
+
+---
+
 ## 2026-05-25 — Iter C9: Shared co-op pact (chooser attribution)
 **Decision:** Pacts already apply globally via `ModifierTotals` (sum_int / product_float / has_flag) and the C2 multi-route fan-out already broadcasts wave modifications across every route — so the "applies to all routes" half of C9 is structurally satisfied. The missing half was attribution: who picked which pact. Added a parallel `active_chooser: Array[int]` to PactManager so each entry in `active_ids` carries the slot id that picked it. ChoosePactCommand + ChooseRelicCommand now grab `session.local_slot_id` at execute time and pass it through `PactManager.activate(id, slot)` plus into `RunLog.record("pact_chosen" / "relic_chosen", {..., "chosen_by_slot"})`. Solo runs log slot 0; future multiplayer runs will record real chooser identity.
 **Why:** C9 acceptance says "Run summary records pact and who chose it." Pact effects were already universal (each pact's effects file targets ModifierTotals, which the spawner reads for *every* enemy spawn). Solo had no concept of chooser; co-op needs it so the team can debrief who took what risk.

@@ -76,6 +76,7 @@ func _ready() -> void:
 	add_child(draft_director)
 	hud.bind_placement(placement)
 	hud.bind_phase(phase_controller, draft_director)
+	hud.bind_session(session)
 	hud.set_seed_label(RunConfig.format_seed())
 	hud.set_growth_mode_label(RunConfig.growth_mode_label())
 	hud.set_players_label(RunConfig.player_count, RunConfig.session_topology)
