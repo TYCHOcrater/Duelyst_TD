@@ -43,10 +43,12 @@ theme_override_font_sizes/font_size = 22
 offset_left = 440.0
 offset_top = 64.0
 offset_right = 840.0
-offset_bottom = 90.0
+offset_bottom = 96.0
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
+theme_override_font_sizes/normal_font_size = 15
+theme_override_font_sizes/bold_font_size = 17
 modulate = Color(1, 1, 1, 0)
 text = ""
 
@@ -298,15 +300,20 @@ visible = false
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -220.0
+offset_left = -240.0
 offset_top = 140.0
-offset_right = 220.0
-offset_bottom = 174.0
+offset_right = 240.0
+offset_bottom = 178.0
 grow_horizontal = 2
 text = "⚠ SILENCE — towers paused"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 18
-modulate = Color(0.55, 0.85, 1.0, 1)
+theme_override_fonts/font = ExtResource("4_tgp")
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.55, 0.85, 1.0, 1)
+theme_override_colors/font_shadow_color = Color(0.0, 0.05, 0.12, 0.9)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 5
 
 [node name="WaveBanner" type="Label" parent="."]
 anchors_preset = 8
@@ -325,6 +332,10 @@ horizontal_alignment = 1
 vertical_alignment = 1
 theme_override_fonts/font = ExtResource("4_tgp")
 theme_override_font_sizes/font_size = 64
+theme_override_colors/font_shadow_color = Color(0.05, 0.03, 0.02, 0.95)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 4
+theme_override_constants/shadow_outline_size = 10
 modulate = Color(1, 1, 1, 0)
 
 [node name="ActivePactsLabel" type="RichTextLabel" parent="."]
@@ -367,13 +378,22 @@ theme_override_constants/separation = 12
 text = "Choose your Pact"
 horizontal_alignment = 1
 theme_override_fonts/font = ExtResource("4_tgp")
-theme_override_font_sizes/font_size = 36
+theme_override_font_sizes/font_size = 42
+theme_override_colors/font_color = Color(0.95, 0.92, 0.78, 1)
+theme_override_colors/font_shadow_color = Color(0.1, 0.06, 0.04, 0.95)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 2
+theme_override_constants/shadow_outline_size = 6
+
+[node name="TitleSeparator" type="ColorRect" parent="PactChoicePanel/VBox"]
+custom_minimum_size = Vector2(0, 1)
+color = Color(0.55, 0.5, 0.4, 0.55)
 
 [node name="Subtitle" type="Label" parent="PactChoicePanel/VBox"]
 text = "Active for the rest of the run."
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 12
-modulate = Color(0.75, 0.75, 0.8, 1)
+theme_override_font_sizes/font_size = 13
+modulate = Color(0.78, 0.78, 0.82, 1)
 
 [node name="Cards" type="HBoxContainer" parent="PactChoicePanel/VBox"]
 size_flags_vertical = 3
