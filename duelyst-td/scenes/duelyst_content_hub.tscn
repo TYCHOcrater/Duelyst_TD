@@ -149,6 +149,10 @@ theme_override_constants/separation = 8
 text = "D15 — Validate all packs"
 custom_minimum_size = Vector2(220, 30)
 
+[node name="ReportBtn" type="Button" parent="Root/PacksSection/VBox/ValidateRow"]
+text = "D17 — Generate reuse report"
+custom_minimum_size = Vector2(220, 30)
+
 [node name="ValidateResult" type="Label" parent="Root/PacksSection/VBox/ValidateRow"]
 text = ""
 modulate = Color(0.75, 0.85, 0.95, 1)

@@ -30,6 +30,7 @@ const ENEMY_SHELL_GENERATOR_SCRIPT := preload("res://scripts/content/duelyst_ene
 @onready var validate_packs_result: Label = $Root/PacksSection/VBox/ValidateRow/ValidateResult
 
 const VALIDATOR_SCRIPT := preload("res://scripts/content/duelyst_content_validator.gd")
+const REUSE_REPORT_SCRIPT := preload("res://scripts/content/duelyst_reuse_report.gd")
 @onready var back_btn: Button = $Root/TopBar/BackBtn
 
 var _settings: RefCounted
@@ -54,6 +55,25 @@ func _ready() -> void:
 	_render_pack_list()
 	PackManager.packs_changed.connect(_render_pack_list)
 	validate_packs_btn.pressed.connect(_on_validate_packs)
+	var report_btn: Button = $Root/PacksSection/VBox/ValidateRow.get_node_or_null("ReportBtn")
+	if report_btn:
+		report_btn.pressed.connect(_on_generate_reuse_report)
+
+func _on_generate_reuse_report() -> void:
+	var res: Dictionary = REUSE_REPORT_SCRIPT.generate()
+	if not res.get("ok", false):
+		result_label.text = "[color=#ff8f8f][b]D17 report failed.[/b][/color]  %s" % res.get("message", "?")
+		return
+	var lines: Array[String] = []
+	lines.append("[color=#8fff8f][b]D17 reuse report generated.[/b][/color]")
+	lines.append("  Source files scanned:       [b]%d[/b]" % int(res.get("total_files", 0)))
+	lines.append("  Catalogued units:           [b]%d[/b]" % int(res.get("total_units", 0)))
+	lines.append("  Sprite-ready units:         [b]%d[/b]" % int(res.get("sprite_ready", 0)))
+	lines.append("  Playable now (current toggles):  [b]%d[/b]" % int(res.get("playable_now", 0)))
+	lines.append("  Playable if all packs enabled:    [b]%d[/b]" % int(res.get("playable_max", 0)))
+	lines.append("")
+	lines.append("[color=#a0a0a8]Markdown report:[/color]  %s" % res.get("path", "?"))
+	result_label.text = "\n".join(lines)
 
 func _on_validate_packs() -> void:
 	var res: Dictionary = VALIDATOR_SCRIPT.validate_all()
