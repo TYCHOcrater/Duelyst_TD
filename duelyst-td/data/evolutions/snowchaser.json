@@ -1,0 +1,21 @@
+{
+  "base_unit_id": "snowchaser",
+  "evolutions": {
+    "2": [
+      {
+        "id": "snowchaser_iceblade",
+        "display_name": "Iceblade Hunter",
+        "description": "Trades the slow effect for raw damage. Becomes a single-target carry.",
+        "stat_mods": {"damage_mult": 1.50, "slow_duration_mult": 0.0, "fire_rate_mult": 1.10},
+        "behavior_mods": ["damage_focus"]
+      },
+      {
+        "id": "snowchaser_permafrost",
+        "display_name": "Permafrost Tracker",
+        "description": "Slow effect lasts ages and stacks deeper. Damage dips slightly.",
+        "stat_mods": {"slow_duration_mult": 2.20, "slow_factor_mult": 0.85, "damage_mult": 0.90},
+        "behavior_mods": ["heavy_slow"]
+      }
+    ]
+  }
+}

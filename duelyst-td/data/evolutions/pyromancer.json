@@ -1,0 +1,21 @@
+{
+  "base_unit_id": "pyromancer",
+  "evolutions": {
+    "2": [
+      {
+        "id": "pyromancer_inferno",
+        "display_name": "Inferno Caster",
+        "description": "Bigger splash radius and harder hits. Slower fire rate.",
+        "stat_mods": {"splash_radius_mult": 1.60, "damage_mult": 1.20, "fire_rate_mult": 0.85},
+        "behavior_mods": ["wide_splash"]
+      },
+      {
+        "id": "pyromancer_pyro_geyser",
+        "display_name": "Pyro Geyser",
+        "description": "Long-range fire bombardment. Smaller splash but huge range.",
+        "stat_mods": {"range_mult": 1.40, "splash_radius_mult": 0.70, "damage_mult": 1.10},
+        "behavior_mods": ["sniper_splash"]
+      }
+    ]
+  }
+}

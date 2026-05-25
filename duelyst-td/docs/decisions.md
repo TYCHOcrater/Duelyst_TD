@@ -1728,6 +1728,37 @@ enemy.take_damage → RunLog.add_damage(dealt, source_id)               # existi
 
 ---
 
+## 2026-05-25 — Evolution choice prototype (Iteration A6)
+**Decision:** When a tower reaches 2★ in `merge_evolution_hybrid` mode, a 2-card choice modal appears with two branching `EvolutionDef`s for that base unit. Picking applies the evolution's `stat_mods` and records the choice. 4 units (silverguard_knight, windblade_adept, pyromancer, snowchaser) ship with 2 evolutions each at 2★ — the minimum the addendum requires.
+**Why hybrid-mode only:** Per the addendum, `merge_stars` is the "stat bump only" path and `merge_evolution_hybrid` adds the branching choice on top. A6 deliberately preserves merge_stars' simpler feel and only enriches the hybrid path.
+**Why reuse the existing pact-choice modal (PactChoicePanel):** That panel already has a 3-card layout with title/subtitle/description text. Evolutions fit the same shape (2 options instead of 3 — third card hides). Adds one `kind: "evolution"` branch in `_show_choice_modal` rather than building a parallel UI.
+**Why `_apply_stat_mods` was extended (not duplicated):** Evolution stat_mods use the same multiplier shape as trait/flaw mods. Adding `slow_duration_mult`, `slow_factor_mult`, `buff_damage_mult_mult`, `buff_radius_mult` to the existing function lets evolutions, traits, and flaws share the same stat-composition pipeline. No risk of behavior divergence.
+**Why the modal triggers on tower-select (not auto-pop on promote):** Pause-relevant — a player who promoted a tower mid-combat shouldn't have a modal blocking their input. Inspect-on-select gives the player explicit control over when the choice appears.
+**Why `behavior_mods` is just a tag list for A6:** The addendum's example (`chain_attack_1`) requires real code paths in projectile/enemy. For A6 MVP we ship stat-mod variants that fundamentally change feel (heavy_strike, extended_slow, wide_splash, sniper_splash, etc.) without new combat code. Tags are recorded so a future iteration can wire actual behavior — the data shape doesn't change.
+**Why `_evolution_base_unit_id` is stashed on the HUD:** the choice modal carries only the chosen evolution `id`. To resolve back to the EvolutionDef we need the base_unit_id. Stashing on `show_evolution_choice` is the cheapest plumbing — no new fields on the buttons.
+**Evolution catalog shipped:**
+| Unit | 2★ Choice A | 2★ Choice B |
+|---|---|---|
+| silverguard_knight | Stalwart Guardian (+30% dmg / -20% fire) | Lightspear Sentinel (+80% slow duration) |
+| windblade_adept | Storm Duelist (+45% fire / -20% dmg) | Sunblade Guard (+30% range / +50% slow) |
+| pyromancer | Inferno Caster (+60% splash radius / +20% dmg) | Pyro Geyser (+40% range / -30% splash) |
+| snowchaser | Iceblade Hunter (+50% dmg / no slow) | Permafrost Tracker (+120% slow duration) |
+**Impact:**
+- New `data/evolutions/*.json` × 4 (silverguard_knight, windblade_adept, pyromancer, snowchaser).
+- New `scripts/evolution_manager.gd` (autoload) with `has_choices`, `get_choices`, `get_def`.
+- `scripts/tower.gd`: new `star_level: int` (already from A5), new `pending_evolution_star: int`, `evolution_choices: Dictionary`. `promote_star` flags pending evolution in hybrid mode. New `apply_evolution(def)` method. `_apply_stat_mods` extended for slow/buff multipliers.
+- New `scripts/commands/choose_evolution_command.gd`.
+- `scripts/hud.gd`: new `show_evolution_choice(unit_id, star)` + `kind="evolution"` branch in `_show_choice_modal` + tower-select detection of pending evolution + display of chosen evolution name in inspect panel.
+- `project.godot`: EvolutionManager autoload registered after PackManager.
+**Test:**
+- [ ] growth_mode = "Merge + Evolution" → place silverguard_knight → buy 2 duplicate offers → click placed knight → click Promote (2/2 shards) → name updates to "Silverguard Knight (Lvl 1) ★★" AND evolution choice modal appears.
+- [ ] Pick "Lightspear Sentinel" → modal closes. Tower name now reads "Silverguard Knight (Lvl 1) ★★ · Lightspear Sentinel". Slow duration on hit visibly longer.
+- [ ] Try snowchaser, pyromancer, windblade_adept too — each has 2 branches.
+- [ ] Try a unit without evolutions (e.g. azurite_lion) → promote to 2★ works, NO choice modal appears.
+- [ ] `user://run_log_*.json` contains `evolution_chosen` events with instance_id, star_level, evolution_id.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

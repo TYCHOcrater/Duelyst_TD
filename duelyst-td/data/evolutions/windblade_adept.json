@@ -1,0 +1,21 @@
+{
+  "base_unit_id": "windblade_adept",
+  "evolutions": {
+    "2": [
+      {
+        "id": "windblade_storm_duelist",
+        "display_name": "Storm Duelist",
+        "description": "Whirlwind of strikes. Fire rate way up, individual hits softer.",
+        "stat_mods": {"fire_rate_mult": 1.45, "damage_mult": 0.80},
+        "behavior_mods": ["high_attack_speed"]
+      },
+      {
+        "id": "windblade_sunblade_guard",
+        "display_name": "Sunblade Guard",
+        "description": "Wide-reaching strikes. Range and slow boosted at the cost of speed.",
+        "stat_mods": {"range_mult": 1.30, "slow_duration_mult": 1.50, "fire_rate_mult": 0.90},
+        "behavior_mods": ["extended_range"]
+      }
+    ]
+  }
+}

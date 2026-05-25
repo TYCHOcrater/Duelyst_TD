@@ -34,6 +34,7 @@ Mastery="*res://scripts/mastery.gd"
 WaveEffects="*res://scripts/wave_effects.gd"
 VfxRouter="*res://scripts/vfx_router.gd"
 PackManager="*res://scripts/pack_manager.gd"
+EvolutionManager="*res://scripts/evolution_manager.gd"
 
 [display]
 

@@ -59,6 +59,8 @@ extends CanvasLayer
 
 # Tracks whether the modal is currently offering a pact or a relic.
 var _current_choice_kind: String = "pact"
+var _evolution_base_unit_id: String = ""
+const _CHOOSE_EVO_CMD := preload("res://scripts/commands/choose_evolution_command.gd")
 
 @onready var silence_banner: Label = $SilenceBanner
 @onready var wave_banner: Label = $WaveBanner
@@ -556,17 +558,41 @@ func show_pact_choice(options: Array) -> void:
 func show_relic_choice(options: Array) -> void:
 	_show_choice_modal(options, "relic")
 
+func show_evolution_choice(base_unit_id: String, star_level: int) -> void:
+	# A6: surface the evolution branch picker for a freshly-promoted tower.
+	# Stores the base_unit_id so the dispatch handler can resolve the
+	# EvolutionDef back from the click.
+	var choices: Array = EvolutionManager.get_choices(base_unit_id, star_level)
+	if choices.is_empty():
+		return
+	_evolution_base_unit_id = base_unit_id
+	_show_choice_modal(choices, "evolution")
+
 func _show_choice_modal(options: Array, kind: String) -> void:
 	_current_choice_kind = kind
-	if kind == "relic":
-		pact_panel_title.text = "Choose a Relic"
-		pact_panel_subtitle.text = "Pure boon. Active for the rest of the run."
-	else:
-		pact_panel_title.text = "Choose your Pact"
-		pact_panel_subtitle.text = "Boon and curse. Active for the rest of the run."
+	match kind:
+		"relic":
+			pact_panel_title.text = "Choose a Relic"
+			pact_panel_subtitle.text = "Pure boon. Active for the rest of the run."
+		"evolution":
+			pact_panel_title.text = "Choose an Evolution"
+			pact_panel_subtitle.text = "Permanent for this unit. Picks a behavior branch."
+		_:
+			pact_panel_title.text = "Choose your Pact"
+			pact_panel_subtitle.text = "Boon and curse. Active for the rest of the run."
 	for i in pact_cards.size():
 		var btn := pact_cards[i]
 		if i < options.size():
+			# Evolution mode: options is Array of EvolutionDef dicts (not ids).
+			if kind == "evolution":
+				var def: Dictionary = options[i]
+				btn.text = "%s\n\n%s" % [
+					def.get("display_name", "?"),
+					def.get("description", ""),
+				]
+				btn.visible = true
+				btn.set_meta("choice_id", def.get("id", ""))
+				continue
 			var id: String = options[i]
 			var def: Dictionary
 			if kind == "relic":
@@ -600,10 +626,10 @@ func _on_pact_card_pressed(idx: int) -> void:
 		return
 	AudioManager.play("ui_select")
 	hide_pact_choice()
-	if _current_choice_kind == "relic":
-		CommandBus.dispatch(ChooseRelicCommand.new(cid))
-	else:
-		CommandBus.dispatch(ChoosePactCommand.new(cid))
+	match _current_choice_kind:
+		"relic":     CommandBus.dispatch(ChooseRelicCommand.new(cid))
+		"evolution": CommandBus.dispatch(_CHOOSE_EVO_CMD.new(cid))
+		_:           CommandBus.dispatch(ChoosePactCommand.new(cid))
 
 func show_income_breakdown(breakdown: Dictionary) -> void:
 	# Compose a compact "+N" badge with bbcode coloring per component, then fade.
@@ -840,6 +866,12 @@ func show_tower_panel(tower: Node) -> void:
 	_shown_tower = tower
 	_refresh_tower_panel()
 	tower_panel.visible = true
+	# A6: if this tower has a pending evolution and we're in hybrid mode,
+	# pop the choice modal. Hidden by the player picking or by selecting
+	# another tower.
+	if tower and "pending_evolution_star" in tower and int(tower.pending_evolution_star) > 0:
+		if RunConfig.growth_mode == "merge_evolution_hybrid":
+			show_evolution_choice(tower.unit_id, int(tower.pending_evolution_star))
 
 func hide_tower_panel() -> void:
 	_shown_tower = null
@@ -860,6 +892,13 @@ func _refresh_tower_panel() -> void:
 	if t.star_level >= 2:
 		star_text = "  " + "★".repeat(t.star_level)
 	var name_text: String = "%s  (Lvl %d)%s" % [t.display_name, t.level + 1, star_text]
+	# A6: append the chosen evolution branch name (per star) if any.
+	if t.has_method("get") and "evolution_choices" in t:
+		for star_key in (t.evolution_choices as Dictionary).keys():
+			var evo_id: String = String((t.evolution_choices as Dictionary)[star_key])
+			var evo_def: Dictionary = EvolutionManager.get_def(t.unit_id, evo_id)
+			if not evo_def.is_empty():
+				name_text += "  ·  %s" % evo_def.get("display_name", evo_id)
 	if t.trait_id != "":
 		name_text += "  ·  %s" % t.trait_name
 	if t.flaw_id != "":

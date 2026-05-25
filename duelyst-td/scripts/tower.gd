@@ -53,6 +53,13 @@ var star_level: int = 1
 const SHARDS_FOR_2STAR := 2
 const SHARDS_FOR_3STAR := 3  # additional shards on top of the 2 spent for 2★
 
+# A6 evolution choices (merge_evolution_hybrid only).
+# pending_evolution_star: > 0 means the tower just promoted to this star and
+# is awaiting an evolution pick. evolution_choices: star_level -> evolution_id
+# (records what was chosen for inspect display + run summary).
+var pending_evolution_star: int = 0
+var evolution_choices: Dictionary = {}
+
 const EVO_THRESHOLDS := [15, 40, 80]
 const EVO_NAMES := ["", "Tempered", "Veteran", "Legendary"]
 
@@ -145,6 +152,17 @@ func _apply_stat_mods(mods: Dictionary) -> void:
 			slow_factor = 0.75
 	if mods.has("slow_factor_min") and slow_factor > float(mods["slow_factor_min"]):
 		slow_factor = float(mods["slow_factor_min"])
+	# A6 additional mults used by evolutions.
+	if mods.has("slow_duration_mult"):
+		slow_duration = slow_duration * float(mods["slow_duration_mult"])
+	if mods.has("slow_factor_mult") and slow_factor < 1.0:
+		# Multiply toward zero to amplify (slow_factor is the speed multiplier
+		# while slowed, so smaller = more slowed; mult < 1.0 strengthens).
+		slow_factor = max(0.1, slow_factor * float(mods["slow_factor_mult"]))
+	if mods.has("buff_damage_mult_mult") and buff_damage_mult > 0.0:
+		buff_damage_mult = buff_damage_mult * float(mods["buff_damage_mult_mult"])
+	if mods.has("buff_radius_mult") and buff_radius > 0.0:
+		buff_radius = buff_radius * float(mods["buff_radius_mult"])
 	# Veteran start_level: apply N upgrades up front.
 	if mods.has("start_level"):
 		var jumps: int = int(mods["start_level"])
@@ -224,8 +242,30 @@ func promote_star() -> bool:
 		"star_level": star_level,
 		"shards_consumed": cost,
 	})
+	# A6: in hybrid mode, if evolution branches exist for this base unit at
+	# the new star, mark the tower as pending an evolution pick. HUD reads
+	# this flag and surfaces the choice modal when the tower is inspected.
+	if RunConfig.growth_mode == "merge_evolution_hybrid":
+		if EvolutionManager.has_choices(unit_id, star_level):
+			pending_evolution_star = star_level
 	queue_redraw()
 	return true
+
+func apply_evolution(evo_def: Dictionary) -> void:
+	# A6: applies an EvolutionDef chosen by the player. Stat mods are the
+	# same shape as trait stat_mods (damage_mult, fire_rate_mult, range_mult,
+	# slow_duration_mult, slow_factor_mult, splash_radius_mult, buff_*_mult).
+	_apply_stat_mods(evo_def.get("stat_mods", {}))
+	# Record what the player picked at this star (for inspect display + summary).
+	evolution_choices[str(star_level)] = String(evo_def.get("id", ""))
+	pending_evolution_star = 0
+	RunLog.record("evolution_chosen", {
+		"unit": unit_id,
+		"instance_id": instance_id,
+		"star_level": star_level,
+		"evolution_id": evo_def.get("id", ""),
+	})
+	queue_redraw()
 
 func upgrade_cost() -> int:
 	var base_cost: float = cost * 0.75 * pow(1.4, level)
