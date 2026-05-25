@@ -7,6 +7,7 @@ extends Control
 const SETTINGS_SCRIPT := preload("res://scripts/content/duelyst_content_settings.gd")
 const SCANNER_SCRIPT := preload("res://scripts/content/duelyst_raw_scanner.gd")
 const CATEGORIZER_SCRIPT := preload("res://scripts/content/duelyst_categorizer.gd")
+const IMPORTER_SCRIPT := preload("res://scripts/content/duelyst_importer.gd")
 
 @onready var source_field: LineEdit = $Root/SettingsSection/VBox/SourceRow/SourceField
 @onready var save_btn: Button = $Root/SettingsSection/VBox/SourceRow/SaveBtn
@@ -15,6 +16,8 @@ const CATEGORIZER_SCRIPT := preload("res://scripts/content/duelyst_categorizer.g
 @onready var scan_btn: Button = $Root/ScanSection/VBox/ActionRow/ScanBtn
 @onready var categorize_btn: Button = $Root/ScanSection/VBox/ActionRow/CategorizeBtn
 @onready var open_output_btn: Button = $Root/ScanSection/VBox/ActionRow/OpenOutputBtn
+@onready var open_browser_btn: Button = $Root/ScanSection/VBox/ActionRow/OpenBrowserBtn
+@onready var import_btn: Button = $Root/ScanSection/VBox/ActionRow/ImportBtn
 @onready var result_label: RichTextLabel = $Root/ScanSection/VBox/ResultLabel
 @onready var back_btn: Button = $Root/TopBar/BackBtn
 
@@ -28,6 +31,8 @@ func _ready() -> void:
 	scan_btn.pressed.connect(_on_scan)
 	categorize_btn.pressed.connect(_on_categorize)
 	open_output_btn.pressed.connect(_on_show_outputs)
+	open_browser_btn.pressed.connect(_on_open_browser)
+	import_btn.pressed.connect(_on_import)
 	back_btn.pressed.connect(_on_back)
 	# Auto-validate on entry so the user sees the current state.
 	_on_validate()
@@ -85,6 +90,36 @@ func _on_show_outputs() -> void:
 
 func _on_back() -> void:
 	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+func _on_open_browser() -> void:
+	get_tree().change_scene_to_file("res://scenes/duelyst_content_browser.tscn")
+
+func _on_import() -> void:
+	result_label.text = "[i]Importing safe categories (icon, ui_image, map_tile, map_background, font) into res://assets/duelyst/ …[/i]"
+	await get_tree().process_frame
+	var t0: int = Time.get_ticks_msec()
+	var res: Dictionary = IMPORTER_SCRIPT.import_categories()
+	var elapsed: int = Time.get_ticks_msec() - t0
+	if not res.get("ok", false):
+		result_label.text = "[color=#ff8f8f][b]Import failed.[/b][/color]  %s" % res.get("message", "?")
+		return
+	var imported: Dictionary = res.get("imported", {})
+	var skipped: Dictionary = res.get("skipped", {})
+	var failed: Dictionary = res.get("failed", {})
+	var total_imp := 0
+	for k in imported: total_imp += int(imported[k])
+	var total_skip := 0
+	for k in skipped: total_skip += int(skipped[k])
+	var lines: Array[String] = []
+	lines.append("[color=#8fff8f][b]D3 import complete.[/b][/color]  %d imported / %d skipped in %d ms" % [total_imp, total_skip, elapsed])
+	lines.append("[color=#a0a0a8]Dest:[/color] %s" % res.get("dest_root", "?"))
+	lines.append("[color=#a0a0a8]Imported:[/color] %s" % JSON.stringify(imported))
+	lines.append("[color=#a0a0a8]Skipped (already up-to-date):[/color] %s" % JSON.stringify(skipped))
+	if failed.size() > 0:
+		lines.append("[color=#ffce6c]Failed:[/color] %s" % JSON.stringify(failed))
+	lines.append("")
+	lines.append("[color=#7a7a82]Restart the editor to let Godot auto-import the new files as proper resources.[/color]")
+	result_label.text = "\n".join(lines)
 
 func _render_last_run_summary() -> void:
 	var lines: Array[String] = []

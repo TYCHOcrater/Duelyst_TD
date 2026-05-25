@@ -1197,6 +1197,53 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — Content browser + Godot importer (Iterations D3 + D4)
+**Decision:** Land D3 (importer that copies selected categories into `res://assets/duelyst/<category>/`) and D4 (in-game content browser that previews images and plays audio across all 6055 cataloged assets). Browser uses path-agnostic loading (`Image.load_from_file` for images, `AudioStreamOggVorbis/MP3/WAV.load_from_file` for audio) so D3 is *optional* for browsing — every file in the source folder becomes browseable as soon as D1+D2 have run.
+**Why D3 + D4 together:** The milestone doc explicitly says "Do not skip D4" — without the browser, the 6055 cataloged assets are invisible. D3 (importer) and D4 (browser) target the same `catalog_categorized.json` and share a UI entry-point (the Content Hub). Bundling them avoids creating two near-identical hub revisions.
+**Why D3 only imports a safe-by-default subset:** `DuelystImporter.DEFAULT_CATEGORIES = ["icon", "ui_image", "map_tile", "map_background", "font"]`. We explicitly do NOT bulk-import unit/fx sprites because:
+1. The existing `tools/convert_units.py` pipeline produces `SpriteFrames` from `.plist` atlases — bulk-copying loose `.png`s would clash with that flow and confuse the editor.
+2. Unit/fx assets need the atlas/animation metadata to be useful; the importer doesn't process `.plist` metadata yet (D5-D6 will).
+3. UI / icons / fonts are flat images that Godot imports natively as Texture2D / FontFile — those benefit immediately from being in `res://`.
+**Why image preview uses `Image.load_from_file` instead of `load(res_path)`:** Files copied via D3 only become proper Godot-imported resources after a restart of the editor (Godot scans on launch). For D4 to be useful *immediately* after D1+D2, it has to read raw bytes from `abs_path`. `Image.load_from_file` doesn't go through Godot's import system — it reads PNG/JPG/WebP straight off disk and returns an `Image` we wrap in `ImageTexture.create_from_image`. Same pattern for audio: `AudioStreamOggVorbis/MP3/WAV.load_from_file` reads external paths directly.
+**Why .m4a audio shows "Preview unavailable":** Duelyst ships SFX/music as AAC-in-MP4 (`.m4a`). Godot 4 does NOT support AAC out of the box — only OGG, MP3, WAV. The browser detects `.m4a` and displays the limitation rather than crashing. A future iteration (or `tools/convert_sfx.py`) can transcode the 700 sfx files into OGG.
+**Why D3 writes to `res://assets/duelyst/` (not user://):** The whole point of D3 is to make assets *Godot-importable* — i.e. they become loadable as Texture2D / AudioStream via `load("res://...")`. user:// works for raw file reads but Godot doesn't run the import pipeline on user:// paths. Trade-off: D3 only works when running from the editor (or a debug build with the project dir writable). In an exported game `res://` is read-only and the import button fails with a clear message; that's correct — D3 is a dev-only tool, not a runtime feature.
+**Browser features (D4):**
+- Category buttons (toggle-style row): All, unit_sprite, unit_animation_data, fx_sprite, fx_animation_data, sfx, music, ui_image, icon, map_tile, map_background, font, unknown.
+- Search field: substring match across rel_path, category, faction, id.
+- Result count + 2000-entry display cap (filtered list always shows full count; truncates rendering for ItemList responsiveness).
+- Preview panel: file name, faction-colored entry, all metadata (category, faction, section hint, extension, size, readiness, id, abs_path), image preview (TextureRect) for visual categories, audio playback (AudioStreamPlayer + Play/Stop) for sfx/music.
+- Entry list color-codes faction (gold lyonar, red songhai, etc.) so the right-hand-side preview isn't the only faction signal.
+**Importer details (D3):**
+- Idempotent: per-entry check compares src/dest byte size; skips if equal.
+- Selective: `import_categories(categories: Array)` accepts a list; defaults to the safe 5.
+- Output: `res://assets/duelyst/<category>/<entry_id><ext>` (e.g. `res://assets/duelyst/icon/icons_icon_health_png.png`).
+- Report: `user://duelyst_content/import_report.json` with per-category imported / skipped / failed counts + a sample of paths written.
+- Restart prompt: hub message after import reminds the dev to restart Godot so the editor picks up the new files for auto-import.
+**Impact:**
+- New `scripts/content/duelyst_importer.gd` (~110 lines).
+- New `scripts/content/duelyst_content_browser.gd` (~200 lines).
+- New `scenes/duelyst_content_browser.tscn`.
+- `scenes/duelyst_content_hub.tscn` + `scripts/content/duelyst_content_hub.gd`: two new buttons in ActionRow — "Open browser (D4)" and "Import D3 — safe categories".
+**Test:** See "Manual Test Checklist - Iter D3+D4" below.
+
+---
+
+### Manual Test Checklist - Iter D3+D4 (Importer + browser)
+
+- [ ] From main menu → Duelyst Content → Run D1 + D2 (if not already run).
+- [ ] Click **Open browser (D4)**. Browser opens with category buttons across the top, search bar, two-pane split (entry list + preview panel).
+- [ ] Click **unit_sprite** category → list narrows to ~820 entries.
+- [ ] Type "lyonar" in search → list narrows further. Faction-colored entries (gold for lyonar) appear.
+- [ ] Click an entry like `units/f1_silverguardsquire.png` → right pane shows metadata + the actual sprite renders in the preview area.
+- [ ] Click **sfx** category → search "shield" → click an entry → if `.ogg` or `.mp3`, Play button works. If `.m4a` (most Duelyst SFX), status shows "Preview unavailable" gracefully.
+- [ ] Switch to **icon** category → select any icon → image preview renders.
+- [ ] Back to hub. Click **Import D3 — safe categories**. After ~30 seconds, status shows "D3 import complete. N imported / N skipped" with per-category breakdown.
+- [ ] Open the Godot project folder → `duelyst-td/assets/duelyst/` now contains subdirs `icon/`, `ui_image/`, `map_tile/`, `map_background/`, `font/` with files inside.
+- [ ] Re-click Import → second run reports all entries as skipped (already up-to-date).
+- [ ] Restart Godot editor → it auto-imports the new files (you'll see progress in the editor). After reopening, `res://assets/duelyst/icon/...` files can be referenced as Texture2D via `load(...)`.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):
