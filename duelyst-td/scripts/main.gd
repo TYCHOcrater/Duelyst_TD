@@ -58,6 +58,11 @@ func _ready() -> void:
 	placement.bind_grid(board.grid)
 	placement.bind_session(session)
 	placement.path = board.enemy_path
+	# C5: camera gets a board reference so 1..4 / TAB hotkeys can focus
+	# routes and overview the map.
+	var cam: Node = world.get_node_or_null("Camera2D")
+	if cam and cam.has_method("bind_board"):
+		cam.bind_board(board)
 	phase_controller = Node.new()
 	phase_controller.set_script(PHASE_SCRIPT)
 	phase_controller.name = "PhaseController"

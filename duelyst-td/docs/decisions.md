@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C5: co-op camera and route overview
+**Decision:** Camera2D gets `bind_board(board)`, `_focus_route_index(i)`, and `focus_overview()`. Keys **1-4** tween the camera to the centroid of route i at a route zoom (1.4x); **TAB** fits the whole grid in the viewport (with a 10% margin, clamped to camera limits). Tween uses TRANS_SINE/EASE_OUT, 0.35s, position+zoom in parallel.
+**Why:** C-track next step; makes the 4-quadrant battleground actually navigable. Pressing 1 → north route, 2 → east, etc., is the same idiom most co-op TDs use. TAB gives the co-op overview the addendum's acceptance criterion calls out.
+**Impact:** `scripts/camera_controller.gd` (board ref + 4 new methods + KEY_1..KEY_4/KEY_TAB handler), `scripts/main.gd` (cam.bind_board after map load).
+**Test:** `--use-battleground` boots clean. In-engine: press 1/2/3/4 to fly between the cardinal routes; press TAB to pull back and see all four lanes at once. Existing wheel-zoom + RMB-pan still work and can override the tweened framing.
+
+---
+
 ## 2026-05-25 — Iter C4: synced co-op phases
 **Decision:** PhaseController.confirm_start_wave is no longer the entry point — the new `set_slot_ready(slot_id, ready)` API per-slot gates wave start on all slots being ready. StartWaveCommand now marks the local slot ready instead of starting directly; in solo this is a 1-slot all-ready → wave starts (same UX as before). New `slot_ready_changed(slot_id, ready)` signal for HUDs to render a waiting indicator. F5 debug force-start bypasses the gate. Ready flags clear automatically on combat start.
 **Why:** C-track next step. The wave-start button is the central sync point of any co-op TD; building the gate now (before multiplayer presence) keeps solo behavior intact while letting C5+ render ready states and C12 wire it across the network.
