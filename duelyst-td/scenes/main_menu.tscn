@@ -21,29 +21,20 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 
 [node name="VBox" type="VBoxContainer" parent="CenterContainer"]
-custom_minimum_size = Vector2(520, 0)
-theme_override_constants/separation = 14
+custom_minimum_size = Vector2(560, 0)
+theme_override_constants/separation = 6
 
 [node name="Title" type="Label" parent="CenterContainer/VBox"]
 text = "Shardstorm TD"
 horizontal_alignment = 1
 theme_override_fonts/font = ExtResource("2_tgp")
-theme_override_font_sizes/font_size = 64
+theme_override_font_sizes/font_size = 44
 
 [node name="Status" type="Label" parent="CenterContainer/VBox"]
 text = "Project Loaded"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 modulate = Color(0.55, 1, 0.6, 1)
-
-[node name="VersionInfo" type="Label" parent="CenterContainer/VBox"]
-text = "Stage 0 — Project Discipline"
-horizontal_alignment = 1
-theme_override_font_sizes/font_size = 13
-modulate = Color(0.7, 0.7, 0.78, 1)
-
-[node name="Spacer1" type="Control" parent="CenterContainer/VBox"]
-custom_minimum_size = Vector2(0, 12)
 
 [node name="SeedRow" type="HBoxContainer" parent="CenterContainer/VBox"]
 theme_override_constants/separation = 8
@@ -109,63 +100,70 @@ modulate = Color(0.65, 0.65, 0.72, 1)
 
 [node name="NewRunButton" type="Button" parent="CenterContainer/VBox"]
 text = "New Run"
-custom_minimum_size = Vector2(0, 56)
-theme_override_font_sizes/font_size = 24
+custom_minimum_size = Vector2(0, 44)
+theme_override_font_sizes/font_size = 20
 
 [node name="DailySeparator" type="HSeparator" parent="CenterContainer/VBox"]
 
 [node name="DailyHeader" type="Label" parent="CenterContainer/VBox"]
 text = "Daily Storm"
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 14
 modulate = Color(0.85, 0.95, 1.0, 1)
 
 [node name="DailyInfo" type="Label" parent="CenterContainer/VBox"]
 text = ""
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 modulate = Color(0.75, 0.75, 0.8, 1)
 
 [node name="DailyBest" type="Label" parent="CenterContainer/VBox"]
 text = ""
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 12
+theme_override_font_sizes/font_size = 11
 modulate = Color(0.85, 0.85, 0.9, 1)
 
 [node name="PlayDailyButton" type="Button" parent="CenterContainer/VBox"]
 text = "Play Daily"
-custom_minimum_size = Vector2(0, 44)
-theme_override_font_sizes/font_size = 18
+custom_minimum_size = Vector2(0, 34)
+theme_override_font_sizes/font_size = 16
 
 [node name="RecentLabel" type="RichTextLabel" parent="CenterContainer/VBox"]
 bbcode_enabled = true
 fit_content = true
 scroll_active = false
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 36)
 text = ""
 
 [node name="DeterminismSeparator" type="HSeparator" parent="CenterContainer/VBox"]
 
-[node name="DeterminismButton" type="Button" parent="CenterContainer/VBox"]
-text = "Run Determinism Test"
-custom_minimum_size = Vector2(0, 36)
+[node name="SecondaryRow" type="HBoxContainer" parent="CenterContainer/VBox"]
+theme_override_constants/separation = 6
+
+[node name="DeterminismButton" type="Button" parent="CenterContainer/VBox/SecondaryRow"]
+text = "Determinism"
+custom_minimum_size = Vector2(0, 26)
+size_flags_horizontal = 3
+
+[node name="MasteryButton" type="Button" parent="CenterContainer/VBox/SecondaryRow"]
+text = "Mastery"
+custom_minimum_size = Vector2(0, 26)
+size_flags_horizontal = 3
+
+[node name="DuelystContentButton" type="Button" parent="CenterContainer/VBox/SecondaryRow"]
+text = "Duelyst Content"
+custom_minimum_size = Vector2(0, 26)
+size_flags_horizontal = 3
+
+[node name="QuitButton" type="Button" parent="CenterContainer/VBox/SecondaryRow"]
+text = "Quit"
+custom_minimum_size = Vector2(0, 26)
+size_flags_horizontal = 3
 
 [node name="DeterminismResult" type="Label" parent="CenterContainer/VBox"]
 text = ""
 horizontal_alignment = 1
-theme_override_font_sizes/font_size = 13
-
-[node name="MasteryButton" type="Button" parent="CenterContainer/VBox"]
-text = "Unit Mastery"
-custom_minimum_size = Vector2(0, 30)
-
-[node name="DuelystContentButton" type="Button" parent="CenterContainer/VBox"]
-text = "Duelyst Content (D0-D2)"
-custom_minimum_size = Vector2(0, 30)
-
-[node name="QuitButton" type="Button" parent="CenterContainer/VBox"]
-text = "Quit"
-custom_minimum_size = Vector2(0, 30)
+theme_override_font_sizes/font_size = 12
 
 [node name="MasteryPanel" type="Panel" parent="."]
 visible = false
