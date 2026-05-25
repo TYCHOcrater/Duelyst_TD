@@ -307,6 +307,7 @@ func _run_generator_smoke_test() -> void:
 func _run_content_pipeline_smoke_test() -> void:
 	const Scanner = preload("res://scripts/content/duelyst_raw_scanner.gd")
 	const Categorizer = preload("res://scripts/content/duelyst_categorizer.gd")
+	const UnitCatalogBuilder = preload("res://scripts/content/duelyst_unit_catalog_builder.gd")
 	var t0: int = Time.get_ticks_msec()
 	var scan_res: Dictionary = Scanner.scan()
 	var scan_ms: int = Time.get_ticks_msec() - t0
@@ -328,6 +329,18 @@ func _run_content_pipeline_smoke_test() -> void:
 	print("D2 categorize PASS: %d entries in %d ms" % [int(cc.get("total", 0)), cat_ms])
 	print("  by_category: %s" % JSON.stringify(cc.get("by_category", {})))
 	print("  by_faction: %s" % JSON.stringify(cc.get("by_faction", {})))
+	t0 = Time.get_ticks_msec()
+	var uc_res: Dictionary = UnitCatalogBuilder.build()
+	var uc_ms: int = Time.get_ticks_msec() - t0
+	if not uc_res.get("ok", false):
+		print("D6 BUILD FAIL: %s" % uc_res.get("message", "?"))
+		get_tree().quit(1)
+		return
+	print("D6 unit catalog PASS: %d units in %d ms" % [int(uc_res.get("total_units", 0)), uc_ms])
+	print("  with_animations: %d  ·  sprite_frames_ready: %d" % [
+		int(uc_res.get("with_animations", 0)), int(uc_res.get("sprite_frames_ready", 0)),
+	])
+	print("  by_faction: %s" % JSON.stringify(uc_res.get("by_faction", {})))
 	get_tree().quit()
 
 func _on_quit() -> void:

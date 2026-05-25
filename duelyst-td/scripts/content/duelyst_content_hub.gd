@@ -8,6 +8,7 @@ const SETTINGS_SCRIPT := preload("res://scripts/content/duelyst_content_settings
 const SCANNER_SCRIPT := preload("res://scripts/content/duelyst_raw_scanner.gd")
 const CATEGORIZER_SCRIPT := preload("res://scripts/content/duelyst_categorizer.gd")
 const IMPORTER_SCRIPT := preload("res://scripts/content/duelyst_importer.gd")
+const UNIT_CATALOG_SCRIPT := preload("res://scripts/content/duelyst_unit_catalog_builder.gd")
 
 @onready var source_field: LineEdit = $Root/SettingsSection/VBox/SourceRow/SourceField
 @onready var save_btn: Button = $Root/SettingsSection/VBox/SourceRow/SaveBtn
@@ -18,6 +19,7 @@ const IMPORTER_SCRIPT := preload("res://scripts/content/duelyst_importer.gd")
 @onready var open_output_btn: Button = $Root/ScanSection/VBox/ActionRow/OpenOutputBtn
 @onready var open_browser_btn: Button = $Root/ScanSection/VBox/ActionRow/OpenBrowserBtn
 @onready var import_btn: Button = $Root/ScanSection/VBox/ActionRow/ImportBtn
+@onready var build_unit_catalog_btn: Button = $Root/ScanSection/VBox/ActionRow/BuildUnitCatalogBtn
 @onready var result_label: RichTextLabel = $Root/ScanSection/VBox/ResultLabel
 @onready var back_btn: Button = $Root/TopBar/BackBtn
 
@@ -33,6 +35,7 @@ func _ready() -> void:
 	open_output_btn.pressed.connect(_on_show_outputs)
 	open_browser_btn.pressed.connect(_on_open_browser)
 	import_btn.pressed.connect(_on_import)
+	build_unit_catalog_btn.pressed.connect(_on_build_unit_catalog)
 	back_btn.pressed.connect(_on_back)
 	# Auto-validate on entry so the user sees the current state.
 	_on_validate()
@@ -119,6 +122,30 @@ func _on_import() -> void:
 		lines.append("[color=#ffce6c]Failed:[/color] %s" % JSON.stringify(failed))
 	lines.append("")
 	lines.append("[color=#7a7a82]Restart the editor to let Godot auto-import the new files as proper resources.[/color]")
+	result_label.text = "\n".join(lines)
+
+func _on_build_unit_catalog() -> void:
+	result_label.text = "[i]Building unit catalog from categorized entries …[/i]"
+	await get_tree().process_frame
+	var t0: int = Time.get_ticks_msec()
+	var res: Dictionary = UNIT_CATALOG_SCRIPT.build()
+	var elapsed: int = Time.get_ticks_msec() - t0
+	if not res.get("ok", false):
+		result_label.text = "[color=#ff8f8f][b]D6 build failed.[/b][/color]  %s" % res.get("message", "?")
+		return
+	var lines: Array[String] = []
+	lines.append("[color=#8fff8f][b]D6 unit catalog built.[/b][/color]  %d units in %d ms" % [int(res.get("total_units", 0)), elapsed])
+	lines.append("  with animations:        %d" % int(res.get("with_animations", 0)))
+	lines.append("  SpriteFrames already ready: %d" % int(res.get("sprite_frames_ready", 0)))
+	lines.append("[color=#a0a0a8]By faction:[/color]")
+	var by_faction: Dictionary = res.get("by_faction", {})
+	var keys: Array = by_faction.keys()
+	keys.sort()
+	for k in keys:
+		var label: String = k if k != "" else "(unset)"
+		lines.append("  %-12s  %d" % [label, int(by_faction[k])])
+	lines.append("")
+	lines.append("[color=#a0a0a8]Output:[/color]  %s" % res.get("out_path", "?"))
 	result_label.text = "\n".join(lines)
 
 func _render_last_run_summary() -> void:
