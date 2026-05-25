@@ -1,0 +1,12 @@
+{
+  "id": "sun_aegis",
+  "kind": "relic",
+  "display_name": "Sun Aegis",
+  "rarity": "common",
+  "tags": ["defensive"],
+  "run_adjective": "Aegis-Bound",
+  "boon": "First leak each wave does 0 damage",
+  "effects": [
+    {"type": "ignore_first_leak"}
+  ]
+}

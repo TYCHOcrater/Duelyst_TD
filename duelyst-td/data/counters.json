@@ -1,0 +1,52 @@
+{
+  "swarm": {
+    "label": "Swarm",
+    "color": [0.85, 0.5, 1.0],
+    "hint": "Splash damage shreds groups (Pyromancer, Firebreather)."
+  },
+  "fast": {
+    "label": "Fast",
+    "color": [1.0, 0.55, 0.45],
+    "hint": "Slow effects buy your towers time (Snowchaser, Frost Dryad)."
+  },
+  "tank": {
+    "label": "Tank",
+    "color": [0.55, 0.85, 1.0],
+    "hint": "Burst single-target chews through big HP pools (Caster, Kaido Assassin)."
+  },
+  "armored": {
+    "label": "Armored",
+    "color": [1.0, 0.85, 0.4],
+    "hint": "Arcane / spirit / frost cuts through armor; strike is heavily reduced."
+  },
+  "regen": {
+    "label": "Regen",
+    "color": [0.55, 1.0, 0.65],
+    "hint": "Bursts kill before they heal back; slow trickle damage gets out-healed."
+  },
+  "shielded": {
+    "label": "Shielded",
+    "color": [0.55, 0.9, 1.0],
+    "hint": "Fast multi-hit eats shields (Archer, Azurite Lion). Single big hits waste."
+  },
+  "boss": {
+    "label": "BOSS",
+    "color": [1.0, 0.5, 0.3],
+    "hint": "Focus the boss with single-target casters; deal with adds via splash."
+  },
+  "splitter": {
+    "label": "Splitter",
+    "color": [0.65, 1.0, 0.55],
+    "hint": "Splits into smaller enemies on death. Splash damage cleans the brood; otherwise a single-target tower kills the mother and then has to deal with all the children."
+  },
+  "silence": {
+    "label": "Silence",
+    "color": [0.55, 0.85, 1.0],
+    "hint": "Towers periodically stop firing for ~1.5s. Front-load damage between silences; fast multi-hit recovers faster than slow-rate burst casters."
+  },
+  "corruption": {
+    "label": "Corruption",
+    "color": [0.75, 0.4, 1.0],
+    "hint": "Every leak corrupts a tile near the core; towers on corrupted tiles fire at 70% rate. Don't leak. If you do, sell from the corrupted tile."
+  }
+}

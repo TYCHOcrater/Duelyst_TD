@@ -1,0 +1,21 @@
+{
+  "id": "diamond_golem",
+  "display_name": "Diamond Golem",
+  "asset_profile_id": "neutral_diamondgolem",
+  "family": "tank",
+  "tags": ["tank", "neutral", "golem"],
+  "hp": 220,
+  "speed": 38.0,
+  "armor": 0,
+  "physical_resist": 0.0,
+  "magic_resist": 0.0,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 30,
+  "leak_damage": 3,
+  "scale": 1.25,
+  "tint": [0.8, 0.95, 1.0],
+  "hp_bar_offset": -70,
+  "hp_bar_width": 80,
+  "description": "Huge HP, no defenses. Burst damage and concentrated fire chew through it; chip damage takes forever."
+}

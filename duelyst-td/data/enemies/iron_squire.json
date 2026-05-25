@@ -1,0 +1,21 @@
+{
+  "id": "iron_squire",
+  "display_name": "Iron Squire",
+  "asset_profile_id": "f1_silverguardsquire",
+  "family": "armored",
+  "tags": ["armored", "lyonar"],
+  "hp": 70,
+  "speed": 60.0,
+  "armor": 4,
+  "physical_resist": 0.30,
+  "magic_resist": 0.0,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 12,
+  "leak_damage": 1,
+  "scale": 1.0,
+  "tint": [1.0, 0.95, 0.7],
+  "hp_bar_offset": -55,
+  "hp_bar_width": 55,
+  "description": "Plated. Strike damage is heavily reduced (armor 4, -30% phys). Arcane and frost cut through cleanly."
+}

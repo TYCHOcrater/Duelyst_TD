@@ -1,0 +1,11 @@
+{
+  "id": "slow_witted",
+  "display_name": "Slow-Witted",
+  "rarity": "common",
+  "is_flaw": true,
+  "tags": ["combat", "tempo"],
+  "description": "-30% fire rate. Slower trigger reflex.",
+  "stat_mods": {
+    "fire_rate_mult": 0.7
+  }
+}

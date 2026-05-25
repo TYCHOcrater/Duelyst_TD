@@ -1,0 +1,22 @@
+{
+  "id": "black_solus",
+  "display_name": "Black Solus",
+  "asset_profile_id": "f4_blacksolus",
+  "faction": "abyssian",
+  "roles": ["support"],
+  "keywords": ["aura"],
+  "tags": ["abyssian", "support", "buff"],
+  "cost": 9,
+  "range": 0,
+  "damage": 0,
+  "fire_rate": 0.1,
+  "damage_type": "spirit",
+  "targeting": "first",
+  "projectile_speed": 0,
+  "projectile_color": [0.6, 0.3, 0.9],
+  "buff_radius": 220,
+  "buff_damage_mult": 0.35,
+  "shoot_sfx": "",
+  "timing": "support_enabler",
+  "description": "Wraithling commander. Larger and stronger aura than Sunbreaker (+35%) but no attack of its own."
+}

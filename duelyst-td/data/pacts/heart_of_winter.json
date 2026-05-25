@@ -1,0 +1,14 @@
+{
+  "id": "heart_of_winter",
+  "kind": "pact",
+  "display_name": "Heart of Winter",
+  "rarity": "rare",
+  "tags": ["control", "vanar"],
+  "run_adjective": "Heart-Frozen",
+  "boon": "Slow durations last +50% longer",
+  "curse": "Enemies have +20% HP",
+  "effects": [
+    {"type": "slow_duration_mult", "mult": 1.5},
+    {"type": "enemy_hp_mult", "mult": 1.20}
+  ]
+}

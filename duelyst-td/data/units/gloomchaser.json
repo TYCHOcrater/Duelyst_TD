@@ -1,0 +1,20 @@
+{
+  "id": "gloomchaser",
+  "display_name": "Gloomchaser",
+  "asset_profile_id": "f4_gloomchaser",
+  "faction": "abyssian",
+  "roles": ["striker", "starter"],
+  "keywords": ["deathwatch"],
+  "tags": ["abyssian", "single_target", "spirit"],
+  "cost": 6,
+  "range": 170,
+  "damage": 6,
+  "fire_rate": 1.5,
+  "damage_type": "spirit",
+  "targeting": "first",
+  "projectile_speed": 540,
+  "projectile_color": [0.65, 0.4, 0.95],
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "early_hold",
+  "description": "Cheap shadowy striker. Spirit damage; works in swarm-kill builds."
+}

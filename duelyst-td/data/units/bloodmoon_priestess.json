@@ -1,0 +1,31 @@
+{
+  "id": "bloodmoon_priestess",
+  "display_name": "Bloodmoon Priestess",
+  "asset_profile_id": "f4_bloodmoon",
+  "faction": "abyssian",
+  "roles": [
+    "caster"
+  ],
+  "keywords": [
+    "deathwatch"
+  ],
+  "tags": [
+    "abyssian",
+    "magic"
+  ],
+  "cost": 9,
+  "range": 200,
+  "damage": 7,
+  "fire_rate": 1.1,
+  "damage_type": "spirit",
+  "targeting": "first",
+  "projectile_speed": 480,
+  "projectile_color": [
+    0.7,
+    0.3,
+    0.95
+  ],
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "support_enabler",
+  "description": "Soul caster. Sustained spirit damage."
+}

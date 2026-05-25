@@ -1,0 +1,12 @@
+{
+  "id": "mercy_sigil",
+  "kind": "relic",
+  "display_name": "Mercy Sigil",
+  "rarity": "common",
+  "tags": ["combat"],
+  "run_adjective": "Merciful",
+  "boon": "Enemies have 10% less HP",
+  "effects": [
+    {"type": "enemy_hp_mult", "mult": 0.9}
+  ]
+}

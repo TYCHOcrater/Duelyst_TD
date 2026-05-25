@@ -1,0 +1,55 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Duelyst_TD"
+run/main_scene="res://scenes/main_menu.tscn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+GameState="*res://scripts/game_state.gd"
+AudioManager="*res://scripts/audio_manager.gd"
+SessionRng="*res://scripts/session_rng.gd"
+UnitFactory="*res://scripts/unit_factory.gd"
+EnemyFactory="*res://scripts/enemy_factory.gd"
+RunConfig="*res://scripts/run_config.gd"
+RunLog="*res://scripts/run_log.gd"
+CommandBus="*res://scripts/command_bus.gd"
+PactManager="*res://scripts/pact_manager.gd"
+RelicManager="*res://scripts/relic_manager.gd"
+TraitManager="*res://scripts/trait_manager.gd"
+FlawManager="*res://scripts/flaw_manager.gd"
+Daily="*res://scripts/daily.gd"
+Mastery="*res://scripts/mastery.gd"
+WaveEffects="*res://scripts/wave_effects.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
+mouse_cursor/custom_image="res://assets/ui/cursor.png"
+mouse_cursor/custom_image_hotspot=Vector2(8, 6)
+
+[gui]
+
+theme/custom="res://assets/ui/duelyst_theme.tres"
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"

@@ -1,0 +1,21 @@
+{
+  "id": "sun_priest",
+  "display_name": "Sun-Priest",
+  "asset_profile_id": "f1_silverguardsquire",
+  "family": "fast",
+  "tags": ["anti_frost", "lyonar", "elite"],
+  "hp": 95,
+  "speed": 110.0,
+  "armor": 1,
+  "physical_resist": 0.0,
+  "magic_resist": 0.60,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 18,
+  "leak_damage": 2,
+  "scale": 1.0,
+  "tint": [1.0, 1.0, 0.7],
+  "hp_bar_offset": -55,
+  "hp_bar_width": 60,
+  "description": "Fast holy unit, 60% magic resist. Frost slows still apply but the damage is cut. Bring physical."
+}

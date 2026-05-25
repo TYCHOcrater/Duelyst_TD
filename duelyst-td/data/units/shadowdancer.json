@@ -1,0 +1,21 @@
+{
+  "id": "shadowdancer",
+  "display_name": "Shadowdancer",
+  "asset_profile_id": "f4_shadowdancer",
+  "faction": "abyssian",
+  "roles": ["caster"],
+  "keywords": ["deathwatch"],
+  "tags": ["abyssian", "aoe", "spirit"],
+  "cost": 9,
+  "range": 190,
+  "damage": 7,
+  "fire_rate": 0.9,
+  "damage_type": "spirit",
+  "targeting": "first",
+  "projectile_speed": 460,
+  "projectile_color": [0.75, 0.4, 1.0],
+  "splash_radius": 55,
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "midgame_spike",
+  "description": "Drain pulse splash. Soft AoE; cuts down armored squires when stacked."
+}

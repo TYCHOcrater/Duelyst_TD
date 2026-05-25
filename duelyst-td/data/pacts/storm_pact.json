@@ -1,0 +1,13 @@
+{
+  "id": "storm_pact",
+  "display_name": "Storm Pact",
+  "rarity": "rare",
+  "tags": ["combat", "tempo"],
+  "run_adjective": "Stormbound",
+  "boon": "+3 gold per enemy killed",
+  "curse": "Enemies move +20% faster",
+  "effects": [
+    {"type": "kill_gold_bonus", "amount": 3},
+    {"type": "enemy_speed_mult", "mult": 1.20}
+  ]
+}

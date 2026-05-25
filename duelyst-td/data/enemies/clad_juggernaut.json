@@ -1,0 +1,21 @@
+{
+  "id": "clad_juggernaut",
+  "display_name": "Clad Juggernaut",
+  "asset_profile_id": "neutral_diamondgolem",
+  "family": "armored",
+  "tags": ["armored", "anti_burst", "elite"],
+  "hp": 240,
+  "speed": 38.0,
+  "armor": 8,
+  "physical_resist": 0.50,
+  "magic_resist": 0.20,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 32,
+  "leak_damage": 3,
+  "scale": 1.30,
+  "tint": [0.7, 0.7, 0.85],
+  "hp_bar_offset": -75,
+  "hp_bar_width": 90,
+  "description": "Plated golem variant. 50% physical resist + 8 armor punishes strike-heavy Songhai burst builds. Bring arcane or frost."
+}

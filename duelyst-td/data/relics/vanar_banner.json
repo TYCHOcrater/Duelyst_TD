@@ -1,0 +1,12 @@
+{
+  "id": "vanar_banner",
+  "kind": "relic",
+  "display_name": "Vanar Banner",
+  "rarity": "common",
+  "tags": ["control", "vanar"],
+  "run_adjective": "Banner-Bearer",
+  "boon": "Slow durations last +30% longer",
+  "effects": [
+    {"type": "slow_duration_mult", "mult": 1.3}
+  ]
+}

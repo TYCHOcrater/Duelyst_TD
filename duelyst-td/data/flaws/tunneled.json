@@ -1,0 +1,11 @@
+{
+  "id": "tunneled",
+  "display_name": "Tunneled",
+  "rarity": "common",
+  "is_flaw": true,
+  "tags": ["positioning"],
+  "description": "-25% range. Sees only what's near.",
+  "stat_mods": {
+    "range_mult": 0.75
+  }
+}

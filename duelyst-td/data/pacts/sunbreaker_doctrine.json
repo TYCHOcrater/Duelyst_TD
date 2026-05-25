@@ -1,0 +1,13 @@
+{
+  "id": "sunbreaker_doctrine",
+  "display_name": "Sunbreaker Doctrine",
+  "rarity": "rare",
+  "tags": ["defensive"],
+  "run_adjective": "Sunbreaker",
+  "boon": "First leak each wave does 0 damage",
+  "curse": "Enemies gain +10% HP",
+  "effects": [
+    {"type": "ignore_first_leak"},
+    {"type": "enemy_hp_mult", "mult": 1.10}
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "frostiva",
+  "display_name": "Frostiva",
+  "asset_profile_id": "f6_frostiva",
+  "faction": "vanar",
+  "roles": ["caster"],
+  "keywords": ["frost"],
+  "tags": ["vanar", "magic", "control"],
+  "cost": 10,
+  "range": 220,
+  "damage": 12,
+  "fire_rate": 0.7,
+  "damage_type": "frost",
+  "targeting": "first",
+  "projectile_speed": 450,
+  "projectile_color": [0.55, 0.85, 1.0],
+  "slow_duration": 1.2,
+  "slow_factor": 0.55,
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "midgame_spike",
+  "description": "Heavy frost caster. High damage + meaningful slow on every hit."
+}

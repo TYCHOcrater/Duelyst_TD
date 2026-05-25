@@ -1,0 +1,13 @@
+{
+  "id": "echo_reliquary",
+  "kind": "relic",
+  "display_name": "Echo Reliquary",
+  "rarity": "rare",
+  "tags": ["economy", "abyssian"],
+  "run_adjective": "Reliquary-Touched",
+  "boon": "+2 gold per kill and +1 gold each planning phase",
+  "effects": [
+    {"type": "kill_gold_bonus", "amount": 2},
+    {"type": "wave_gold_bonus", "amount": 1}
+  ]
+}

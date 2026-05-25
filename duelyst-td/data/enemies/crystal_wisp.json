@@ -1,0 +1,21 @@
+{
+  "id": "crystal_wisp",
+  "display_name": "Crystal Wisp",
+  "asset_profile_id": "f6_evilcrystalwisp",
+  "family": "shielded",
+  "tags": ["shielded", "vanar", "magic_resist"],
+  "hp": 55,
+  "speed": 65.0,
+  "armor": 0,
+  "physical_resist": 0.0,
+  "magic_resist": 0.50,
+  "regen_per_sec": 0.0,
+  "shield_hp": 60,
+  "gold_reward": 14,
+  "leak_damage": 1,
+  "scale": 1.0,
+  "tint": [0.65, 0.85, 1.0],
+  "hp_bar_offset": -55,
+  "hp_bar_width": 60,
+  "description": "60 HP shield absorbs the first hits; underneath, magic damage is halved. Physical multi-hits work best."
+}

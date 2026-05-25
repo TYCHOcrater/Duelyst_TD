@@ -1,0 +1,20 @@
+{
+  "id": "chakri_avatar",
+  "display_name": "Chakri Avatar",
+  "asset_profile_id": "f2_chakriavatar",
+  "faction": "songhai",
+  "roles": ["striker"],
+  "keywords": ["celerity"],
+  "tags": ["songhai", "physical", "burst"],
+  "cost": 8,
+  "range": 170,
+  "damage": 5,
+  "fire_rate": 2.6,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 620,
+  "projectile_color": [1.0, 0.45, 0.45],
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "midgame_spike",
+  "description": "Rapid Songhai striker. Highest fire rate in the roster after Azurite Lion. Multi-hit eats shields."
+}

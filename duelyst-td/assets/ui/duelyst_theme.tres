@@ -1,0 +1,128 @@
+[gd_resource type="Theme" load_steps=11 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/Lato-Regular.ttf" id="1_lato"]
+[ext_resource type="FontFile" path="res://assets/fonts/Lato-Bold.ttf" id="2_lato_bold"]
+[ext_resource type="FontFile" path="res://assets/fonts/TrumpGothicPro-Bold-webfont.ttf" id="3_tgp"]
+[ext_resource type="Texture2D" path="res://assets/ui/frames/button_normal.png" id="4_btn_n"]
+[ext_resource type="Texture2D" path="res://assets/ui/frames/button_hover.png" id="5_btn_h"]
+[ext_resource type="Texture2D" path="res://assets/ui/frames/button_pressed.png" id="6_btn_p"]
+
+[sub_resource type="StyleBoxFlat" id="panel_box"]
+bg_color = Color(0.08, 0.1, 0.15, 0.94)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.55, 0.45, 0.22, 0.85)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+content_margin_left = 12.0
+content_margin_top = 8.0
+content_margin_right = 12.0
+content_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxFlat" id="bottom_bar_box"]
+bg_color = Color(0.05, 0.06, 0.1, 0.97)
+border_width_top = 3
+border_color = Color(0.65, 0.55, 0.3, 0.78)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+
+[sub_resource type="StyleBoxFlat" id="card_box"]
+bg_color = Color(0.12, 0.13, 0.18, 0.88)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.55, 0.5, 0.35, 0.55)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 6.0
+content_margin_top = 6.0
+content_margin_right = 6.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="btn_normal"]
+texture = ExtResource("4_btn_n")
+texture_margin_left = 30.0
+texture_margin_top = 14.0
+texture_margin_right = 30.0
+texture_margin_bottom = 14.0
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="btn_hover"]
+texture = ExtResource("5_btn_h")
+texture_margin_left = 30.0
+texture_margin_top = 14.0
+texture_margin_right = 30.0
+texture_margin_bottom = 14.0
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxTexture" id="btn_pressed"]
+texture = ExtResource("6_btn_p")
+texture_margin_left = 30.0
+texture_margin_top = 14.0
+texture_margin_right = 30.0
+texture_margin_bottom = 14.0
+content_margin_left = 16.0
+content_margin_top = 6.0
+content_margin_right = 16.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="btn_disabled"]
+bg_color = Color(0.1, 0.12, 0.16, 0.7)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.32, 0.32, 0.35, 0.5)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 12.0
+content_margin_top = 4.0
+content_margin_right = 12.0
+content_margin_bottom = 4.0
+
+[sub_resource type="StyleBoxFlat" id="btn_focus"]
+draw_center = false
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1.0, 0.9, 0.5, 0.85)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[resource]
+default_font = ExtResource("1_lato")
+default_font_size = 13
+Label/fonts/font = ExtResource("1_lato")
+Button/fonts/font = ExtResource("2_lato_bold")
+Button/colors/font_color = Color(1, 0.95, 0.78, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(0.85, 0.82, 0.6, 1)
+Button/colors/font_disabled_color = Color(0.5, 0.5, 0.55, 1)
+Button/styles/normal = SubResource("btn_normal")
+Button/styles/hover = SubResource("btn_hover")
+Button/styles/pressed = SubResource("btn_pressed")
+Button/styles/disabled = SubResource("btn_disabled")
+Button/styles/focus = SubResource("btn_focus")
+LineEdit/fonts/font = ExtResource("1_lato")
+RichTextLabel/fonts/normal_font = ExtResource("1_lato")
+RichTextLabel/fonts/bold_font = ExtResource("2_lato_bold")
+Panel/styles/panel = SubResource("panel_box")
+PanelContainer/styles/panel = SubResource("card_box")

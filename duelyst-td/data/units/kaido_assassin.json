@@ -1,0 +1,32 @@
+{
+  "id": "kaido_assassin",
+  "display_name": "Kaido Assassin",
+  "asset_profile_id": "f2_twilightfox",
+  "faction": "songhai",
+  "roles": [
+    "finisher"
+  ],
+  "keywords": [
+    "backstab"
+  ],
+  "tags": [
+    "songhai",
+    "physical",
+    "burst"
+  ],
+  "cost": 9,
+  "range": 160,
+  "damage": 14,
+  "fire_rate": 0.85,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 620,
+  "projectile_color": [
+    1.0,
+    0.3,
+    0.3
+  ],
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "boss_killer",
+  "description": "High single-target burst. Slow rate."
+}

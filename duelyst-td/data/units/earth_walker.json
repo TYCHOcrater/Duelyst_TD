@@ -1,0 +1,32 @@
+{
+  "id": "earth_walker",
+  "display_name": "Earth Walker",
+  "asset_profile_id": "f5_earthwalker",
+  "faction": "magmar",
+  "roles": [
+    "bruiser"
+  ],
+  "keywords": [
+    "grow"
+  ],
+  "tags": [
+    "magmar",
+    "physical",
+    "scaler"
+  ],
+  "cost": 8,
+  "range": 110,
+  "damage": 7,
+  "fire_rate": 1.0,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 500,
+  "projectile_color": [
+    0.95,
+    0.7,
+    0.35
+  ],
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "late_scaler",
+  "description": "Grows stronger each wave it survives."
+}

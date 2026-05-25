@@ -1,0 +1,14 @@
+{
+  "id": "duelists_bet",
+  "kind": "pact",
+  "display_name": "Duelist's Bet",
+  "rarity": "rare",
+  "tags": ["songhai", "combat"],
+  "run_adjective": "Tempo-Bound",
+  "boon": "+5 gold per enemy killed",
+  "curse": "Enemies move +15% faster",
+  "effects": [
+    {"type": "kill_gold_bonus", "amount": 5},
+    {"type": "enemy_speed_mult", "mult": 1.15}
+  ]
+}

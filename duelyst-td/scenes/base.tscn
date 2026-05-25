@@ -1,0 +1,16 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/base.gd" id="1_b"]
+[ext_resource type="Texture2D" path="res://assets/ui/base_crest.png" id="2_cr"]
+[ext_resource type="PackedScene" path="res://scenes/health_bar.tscn" id="3_hb"]
+
+[node name="Base" type="Node2D"]
+script = ExtResource("1_b")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_cr")
+scale = Vector2(0.1, 0.1)
+
+[node name="HealthBar" parent="." instance=ExtResource("3_hb")]
+position = Vector2(0, -100)
+bar_size = Vector2(120, 10)

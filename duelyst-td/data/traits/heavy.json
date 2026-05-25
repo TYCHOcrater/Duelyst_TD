@@ -1,0 +1,11 @@
+{
+  "id": "heavy",
+  "display_name": "Heavy",
+  "rarity": "common",
+  "tags": ["combat"],
+  "description": "+60% damage, -30% fire rate.",
+  "stat_mods": {
+    "damage_mult": 1.6,
+    "fire_rate_mult": 0.7
+  }
+}

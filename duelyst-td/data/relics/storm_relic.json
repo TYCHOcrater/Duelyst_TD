@@ -1,0 +1,13 @@
+{
+  "id": "storm_relic",
+  "kind": "relic",
+  "display_name": "Storm Relic",
+  "rarity": "common",
+  "tags": ["songhai", "tempo"],
+  "run_adjective": "Stormtouched",
+  "boon": "+1 gold per kill and +1 base gold each planning phase",
+  "effects": [
+    {"type": "kill_gold_bonus", "amount": 1},
+    {"type": "wave_gold_bonus", "amount": 1}
+  ]
+}

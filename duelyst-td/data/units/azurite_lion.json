@@ -1,0 +1,31 @@
+{
+  "id": "azurite_lion",
+  "display_name": "Azurite Lion",
+  "asset_profile_id": "f1_azuritelion",
+  "faction": "lyonar",
+  "roles": [
+    "striker"
+  ],
+  "keywords": [
+    "celerity"
+  ],
+  "tags": [
+    "lyonar",
+    "physical"
+  ],
+  "cost": 8,
+  "range": 180,
+  "damage": 4,
+  "fire_rate": 2.4,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 540,
+  "projectile_color": [
+    0.85,
+    0.9,
+    1.0
+  ],
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "midgame_spike",
+  "description": "Celerity striker. Attacks rapidly with low damage per hit."
+}

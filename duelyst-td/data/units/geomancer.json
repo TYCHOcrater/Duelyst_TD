@@ -1,0 +1,21 @@
+{
+  "id": "geomancer",
+  "display_name": "Geomancer",
+  "asset_profile_id": "f2_geomancer",
+  "faction": "songhai",
+  "roles": ["artillery"],
+  "keywords": ["blast"],
+  "tags": ["songhai", "magic", "aoe"],
+  "cost": 11,
+  "range": 220,
+  "damage": 13,
+  "fire_rate": 0.65,
+  "damage_type": "arcane",
+  "targeting": "first",
+  "projectile_speed": 460,
+  "projectile_color": [1.0, 0.55, 0.3],
+  "splash_radius": 75,
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "midgame_spike",
+  "description": "Heavy arcane splash. Larger AoE than Pyromancer but slower and pricier."
+}

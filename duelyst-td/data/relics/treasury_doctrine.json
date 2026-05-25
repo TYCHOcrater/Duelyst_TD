@@ -1,0 +1,12 @@
+{
+  "id": "treasury_doctrine",
+  "kind": "relic",
+  "display_name": "Treasury Doctrine",
+  "rarity": "common",
+  "tags": ["economy"],
+  "run_adjective": "Sun-Gilded",
+  "boon": "+3 gold at the start of each planning phase",
+  "effects": [
+    {"type": "wave_gold_bonus", "amount": 3}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "loadbearer_banner",
+  "kind": "relic",
+  "display_name": "Loadbearer Banner",
+  "rarity": "common",
+  "tags": ["economy", "scaling"],
+  "run_adjective": "Steadfast",
+  "boon": "Tower upgrades cost 50% less",
+  "effects": [
+    {"type": "upgrade_cost_mult", "mult": 0.5}
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "veteran",
+  "display_name": "Veteran",
+  "rarity": "rare",
+  "tags": ["scaling"],
+  "description": "Costs +50%, but starts at level 2 (one free upgrade baked in).",
+  "stat_mods": {
+    "cost_mult": 1.5,
+    "start_level": 1
+  }
+}

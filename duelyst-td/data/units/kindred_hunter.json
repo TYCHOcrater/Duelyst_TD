@@ -1,0 +1,22 @@
+{
+  "id": "kindred_hunter",
+  "display_name": "Kindred Hunter",
+  "asset_profile_id": "f6_kindredhunter",
+  "faction": "vanar",
+  "roles": ["sniper"],
+  "keywords": ["ranged"],
+  "tags": ["vanar", "ranged", "magic"],
+  "cost": 7,
+  "range": 260,
+  "damage": 7,
+  "fire_rate": 1.1,
+  "damage_type": "frost",
+  "targeting": "first",
+  "projectile_speed": 600,
+  "projectile_color": [0.7, 0.9, 1.0],
+  "slow_duration": 0.4,
+  "slow_factor": 0.75,
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "early_hold",
+  "description": "Long-range frost sniper. Brief slow on each hit; rewards an early forward placement."
+}

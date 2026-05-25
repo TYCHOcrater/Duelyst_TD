@@ -1,0 +1,21 @@
+{
+  "id": "andromeda_boss",
+  "display_name": "Andromeda Echo",
+  "asset_profile_id": "boss_andromeda",
+  "family": "boss",
+  "tags": ["boss", "elite"],
+  "hp": 700,
+  "speed": 42.0,
+  "armor": 2,
+  "physical_resist": 0.10,
+  "magic_resist": 0.10,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 200,
+  "leak_damage": 5,
+  "scale": 1.7,
+  "tint": [1.0, 0.85, 0.85],
+  "hp_bar_offset": -100,
+  "hp_bar_width": 110,
+  "description": "Wave 10 boss. Modest resistances across the board reward dedicated boss-killers over generalist DPS."
+}

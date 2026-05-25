@@ -1,0 +1,20 @@
+{
+  "id": "aphotic_devourer",
+  "display_name": "Aphotic Devourer",
+  "asset_profile_id": "f4_arcanedevourer",
+  "faction": "abyssian",
+  "roles": ["bruiser", "finisher"],
+  "keywords": [],
+  "tags": ["abyssian", "burst", "spirit"],
+  "cost": 11,
+  "range": 175,
+  "damage": 24,
+  "fire_rate": 0.5,
+  "damage_type": "spirit",
+  "targeting": "strongest",
+  "projectile_speed": 480,
+  "projectile_color": [0.55, 0.25, 0.95],
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "boss_killer",
+  "description": "Slow heavy spirit burst. Boss eater; weak against swarms by itself."
+}

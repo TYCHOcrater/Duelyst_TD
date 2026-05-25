@@ -1,0 +1,33 @@
+{
+  "id": "ethereal_obelysk",
+  "display_name": "Ethereal Obelysk",
+  "asset_profile_id": "f3_orbweaver",
+  "faction": "vetruvian",
+  "roles": [
+    "artillery",
+    "heavy"
+  ],
+  "keywords": [
+    "gateway"
+  ],
+  "tags": [
+    "vetruvian",
+    "magic",
+    "structure"
+  ],
+  "cost": 11,
+  "range": 220,
+  "damage": 16,
+  "fire_rate": 0.55,
+  "damage_type": "arcane",
+  "targeting": "strongest",
+  "projectile_speed": 380,
+  "projectile_color": [
+    0.6,
+    0.7,
+    1.0
+  ],
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "midgame_spike",
+  "description": "Heavy obelysk. Slow but punishing."
+}

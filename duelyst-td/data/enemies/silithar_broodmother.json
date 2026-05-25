@@ -1,0 +1,24 @@
+{
+  "id": "silithar_broodmother",
+  "display_name": "Silithar Broodmother",
+  "asset_profile_id": "f5_silitharelder",
+  "family": "splitter",
+  "tags": ["splitter", "magmar", "elite"],
+  "hp": 180,
+  "speed": 45.0,
+  "armor": 1,
+  "physical_resist": 0.0,
+  "magic_resist": 0.0,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 25,
+  "leak_damage": 2,
+  "scale": 1.4,
+  "tint": [0.85, 1.0, 0.7],
+  "hp_bar_offset": -75,
+  "hp_bar_width": 85,
+  "on_death": [
+    {"type": "split", "enemy_id": "silithar_younglet", "count": 3, "progress_spread": 20.0}
+  ],
+  "description": "Big Magmar mother. On death, three Silithar Younglets spawn at her last position and keep walking. Splash damage handles the brood."
+}

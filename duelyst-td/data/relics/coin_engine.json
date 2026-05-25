@@ -1,0 +1,12 @@
+{
+  "id": "coin_engine",
+  "kind": "relic",
+  "display_name": "Coin Engine",
+  "rarity": "common",
+  "tags": ["economy"],
+  "run_adjective": "Wealthy",
+  "boon": "+1 gold per enemy killed",
+  "effects": [
+    {"type": "kill_gold_bonus", "amount": 1}
+  ]
+}

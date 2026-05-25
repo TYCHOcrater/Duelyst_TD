@@ -1,0 +1,11 @@
+{
+  "id": "glass",
+  "display_name": "Glass",
+  "rarity": "uncommon",
+  "tags": ["combat", "risk"],
+  "description": "+50% damage, -25% range. Big hits at point-blank.",
+  "stat_mods": {
+    "damage_mult": 1.5,
+    "range_mult": 0.75
+  }
+}

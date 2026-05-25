@@ -1,0 +1,22 @@
+{
+  "id": "gravity_well",
+  "display_name": "Gravity Well",
+  "asset_profile_id": "f6_gravitywell",
+  "faction": "vanar",
+  "roles": ["control"],
+  "keywords": ["frost"],
+  "tags": ["vanar", "control", "magic"],
+  "cost": 6,
+  "range": 200,
+  "damage": 2,
+  "fire_rate": 1.6,
+  "damage_type": "frost",
+  "targeting": "first",
+  "projectile_speed": 460,
+  "projectile_color": [0.4, 0.7, 1.0],
+  "slow_duration": 1.8,
+  "slow_factor": 0.40,
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "support_enabler",
+  "description": "Strongest slow in the roster (1.8s @ 40% speed). Tiny damage; pair with high-DPS allies."
+}

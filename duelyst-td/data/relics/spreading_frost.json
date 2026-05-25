@@ -1,0 +1,12 @@
+{
+  "id": "spreading_frost",
+  "kind": "relic",
+  "display_name": "Spreading Frost",
+  "rarity": "rare",
+  "tags": ["control", "synergy"],
+  "run_adjective": "Frostfallen",
+  "boon": "Slow effects last 50% longer",
+  "effects": [
+    {"type": "slow_duration_mult", "mult": 1.5}
+  ]
+}

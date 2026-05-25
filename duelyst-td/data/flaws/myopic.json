@@ -1,0 +1,12 @@
+{
+  "id": "myopic",
+  "display_name": "Myopic",
+  "rarity": "uncommon",
+  "is_flaw": true,
+  "tags": ["combat", "positioning"],
+  "description": "-15% damage and -15% range. Mild general weakness.",
+  "stat_mods": {
+    "damage_mult": 0.85,
+    "range_mult": 0.85
+  }
+}

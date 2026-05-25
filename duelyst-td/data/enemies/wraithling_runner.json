@@ -1,0 +1,21 @@
+{
+  "id": "wraithling_runner",
+  "display_name": "Wraithling",
+  "asset_profile_id": "boss_wraith",
+  "family": "swarm",
+  "tags": ["swarm", "abyssian", "token"],
+  "hp": 16,
+  "speed": 75.0,
+  "armor": 0,
+  "physical_resist": 0.0,
+  "magic_resist": 0.0,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 4,
+  "leak_damage": 1,
+  "scale": 0.85,
+  "tint": [0.85, 0.7, 1.0],
+  "hp_bar_offset": -40,
+  "hp_bar_width": 40,
+  "description": "Frail. Comes in packs. Splash dismantles them; single-target shots waste their time."
+}

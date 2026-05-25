@@ -1,0 +1,21 @@
+{
+  "id": "silithar_younglet",
+  "display_name": "Silithar Younglet",
+  "asset_profile_id": "f5_silitharyoung",
+  "family": "regen",
+  "tags": ["regen", "magmar"],
+  "hp": 80,
+  "speed": 55.0,
+  "armor": 0,
+  "physical_resist": 0.0,
+  "magic_resist": 0.0,
+  "regen_per_sec": 5.0,
+  "shield_hp": 0,
+  "gold_reward": 13,
+  "leak_damage": 1,
+  "scale": 1.0,
+  "tint": [0.7, 1.0, 0.75],
+  "hp_bar_offset": -55,
+  "hp_bar_width": 55,
+  "description": "Regenerates 5 HP/sec. Sustained drip damage gets out-healed; bursts kill them before they recover."
+}

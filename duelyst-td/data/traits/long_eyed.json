@@ -1,0 +1,11 @@
+{
+  "id": "long_eyed",
+  "display_name": "Long-Eyed",
+  "rarity": "common",
+  "tags": ["combat"],
+  "description": "+30% range, -10% damage.",
+  "stat_mods": {
+    "range_mult": 1.3,
+    "damage_mult": 0.9
+  }
+}

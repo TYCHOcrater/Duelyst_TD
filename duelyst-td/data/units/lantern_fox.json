@@ -1,0 +1,22 @@
+{
+  "id": "lantern_fox",
+  "display_name": "Lantern Fox",
+  "asset_profile_id": "f2_lanternfox",
+  "faction": "songhai",
+  "roles": ["support"],
+  "keywords": ["aura"],
+  "tags": ["songhai", "support", "buff"],
+  "cost": 8,
+  "range": 0,
+  "damage": 0,
+  "fire_rate": 0.1,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 0,
+  "projectile_color": [1.0, 0.55, 0.4],
+  "buff_radius": 180,
+  "buff_damage_mult": 0.28,
+  "shoot_sfx": "",
+  "timing": "support_enabler",
+  "description": "Songhai aura tower. +28% damage to allies in 180px. Mid-cost between Hearth-Sister and Sunbreaker."
+}

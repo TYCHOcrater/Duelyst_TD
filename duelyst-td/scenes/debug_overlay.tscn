@@ -1,0 +1,80 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/debug_overlay.gd" id="1_do"]
+
+[node name="DebugOverlay" type="CanvasLayer"]
+layer = 100
+script = ExtResource("1_do")
+
+[node name="StatsPanel" type="Panel" parent="."]
+visible = false
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = -360.0
+offset_right = 340.0
+offset_bottom = -234.0
+grow_vertical = 0
+
+[node name="VBox" type="VBoxContainer" parent="StatsPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="StatsPanel/VBox"]
+text = "[F1] Run Stats"
+theme_override_font_sizes/font_size = 14
+modulate = Color(0.8, 0.9, 1, 1)
+
+[node name="StatsText" type="Label" parent="StatsPanel/VBox"]
+text = ""
+theme_override_font_sizes/font_size = 11
+autowrap_mode = 2
+size_flags_vertical = 3
+
+[node name="ExportButton" type="Button" parent="StatsPanel/VBox"]
+text = "Export log JSON"
+custom_minimum_size = Vector2(0, 26)
+
+[node name="CmdPanel" type="Panel" parent="."]
+visible = false
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -420.0
+offset_top = -380.0
+offset_right = -8.0
+offset_bottom = -234.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="VBox" type="VBoxContainer" parent="CmdPanel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Title" type="Label" parent="CmdPanel/VBox"]
+text = "[F2] Last Commands"
+theme_override_font_sizes/font_size = 14
+modulate = Color(0.8, 0.9, 1, 1)
+
+[node name="CmdText" type="Label" parent="CmdPanel/VBox"]
+text = ""
+theme_override_font_sizes/font_size = 11
+autowrap_mode = 2
+size_flags_vertical = 3

@@ -1,0 +1,31 @@
+{
+  "id": "healing_mystic",
+  "display_name": "Healing Mystic",
+  "asset_profile_id": "neutral_healingmystic",
+  "faction": "neutral",
+  "roles": [
+    "support"
+  ],
+  "keywords": [],
+  "tags": [
+    "neutral",
+    "support"
+  ],
+  "cost": 4,
+  "range": 150,
+  "damage": 3,
+  "fire_rate": 1.5,
+  "damage_type": "arcane",
+  "targeting": "first",
+  "projectile_speed": 520,
+  "projectile_color": [
+    0.7,
+    1.0,
+    0.7
+  ],
+  "buff_radius": 170,
+  "buff_damage_mult": 0.2,
+  "shoot_sfx": "tower_caster_shoot",
+  "timing": "support_enabler",
+  "description": "Cheap support. Mild attack + nearby damage aura (+20%)."
+}

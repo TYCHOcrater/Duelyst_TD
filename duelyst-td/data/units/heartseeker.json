@@ -1,0 +1,32 @@
+{
+  "id": "heartseeker",
+  "display_name": "Heartseeker",
+  "asset_profile_id": "f2_hammonnladeseeker",
+  "faction": "songhai",
+  "roles": [
+    "sniper"
+  ],
+  "keywords": [
+    "ranged"
+  ],
+  "tags": [
+    "songhai",
+    "ranged",
+    "physical"
+  ],
+  "cost": 6,
+  "range": 280,
+  "damage": 5,
+  "fire_rate": 1.2,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 680,
+  "projectile_color": [
+    1.0,
+    0.5,
+    0.4
+  ],
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "early_hold",
+  "description": "Long-range chip. Picks the lead enemy."
+}

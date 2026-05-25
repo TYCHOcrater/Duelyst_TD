@@ -1,0 +1,11 @@
+{
+  "id": "swift",
+  "display_name": "Swift",
+  "rarity": "common",
+  "tags": ["combat", "tempo"],
+  "description": "+40% fire rate, -20% damage.",
+  "stat_mods": {
+    "damage_mult": 0.8,
+    "fire_rate_mult": 1.4
+  }
+}

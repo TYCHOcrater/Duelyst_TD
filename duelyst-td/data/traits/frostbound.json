@@ -1,0 +1,11 @@
+{
+  "id": "frostbound",
+  "display_name": "Frostbound",
+  "rarity": "uncommon",
+  "tags": ["control", "synergy"],
+  "description": "Attacks slow targets for 0.6s. Stacks with existing slows.",
+  "stat_mods": {
+    "slow_duration_add": 0.6,
+    "slow_factor_min": 0.7
+  }
+}

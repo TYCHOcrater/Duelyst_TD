@@ -1,0 +1,11 @@
+{
+  "id": "costly",
+  "display_name": "Costly",
+  "rarity": "uncommon",
+  "is_flaw": true,
+  "tags": ["economy"],
+  "description": "+40% cost. No stat penalty, but eats gold.",
+  "stat_mods": {
+    "cost_mult": 1.4
+  }
+}

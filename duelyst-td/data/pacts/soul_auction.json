@@ -1,0 +1,14 @@
+{
+  "id": "soul_auction",
+  "kind": "pact",
+  "display_name": "Soul Auction",
+  "rarity": "rare",
+  "tags": ["economy", "combat", "abyssian"],
+  "run_adjective": "Soulbound",
+  "boon": "+3 gold per enemy killed",
+  "curse": "Enemies have +15% HP",
+  "effects": [
+    {"type": "kill_gold_bonus", "amount": 3},
+    {"type": "enemy_hp_mult", "mult": 1.15}
+  ]
+}

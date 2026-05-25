@@ -1,0 +1,13 @@
+{
+  "id": "overflow_mercy",
+  "display_name": "Overflow Mercy",
+  "rarity": "common",
+  "tags": ["defensive"],
+  "run_adjective": "Merciful",
+  "boon": "First leak each wave does 0 damage",
+  "curse": "All other leaks deal +1 damage",
+  "effects": [
+    {"type": "ignore_first_leak"},
+    {"type": "leak_damage_delta", "amount": 1}
+  ]
+}

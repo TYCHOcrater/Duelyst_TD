@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/tower.gd" id="1_t"]
+
+[node name="Tower" type="Node2D"]
+script = ExtResource("1_t")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
+animation = &"idle"

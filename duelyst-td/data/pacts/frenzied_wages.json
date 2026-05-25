@@ -1,0 +1,13 @@
+{
+  "id": "frenzied_wages",
+  "display_name": "Frenzied Wages",
+  "rarity": "common",
+  "tags": ["economy", "tempo"],
+  "run_adjective": "Frenzied",
+  "boon": "+1 gold per enemy killed",
+  "curse": "Rerolls cost +2 gold extra",
+  "effects": [
+    {"type": "kill_gold_bonus", "amount": 1},
+    {"type": "reroll_cost_delta", "amount": 2}
+  ]
+}

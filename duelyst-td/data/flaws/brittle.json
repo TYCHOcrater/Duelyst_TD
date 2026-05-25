@@ -1,0 +1,11 @@
+{
+  "id": "brittle",
+  "display_name": "Brittle",
+  "rarity": "common",
+  "is_flaw": true,
+  "tags": ["combat"],
+  "description": "-20% damage. Hits softer than its trait would suggest.",
+  "stat_mods": {
+    "damage_mult": 0.8
+  }
+}

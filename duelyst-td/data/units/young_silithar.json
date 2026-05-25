@@ -1,0 +1,33 @@
+{
+  "id": "young_silithar",
+  "display_name": "Young Silithar",
+  "asset_profile_id": "f5_silitharyoung",
+  "faction": "magmar",
+  "roles": [
+    "bruiser",
+    "starter"
+  ],
+  "keywords": [
+    "rebirth"
+  ],
+  "tags": [
+    "magmar",
+    "melee",
+    "physical"
+  ],
+  "cost": 5,
+  "range": 90,
+  "damage": 5,
+  "fire_rate": 1.4,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 520,
+  "projectile_color": [
+    1.0,
+    0.8,
+    0.4
+  ],
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "early_hold",
+  "description": "Sturdy melee starter."
+}

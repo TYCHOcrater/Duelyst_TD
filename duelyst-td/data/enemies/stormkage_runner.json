@@ -1,0 +1,21 @@
+{
+  "id": "stormkage_runner",
+  "display_name": "Storm Kage",
+  "asset_profile_id": "f2_stormkage",
+  "family": "fast",
+  "tags": ["fast", "songhai"],
+  "hp": 28,
+  "speed": 135.0,
+  "armor": 0,
+  "physical_resist": 0.0,
+  "magic_resist": 0.0,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 7,
+  "leak_damage": 1,
+  "scale": 1.0,
+  "tint": [1.0, 0.6, 0.6],
+  "hp_bar_offset": -50,
+  "hp_bar_width": 50,
+  "description": "Sprints down the lane. Slow effects buy your towers the seconds they need."
+}

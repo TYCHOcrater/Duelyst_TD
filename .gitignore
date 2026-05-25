@@ -1,0 +1,28 @@
+# Build output (large; create GitHub Releases instead)
+builds/
+
+# Duelyst source assets — CC0 from upstream, not redistributed here
+duelyst-main/
+
+# Godot editor cache (machine-specific; regenerated on first import)
+duelyst-td/.godot/
+
+# Godot user data (saved runs, custom maps, daily scoreboards)
+duelyst-td/user/
+
+# Claude Code local settings
+.claude/
+
+# OS / editor cruft
+*.tmp
+*.bak
+Thumbs.db
+.DS_Store
+*.swp
+*~
+
+# Python tooling
+__pycache__/
+*.pyc
+.venv/
+venv/

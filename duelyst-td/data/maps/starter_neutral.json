@@ -1,0 +1,19 @@
+{
+  "id": "starter_neutral",
+  "name": "Starter Neutral",
+  "version": 1,
+  "width": 20,
+  "height": 8,
+  "tile_size": 64,
+  "origin": [0, 56],
+  "tiles": [
+    "BBBBBBBBBBBBBBBBBBBB",
+    "BBPPPPPPPBBBBBBBBBBB",
+    "BBPBBBBBPBBBBBBBBBBB",
+    "BBPBBBBBPBBBBBBBBBBB",
+    "BBPBBBBBPBBBBBPPPPPC",
+    "SPPBBBBBPBBBBBPBBBBB",
+    "BBBBBBBBPBBBBBPBBBBB",
+    "BBBBBBBBPPPPPPPBBBBB"
+  ]
+}

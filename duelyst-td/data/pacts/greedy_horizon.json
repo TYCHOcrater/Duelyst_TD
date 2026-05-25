@@ -1,0 +1,13 @@
+{
+  "id": "greedy_horizon",
+  "display_name": "Greedy Horizon",
+  "rarity": "common",
+  "tags": ["economy"],
+  "run_adjective": "Greedy",
+  "boon": "+4 gold each planning phase",
+  "curse": "Shop offers one fewer unit",
+  "effects": [
+    {"type": "wave_gold_bonus", "amount": 4},
+    {"type": "shop_size_delta", "amount": -1}
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "id": "windblade_adept",
+  "display_name": "Windblade Adept",
+  "asset_profile_id": "f1_windbladecommander",
+  "faction": "lyonar",
+  "roles": [
+    "striker",
+    "starter"
+  ],
+  "keywords": [
+    "zeal"
+  ],
+  "tags": [
+    "lyonar",
+    "melee",
+    "single_target",
+    "physical"
+  ],
+  "cost": 5,
+  "range": 90,
+  "damage": 8,
+  "fire_rate": 1.6,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 600,
+  "projectile_color": [
+    1.0,
+    0.95,
+    0.6
+  ],
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "early_hold",
+  "description": "Cheap melee duelist. Reliable starter, scales near core."
+}

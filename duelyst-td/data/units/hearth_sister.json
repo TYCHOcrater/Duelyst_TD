@@ -1,0 +1,22 @@
+{
+  "id": "hearth_sister",
+  "display_name": "Hearth-Sister",
+  "asset_profile_id": "f6_sister",
+  "faction": "vanar",
+  "roles": ["support"],
+  "keywords": [],
+  "tags": ["vanar", "support", "buff"],
+  "cost": 7,
+  "range": 0,
+  "damage": 0,
+  "fire_rate": 0.1,
+  "damage_type": "frost",
+  "targeting": "first",
+  "projectile_speed": 0,
+  "projectile_color": [0.7, 0.9, 1.0],
+  "buff_radius": 200,
+  "buff_damage_mult": 0.25,
+  "shoot_sfx": "",
+  "timing": "support_enabler",
+  "description": "Frost aura tower. +25% damage to all towers in 200px. Cheaper than Sunbreaker, smaller bonus."
+}
