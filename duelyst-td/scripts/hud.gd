@@ -736,6 +736,11 @@ func on_phase_changed(phase: String) -> void:
 	start_wave_btn.visible = planning
 	# Reroll button visible only during planning.
 	reroll_btn.visible = planning
+	# Phase flash — soft colored vignette as the phase transitions in.
+	if phase == "combat":
+		_flash_phase_vignette(Color(1.0, 0.4, 0.3, 1.0), 0.75)
+	elif phase == "planning":
+		_flash_phase_vignette(Color(0.45, 0.75, 1.0, 1.0), 0.45)
 
 func show_draft_offers(offers: Array) -> void:
 	_current_offers = offers.duplicate()
@@ -998,6 +1003,51 @@ func _on_promote() -> void:
 
 func _on_sell() -> void:
 	CommandBus.dispatch(SellUnitCommand.new())
+
+# Phase-flash vignette: lazily-built TextureRect full-screen overlay with a
+# soft radial gradient (transparent middle, opaque edges). Tinted + faded by
+# on_phase_changed.
+var _phase_flash: TextureRect = null
+
+func _ensure_phase_flash() -> void:
+	if _phase_flash != null:
+		return
+	_phase_flash = TextureRect.new()
+	_phase_flash.name = "PhaseFlash"
+	_phase_flash.texture = _build_vignette_texture(256)
+	_phase_flash.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_phase_flash.stretch_mode = TextureRect.STRETCH_SCALE
+	_phase_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_phase_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_phase_flash.modulate = Color(1, 1, 1, 0)
+	_phase_flash.z_index = -1
+	add_child(_phase_flash)
+	# Send it behind other HUD children but keep it within the CanvasLayer.
+	move_child(_phase_flash, 0)
+
+func _flash_phase_vignette(color: Color, peak_alpha: float) -> void:
+	_ensure_phase_flash()
+	if _phase_flash == null:
+		return
+	_phase_flash.modulate = Color(color.r, color.g, color.b, peak_alpha)
+	var t := create_tween()
+	t.tween_property(_phase_flash, "modulate:a", 0.0, 0.75).set_trans(Tween.TRANS_QUART).set_ease(Tween.EASE_OUT)
+
+func _build_vignette_texture(size: int) -> ImageTexture:
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	var c := Vector2(size, size) * 0.5
+	var max_d: float = c.length()
+	var inner_frac := 0.55
+	for y in size:
+		for x in size:
+			var d: float = Vector2(x + 0.5, y + 0.5).distance_to(c) / max_d
+			if d <= inner_frac:
+				continue
+			var t: float = (d - inner_frac) / (1.0 - inner_frac)
+			t = t * t
+			img.set_pixel(x, y, Color(1, 1, 1, clamp(t, 0.0, 1.0)))
+	return ImageTexture.create_from_image(img)
 
 # C6: gate shield UI. Built lazily so single-topology maps never create it.
 const _GATE_SHIELD_COLORS := [
