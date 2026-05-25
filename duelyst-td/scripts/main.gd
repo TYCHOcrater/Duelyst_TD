@@ -98,8 +98,14 @@ func _ready() -> void:
 	# C2: hand the spawner the full per-route Path2D array so each scheduled
 	# spawn fans out onto every route. For single-topology maps route_paths
 	# is just [enemy_path] and behavior is unchanged.
+	# C6: also pass parallel route_ids so leaks can route through the matching
+	# Gate Shield, and initialize each route's Gate Shield HP.
 	if board.route_paths.size() > 1:
-		spawner.configure_paths(board.route_paths)
+		var rids: Array = []
+		for r in board.routes:
+			rids.append(String(r.get("id", "")))
+		spawner.configure_paths(board.route_paths, rids)
+		GameState.init_gate_shields(board.routes)
 		print("main: multi-route spawn enabled across %d route(s) [topology=%s]" % [
 			board.route_paths.size(), board.topology
 		])

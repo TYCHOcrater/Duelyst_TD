@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C6: Gate Shield + route leak routing
+**Decision:** Each route on a multi-route map now has its own Gate Shield (default 3 HP, configurable per route). Leaks damage the shield first; overflow falls through to the shared Core (existing `GameState.lives`). HUD lazily builds a per-route strip (colored label + colored ProgressBar) anchored under the TopBar, flashes on hit, dims when broken. Single-topology maps never instantiate the strip and behave exactly as before.
+**Why:** Closes the C2 leak-routing leftover and lands the C6 acceptance criteria: per-route UI, damage flash, distinct Core hit. With shields visible, the player can read at a glance which lane is bleeding — essential for any multi-lane co-op TD even in solo battleground testing.
+**Impact:** `scripts/game_state.gd` (gate_shields/gate_shield_max dicts + GATE_SHIELD_PER_ROUTE const + init_gate_shields + take_leak_damage + gate_shield_changed signal), `scripts/wave_spawner.gd` (route_ids parallel array, _path_by_route lookup, configure_paths now takes route_ids, leak handlers bind route_id at connect time, splitter children inherit parent's route), `scripts/main.gd` (passes rids + calls GameState.init_gate_shields when route_paths > 1), `scripts/hud.gd` (gate_shield_changed handler + lazy strip builder + flash/dim feedback).
+**Test:** `--use-battleground` boots clean and creates 4 shield rows once any wave produces leaks. Default starter map boots clean; no strip created (route_id is "" and the handler short-circuits). RunLog `leak` entries now include `route_id`, `shield_hits`, `core_hits`.
+
+---
+
 ## 2026-05-25 — Iter C5: co-op camera and route overview
 **Decision:** Camera2D gets `bind_board(board)`, `_focus_route_index(i)`, and `focus_overview()`. Keys **1-4** tween the camera to the centroid of route i at a route zoom (1.4x); **TAB** fits the whole grid in the viewport (with a 10% margin, clamped to camera limits). Tween uses TRANS_SINE/EASE_OUT, 0.35s, position+zoom in parallel.
 **Why:** C-track next step; makes the 4-quadrant battleground actually navigable. Pressing 1 → north route, 2 → east, etc., is the same idiom most co-op TDs use. TAB gives the co-op overview the addendum's acceptance criterion calls out.

@@ -163,6 +163,9 @@ func _ready() -> void:
 	GameState.lives_changed.connect(_on_lives_changed)
 	GameState.wave_changed.connect(_on_wave_changed)
 	GameState.game_over.connect(_on_game_over)
+	# C6: route Gate Shield strip. Built lazily as routes report in so
+	# single-topology maps never even instantiate the container.
+	GameState.gate_shield_changed.connect(_on_gate_shield_changed)
 	for i in offer_btns.size():
 		var idx := i
 		offer_btns[idx].pressed.connect(func(): _on_offer_pressed(idx))
@@ -981,3 +984,72 @@ func _on_promote() -> void:
 
 func _on_sell() -> void:
 	CommandBus.dispatch(SellUnitCommand.new())
+
+# C6: gate shield UI. Built lazily so single-topology maps never create it.
+const _GATE_SHIELD_COLORS := [
+	Color(0.55, 0.85, 1.0, 1.0),   # P1 / route 0 — frost blue
+	Color(1.00, 0.85, 0.45, 1.0),  # P2 / route 1 — gold
+	Color(1.00, 0.55, 0.55, 1.0),  # P3 / route 2 — coral
+	Color(0.60, 1.00, 0.65, 1.0),  # P4 / route 3 — green
+]
+var _gate_strip: VBoxContainer = null
+var _gate_rows: Dictionary = {}  # route_id -> Dictionary{label, bar}
+var _gate_route_order: Array = []
+
+func _ensure_gate_strip() -> void:
+	if _gate_strip != null:
+		return
+	_gate_strip = VBoxContainer.new()
+	_gate_strip.name = "GateShieldStrip"
+	_gate_strip.add_theme_constant_override("separation", 4)
+	_gate_strip.position = Vector2(12, 56)  # just below the TopBar
+	_gate_strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_gate_strip)
+
+func _ensure_gate_row(route_id: String, max_hp: int) -> void:
+	if _gate_rows.has(route_id):
+		return
+	_ensure_gate_strip()
+	var idx: int = _gate_route_order.size()
+	_gate_route_order.append(route_id)
+	var color: Color = _GATE_SHIELD_COLORS[idx % _GATE_SHIELD_COLORS.size()]
+	var row := HBoxContainer.new()
+	row.add_theme_constant_override("separation", 6)
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var label := Label.new()
+	label.text = "%s gate" % route_id.capitalize()
+	label.add_theme_color_override("font_color", color)
+	label.custom_minimum_size = Vector2(80, 0)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bar := ProgressBar.new()
+	bar.min_value = 0
+	bar.max_value = max_hp
+	bar.value = max_hp
+	bar.show_percentage = false
+	bar.custom_minimum_size = Vector2(110, 14)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = color
+	bar.add_theme_stylebox_override("fill", fill)
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(label)
+	row.add_child(bar)
+	_gate_strip.add_child(row)
+	_gate_rows[route_id] = {"label": label, "bar": bar, "row": row, "color": color}
+
+func _on_gate_shield_changed(route_id: String, current: int, max_hp: int) -> void:
+	if route_id == "":
+		return
+	_ensure_gate_row(route_id, max_hp)
+	var entry: Dictionary = _gate_rows[route_id]
+	var bar: ProgressBar = entry["bar"]
+	bar.max_value = max_hp
+	bar.value = current
+	# Flash the row briefly to call attention to the damaged lane.
+	var row: HBoxContainer = entry["row"]
+	row.modulate = Color(1.6, 1.6, 1.6, 1.0)
+	var t := create_tween()
+	t.tween_property(row, "modulate", Color.WHITE, 0.35)
+	if current <= 0:
+		# Broken: dim the row so the player sees the lane is now bleeding into Core.
+		var col: Color = entry["color"]
+		entry["label"].add_theme_color_override("font_color", Color(col.r * 0.5, col.g * 0.5, col.b * 0.5, 1.0))
