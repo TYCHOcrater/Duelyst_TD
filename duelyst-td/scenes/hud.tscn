@@ -143,7 +143,13 @@ theme_override_constants/separation = 2
 
 [node name="WaveTitle" type="Label" parent="BottomBar/VBox/DraftRow/WavePreview/VBox"]
 text = "Wave 1: --"
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("4_tgp")
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.95, 0.92, 0.78, 1)
+
+[node name="WaveSeparator" type="ColorRect" parent="BottomBar/VBox/DraftRow/WavePreview/VBox"]
+custom_minimum_size = Vector2(0, 1)
+color = Color(0.45, 0.45, 0.5, 0.45)
 
 [node name="WaveTags" type="RichTextLabel" parent="BottomBar/VBox/DraftRow/WavePreview/VBox"]
 custom_minimum_size = Vector2(0, 22)
@@ -156,8 +162,9 @@ text = ""
 text = ""
 autowrap_mode = 2
 theme_override_font_sizes/font_size = 11
+theme_override_constants/line_spacing = 3
 size_flags_vertical = 3
-modulate = Color(0.85, 0.85, 0.9, 1)
+modulate = Color(0.82, 0.86, 0.9, 1)
 
 [node name="OfferBox1" type="PanelContainer" parent="BottomBar/VBox/DraftRow"]
 custom_minimum_size = Vector2(190, 200)
