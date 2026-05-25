@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C9: Shared co-op pact (chooser attribution)
+**Decision:** Pacts already apply globally via `ModifierTotals` (sum_int / product_float / has_flag) and the C2 multi-route fan-out already broadcasts wave modifications across every route — so the "applies to all routes" half of C9 is structurally satisfied. The missing half was attribution: who picked which pact. Added a parallel `active_chooser: Array[int]` to PactManager so each entry in `active_ids` carries the slot id that picked it. ChoosePactCommand + ChooseRelicCommand now grab `session.local_slot_id` at execute time and pass it through `PactManager.activate(id, slot)` plus into `RunLog.record("pact_chosen" / "relic_chosen", {..., "chosen_by_slot"})`. Solo runs log slot 0; future multiplayer runs will record real chooser identity.
+**Why:** C9 acceptance says "Run summary records pact and who chose it." Pact effects were already universal (each pact's effects file targets ModifierTotals, which the spawner reads for *every* enemy spawn). Solo had no concept of chooser; co-op needs it so the team can debrief who took what risk.
+**Impact:** `scripts/pact_manager.gd` (new active_chooser array, optional `chosen_by_slot` arg on `activate()`, `chooser_for(i)` accessor, cleared in reset), `scripts/commands/choose_pact_command.gd` (passes session.local_slot_id), `scripts/commands/choose_relic_command.gd` (mirrors the pattern in the RunLog entry).
+**Test:** Headless boot clean. Pick a pact in-game — the per-pact `RunLog.record("pact_chosen")` now carries `chosen_by_slot`. ModifierTotals already affected both routes on the battleground map, so an "enemy_hp_mult" pact still buffs enemies on every lane.
+
+---
+
 ## 2026-05-25 — Iter C8: Breach Tunnel v1
 **Decision:** When a route accumulates `BREACH_TRIGGER_LEAKS = 3` leaks in a single wave, the spawner drops a **breach_packet** elite (HP 80, speed 45, scale 1.2, red tint, leak_damage 3) at that route's start. If towers kill it before it reaches the Core, `GameState.grant_breach_saves(route_id, 2)` banks two leak-saves on that route — each future leak on that lane is fully absorbed (no shield/core damage). If the breach reaches the Core, it leaks like any elite but heavier. One breach max per route per wave.
 **Why:** C8 acceptance — give a collapsing lane a last-chance save moment. The 3-leak trigger means it only appears when a lane is actually breaking; the 2-save reward gives clear payoff without trivializing the lane.

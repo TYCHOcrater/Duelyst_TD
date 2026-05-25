@@ -11,6 +11,9 @@ signal offers_rolled(options: Array)
 var pacts: Dictionary = {}            # id -> def
 var pact_ids: Array[String] = []
 var active_ids: Array[String] = []    # chosen in this run, in order
+# C9: parallel to active_ids — which slot chose each pact. -1 means "no
+# attribution" (legacy / single-player runs default to local_slot_id=0).
+var active_chooser: Array[int] = []
 var current_offers: Array[String] = []  # 3 options awaiting pick
 
 func _ready() -> void:
@@ -18,6 +21,7 @@ func _ready() -> void:
 
 func reset() -> void:
 	active_ids.clear()
+	active_chooser.clear()
 	current_offers.clear()
 	pacts_changed.emit()
 
@@ -76,15 +80,25 @@ func roll_offers(count: int) -> Array[String]:
 	offers_rolled.emit(current_offers)
 	return current_offers
 
-func activate(id: String) -> bool:
+func activate(id: String, chosen_by_slot: int = -1) -> bool:
 	if not pacts.has(id):
 		return false
 	if is_active(id):
 		return false
 	active_ids.append(id)
+	# C9: parallel attribution. If unspecified, callers default to -1 so the
+	# run summary can still distinguish "no record" from a real slot id.
+	active_chooser.append(chosen_by_slot)
 	current_offers.clear()
 	pacts_changed.emit()
 	return true
+
+# C9: lookup the slot that picked the pact at active_ids index `i`, or -1 if
+# no attribution exists for that index.
+func chooser_for(i: int) -> int:
+	if i < 0 or i >= active_chooser.size():
+		return -1
+	return active_chooser[i]
 
 # --- Effect queries (sum_int, product_float, has_flag) ---
 
