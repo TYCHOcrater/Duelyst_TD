@@ -322,6 +322,11 @@ func evolution_progress() -> Dictionary:
 
 func _process(delta: float) -> void:
 	fire_cooldown -= delta
+	# Drive the upgradable-highlight pulse for any non-preview tower that
+	# has an action available. Cheap check, no queue_redraw if there's
+	# nothing to highlight.
+	if not is_preview and _has_upgrade_available():
+		queue_redraw()
 	if buff_damage_mult > 0.0 and damage <= 0:
 		queue_redraw()
 		return
@@ -427,6 +432,17 @@ func _fire() -> void:
 			sprite.play("idle")
 
 func _draw() -> void:
+	# Soft elliptical ground shadow under the unit (Duelyst-style). Drawn
+	# first so range circles + aura pulses layer over it. Skipped for the
+	# placement-preview ghost so it doesn't double up with the live tower.
+	if not is_preview:
+		_draw_unit_shadow()
+		# A2/A4/A5/A6 upgradable highlight: pulsing ring when this unit has a
+		# pending evolution OR can be promoted in the current growth mode OR
+		# can be classically upgraded with current gold. Helps the player see
+		# at a glance "I have an action available on this unit".
+		if _has_upgrade_available():
+			_draw_upgrade_highlight()
 	if show_range:
 		var range_color := Color(0.2, 0.7, 1.0, 0.12)
 		var border_color := Color(0.2, 0.7, 1.0, 0.5)
@@ -455,6 +471,51 @@ func _draw() -> void:
 		for i in evolution_tier:
 			var sx: float = -total_w * 0.5 + i * spacing
 			_draw_star(Vector2(sx, star_y), 4.0, star_color)
+
+func _draw_unit_shadow() -> void:
+	# Squashed ellipse approximated via two stacked circles to avoid needing a
+	# texture asset. Radii sized to roughly match the unit footprint.
+	var shadow := Color(0.0, 0.0, 0.0, 0.22)
+	# Center near the feet of the sprite. Sprite origin is at the unit center
+	# (~16px above ground), so y +18 offsets to ground.
+	var c := Vector2(0, 18)
+	# Squash: render as a horizontal ellipse using two arcs.
+	# Cheap path: just draw a filled ellipse as 32 triangle slices.
+	var rx: float = 22.0
+	var ry: float = 7.0
+	var pts: PackedVector2Array = PackedVector2Array()
+	pts.append(c)
+	var segs := 24
+	for i in segs + 1:
+		var a: float = TAU * i / segs
+		pts.append(c + Vector2(cos(a) * rx, sin(a) * ry))
+	draw_polygon(pts, PackedColorArray([shadow]))
+
+func _has_upgrade_available() -> bool:
+	# True if the player has at least one action available on this unit right now.
+	# (Doesn't gate on phase — the highlight is informational; commands still
+	# enforce planning_only.)
+	var mode: String = RunConfig.growth_mode
+	# Classic-upgrade-eligible modes: have enough gold AND not at max level
+	if mode in ["classic_upgrade", "merge_evolution_hybrid"]:
+		if level < 4 and GameState.gold >= upgrade_cost():
+			return true
+	# Merge-mode shard promotion
+	if mode in ["merge_stars", "merge_evolution_hybrid"]:
+		if can_promote_star():
+			return true
+	# Pending evolution choice (hybrid only)
+	if pending_evolution_star > 0:
+		return true
+	return false
+
+func _draw_upgrade_highlight() -> void:
+	var pulse: float = 0.5 + 0.5 * sin(Time.get_ticks_msec() / 320.0)
+	var color := Color(1.0, 0.95, 0.55, 0.55 + 0.30 * pulse)
+	var inner_color := Color(1.0, 0.95, 0.55, 0.10 + 0.06 * pulse)
+	var radius: float = 28.0
+	draw_circle(Vector2(0, 4), radius, inner_color)
+	draw_arc(Vector2(0, 4), radius, 0, TAU, 40, color, 3.0)
 
 func _draw_star(center: Vector2, size: float, color: Color) -> void:
 	var pts := PackedVector2Array([

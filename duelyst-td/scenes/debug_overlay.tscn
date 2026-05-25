@@ -8,14 +8,11 @@ script = ExtResource("1_do")
 
 [node name="StatsPanel" type="Panel" parent="."]
 visible = false
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
+anchors_preset = 0
 offset_left = 8.0
-offset_top = -360.0
+offset_top = 140.0
 offset_right = 340.0
-offset_bottom = -234.0
-grow_vertical = 0
+offset_bottom = 360.0
 
 [node name="VBox" type="VBoxContainer" parent="StatsPanel"]
 anchors_preset = 15
@@ -45,17 +42,14 @@ custom_minimum_size = Vector2(0, 26)
 
 [node name="CmdPanel" type="Panel" parent="."]
 visible = false
-anchors_preset = 3
+anchors_preset = 1
 anchor_left = 1.0
-anchor_top = 1.0
 anchor_right = 1.0
-anchor_bottom = 1.0
 offset_left = -420.0
-offset_top = -380.0
+offset_top = 64.0
 offset_right = -8.0
-offset_bottom = -234.0
+offset_bottom = 280.0
 grow_horizontal = 0
-grow_vertical = 0
 
 [node name="VBox" type="VBoxContainer" parent="CmdPanel"]
 anchors_preset = 15

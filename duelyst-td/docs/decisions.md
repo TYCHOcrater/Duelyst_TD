@@ -1759,6 +1759,42 @@ enemy.take_damage → RunLog.add_damage(dealt, source_id)               # existi
 
 ---
 
+## 2026-05-25 — Polish: unit shadows, upgrade-available highlight, debug overlay repositioning
+**Decision:** Three user-flagged polish items, one iteration.
+1. **Soft ground shadow** drawn under every tower and enemy (Duelyst-style). Pure `_draw` polygons — no texture asset needed.
+2. **Upgrade-available highlight**: pulsing gold ring under any tower that has at least one action the player could take right now (classic upgrade afford, shards for promotion, or pending evolution choice). Tells the player at a glance which units want a click.
+3. **F1/F2 debug overlay panels** repositioned to the top half of the viewport so they stop overlapping the play board's lower-middle (where towers usually live).
+**Why polygons, not texture sprites:** A shadow PNG would be one more asset to maintain. `draw_polygon(24-segment ellipse)` is functionally identical at our scale and costs nothing in disk/import.
+**Why the highlight pulses (not solid):** A static outline would compete visually with selection/hover affordances. A 0.32s sine pulse on alpha makes the ring quietly draw the eye without screaming.
+**Why `_has_upgrade_available()` checks all three growth modes:**
+- Classic / hybrid: gold ≥ upgrade_cost + level < max
+- Merge / hybrid: shards ≥ promote_cost OR pending_evolution > 0
+A single helper centralizes the "any action available?" logic; the same function gates the highlight + drives the pulse's queue_redraw.
+**Why the highlight runs in `_process` even when nothing's pulsing:** `_has_upgrade_available()` is cheap (3 conditional checks). Calling it per-tower per-frame costs less than maintaining a signal-based notification system that fires on every gold change, every shard buy, every wave clear, etc. ~6 active towers × 60fps × 3 conditionals = trivial.
+**Why F1 panel moved to y=140-360 (top-left) and F2 to y=64-280 (top-right):**
+- Old positions hugged the bottom bar (y=360-486) which is squarely on the playable board's lower half, occluding the tile grid where most towers sit.
+- New positions live ABOVE the wave-preview / offer-cards bottom bar AND below the top bar / pacts label / income floater, in the screen's quiet upper-third.
+- ActivePactsLabel (y=64-130) is on the left; F1 starts at y=140 to clear it.
+- IncomeFloater (y=64-90, x=440-840) is centered; F2 starts at x=860 to clear it.
+**Impact:**
+- `scripts/tower.gd`:
+  - `_draw_unit_shadow()` — 24-segment elliptical polygon, semi-transparent black.
+  - `_has_upgrade_available()` — three-mode check.
+  - `_draw_upgrade_highlight()` — pulsing ring at radius 28.
+  - `_process` calls `queue_redraw()` when `_has_upgrade_available()` is true (drives the pulse without polluting buff-tower / target-line redraw paths).
+  - `_draw` head adds shadow + (conditional) highlight before the existing range/aura/target overlays.
+- `scripts/enemy.gd`: `_draw()` adds a smaller elliptical shadow scaled by the enemy's `scale.x/y` (so big bosses cast bigger shadows).
+- `scenes/debug_overlay.tscn`: StatsPanel anchors_preset 0 + new offsets at top-left. CmdPanel anchors_preset 1 + new offsets at top-right.
+**Test:**
+- [ ] Start a run. Place any tower → soft elliptical shadow under it.
+- [ ] Have enough gold to upgrade → pulsing gold ring appears under the tower. Spend the gold below the cost → ring disappears.
+- [ ] In merge_stars mode, buy 2 duplicates of a placed unit → ring appears (promotion available).
+- [ ] In merge_evolution_hybrid mode, promote a unit to 2★ that has evolutions → ring stays on (pending evolution). Pick an evolution → ring goes off until the next action is available.
+- [ ] Enemies have a shadow too; bosses' shadows are visibly bigger.
+- [ ] Press F1 → StatsPanel pops up at the top-left, well clear of any tiles. Press F2 → CmdPanel at top-right, clear of pacts label + income floater.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):

@@ -33,6 +33,22 @@ var _pending_def: Dictionary = {}
 var _on_death_events: Array = []
 
 @onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+
+func _draw() -> void:
+	# Duelyst-style soft ground shadow. Drawn each frame because the enemy
+	# is moving along the path — we want the shadow to track the unit.
+	# (PathFollow2D's _process is called every frame anyway; queue_redraw
+	# is implicit via the next frame's redraw of moved nodes.)
+	var shadow := Color(0.0, 0.0, 0.0, 0.20)
+	var c := Vector2(0, 14)
+	var rx: float = 18.0 * scale.x
+	var ry: float = 6.0 * scale.y
+	var pts: PackedVector2Array = PackedVector2Array()
+	pts.append(c)
+	for i in 25:
+		var a: float = TAU * i / 24
+		pts.append(c + Vector2(cos(a) * rx, sin(a) * ry))
+	draw_polygon(pts, PackedColorArray([shadow]))
 @onready var hp_bar: Node2D = $HealthBar
 @onready var status_icons: Node2D = $StatusIcons
 
