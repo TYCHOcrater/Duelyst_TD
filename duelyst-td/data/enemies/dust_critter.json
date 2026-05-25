@@ -1,0 +1,21 @@
+{
+  "id": "dust_critter",
+  "display_name": "Dust Critter",
+  "asset_profile_id": "critter_1",
+  "family": "swarm",
+  "tags": ["swarm", "neutral", "fast"],
+  "hp": 10,
+  "speed": 95.0,
+  "armor": 0,
+  "physical_resist": 0.0,
+  "magic_resist": 0.0,
+  "regen_per_sec": 0.0,
+  "shield_hp": 0,
+  "gold_reward": 3,
+  "leak_damage": 1,
+  "scale": 0.7,
+  "tint": [1.0, 0.95, 0.8],
+  "hp_bar_offset": -30,
+  "hp_bar_width": 32,
+  "description": "Tiny and quick. Easy to kill but slips past slow towers."
+}

@@ -1,0 +1,34 @@
+{
+  "id": "archdeacon",
+  "display_name": "Archdeacon",
+  "asset_profile_id": "f1_archdeacon",
+  "faction": "lyonar",
+  "roles": [
+    "caster"
+  ],
+  "keywords": [
+    "blessing"
+  ],
+  "tags": [
+    "lyonar",
+    "ranged",
+    "magical",
+    "splash"
+  ],
+  "cost": 11,
+  "range": 210,
+  "damage": 9,
+  "fire_rate": 0.55,
+  "damage_type": "celestial",
+  "targeting": "first",
+  "projectile_speed": 500,
+  "projectile_color": [
+    1.0,
+    0.95,
+    0.6
+  ],
+  "splash_radius": 70,
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "lategame_spike",
+  "description": "Heavy celestial spell. Slow but punishing AoE."
+}

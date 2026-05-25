@@ -1,0 +1,33 @@
+{
+  "id": "backline_archer",
+  "display_name": "Backline Archer",
+  "asset_profile_id": "f1_backlinearcher",
+  "faction": "lyonar",
+  "roles": [
+    "sniper",
+    "starter"
+  ],
+  "keywords": [
+    "ranged"
+  ],
+  "tags": [
+    "lyonar",
+    "ranged",
+    "physical"
+  ],
+  "cost": 5,
+  "range": 250,
+  "damage": 3,
+  "fire_rate": 1.4,
+  "damage_type": "strike",
+  "targeting": "first",
+  "projectile_speed": 640,
+  "projectile_color": [
+    1.0,
+    0.95,
+    0.7
+  ],
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "early_hold",
+  "description": "Long arrows. Cheap, picks the lead — solid early hold."
+}

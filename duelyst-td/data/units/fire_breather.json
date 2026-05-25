@@ -1,0 +1,34 @@
+{
+  "id": "fire_breather",
+  "display_name": "Fire Breather",
+  "asset_profile_id": "f5_firebreather",
+  "faction": "magmar",
+  "roles": [
+    "bruiser"
+  ],
+  "keywords": [
+    "scorch"
+  ],
+  "tags": [
+    "magmar",
+    "melee",
+    "fire",
+    "splash"
+  ],
+  "cost": 7,
+  "range": 130,
+  "damage": 7,
+  "fire_rate": 1.1,
+  "damage_type": "fire",
+  "targeting": "first",
+  "projectile_speed": 380,
+  "projectile_color": [
+    1.0,
+    0.45,
+    0.2
+  ],
+  "splash_radius": 50,
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "midgame_spike",
+  "description": "Short-range flame cone. Burns clumped enemies fast."
+}

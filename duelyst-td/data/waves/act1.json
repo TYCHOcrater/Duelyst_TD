@@ -25,7 +25,8 @@
       "tags": ["fast", "swarm"],
       "spawn_groups": [
         {"enemy_id": "wraithling_runner", "count": 6, "interval": 0.7},
-        {"enemy_id": "stormkage_runner", "count": 4, "interval": 0.9}
+        {"enemy_id": "stormkage_runner", "count": 4, "interval": 0.9},
+        {"enemy_id": "dust_critter", "count": 5, "interval": 0.6, "delay": 6.0}
       ]
     },
     {
@@ -74,6 +75,7 @@
         {"enemy_id": "iron_squire", "count": 5, "interval": 0.8},
         {"enemy_id": "sanctified_bulwark", "count": 1, "interval": 0.0, "delay": 5.0},
         {"enemy_id": "clad_juggernaut", "count": 1, "interval": 0.0, "delay": 12.0},
+        {"enemy_id": "loam_critter", "count": 4, "interval": 1.1, "delay": 3.0},
         {"enemy_id": "wraithling_runner", "count": 10, "interval": 0.4}
       ]
     },

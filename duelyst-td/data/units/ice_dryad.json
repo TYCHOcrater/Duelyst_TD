@@ -1,0 +1,35 @@
+{
+  "id": "ice_dryad",
+  "display_name": "Ice Dryad",
+  "asset_profile_id": "f6_icedryad",
+  "faction": "vanar",
+  "roles": [
+    "controller"
+  ],
+  "keywords": [
+    "frostbite"
+  ],
+  "tags": [
+    "vanar",
+    "ranged",
+    "magical",
+    "slow"
+  ],
+  "cost": 7,
+  "range": 200,
+  "damage": 3,
+  "fire_rate": 1.3,
+  "damage_type": "frost",
+  "targeting": "first",
+  "projectile_speed": 460,
+  "projectile_color": [
+    0.6,
+    0.85,
+    1.0
+  ],
+  "slow_duration": 1.4,
+  "slow_factor": 0.55,
+  "shoot_sfx": "tower_archer_shoot",
+  "timing": "support_enabler",
+  "description": "Frost shards. Light damage, heavy slow — keeps lanes stuck."
+}
