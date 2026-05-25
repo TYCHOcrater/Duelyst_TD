@@ -1442,6 +1442,37 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — SFX event router (Iteration D9)
+**Decision:** Land the event-routing infrastructure for D9 without bulk-transcoding audio first. AudioManager gains `play_event(event_id)` that looks up `data/duelyst/sfx_events.json`, applies cooldown + max-simultaneous throttling, and routes to the existing pooled `play(sfx_id)`. 20 events defined; 13 currently route to playable OGG sounds, 7 are data-ready but silent (no audio asset yet — they no-op without crashing).
+**Why infrastructure first, audio later:** Duelyst ships SFX as `.m4a` (AAC). Godot 4 can't play AAC natively. `tools/convert_sfx.py` exists to transcode .m4a → .ogg but only 5 sounds are currently transcoded. Building the router *now* means future transcoded sounds wire in by editing one JSON file — no code changes needed. Lets the catalog/router/throttle infrastructure ship without blocking on the slow per-sound curation work.
+**Why play_event returns bool:** True = sound dispatched OR data-ready silent event. False = throttled (cooldown active, voice cap hit, or unknown event). Callers can branch on this if they want to chain alternate UX (e.g. visual flash instead of redundant beep when throttle hits).
+**Why a 1.2s fixed in-flight timeout (not per-stream length):** Stream length lookup at play-time is more code for marginal benefit — 1.2s overestimates the typical SFX duration but isn't long enough to noticeably starve max_simultaneous in practice. Refine when actual telemetry shows it matters.
+**Why call sites still use `play(sfx_id)` directly:** Existing code (`tower.gd`, `placement_controller.gd`, etc.) calls `AudioManager.play("place_tower")` etc. Those keep working — `play_event` is an additive surface, not a replacement. Future iterations can migrate specific call sites to events as the routing benefits become valuable. Migration is non-breaking either way.
+**Why ResourceLoader.exists() guard in `_ready`:** Previously, AudioManager called `load("res://assets/sfx/ui_select.ogg")` and `load("res://assets/sfx/wave_start.ogg")` for paths that don't exist (transcoded files were never committed). `load()` returns null → the pooled players got null streams → silent failure cascading into the `_in_flight` accounting if play_event was called. Skipping missing files at boot is cleaner.
+**20 events defined** (in order of priority):
+- Low-priority (UI feedback): ui_click, ui_confirm, ui_cancel, shop_reroll
+- Medium (gameplay actions): unit_place, unit_sell, unit_upgrade, unit_merge, unit_evolve, tower_shoot, tower_cast
+- High (state changes): wave_start, enemy_death, leak, core_damage, pact_chosen, relic_chosen, boss_warning
+- Reserved (planned, no audio): unit_merge, unit_evolve, boss_warning, victory, defeat
+**Impact:**
+- New `data/duelyst/sfx_events.json` — 20 event definitions with sfx_id (nullable), priority, cooldown_ms, max_simultaneous.
+- `scripts/audio_manager.gd`: new `play_event(event_id, pitch_variance)`, `_load_events()`, `_in_flight`/`_last_fire_ms` tracking dicts. `ResourceLoader.exists()` guard on stream loading.
+**Test:** See checklist below.
+
+---
+
+### Manual Test Checklist - Iter D9 (SFX router)
+
+- [ ] Start a run. Boot prints no warnings about missing audio files (previously `place_tower` etc. would warn).
+- [ ] Place a unit → `place_tower.ogg` plays as before (existing call sites unchanged).
+- [ ] Open Godot script console at runtime → `AudioManager.play_event("ui_click")` returns `true` and the ui_select sound plays.
+- [ ] Spam `AudioManager.play_event("ui_click")` 10× in 50ms → first ~3 succeed (cooldown 40ms × max_simultaneous 4), the rest return `false`.
+- [ ] `AudioManager.play_event("unit_merge")` returns `true` but plays nothing (sfx_id=null — planned event).
+- [ ] `AudioManager.play_event("nonexistent_event")` returns `false` and prints a "unknown event" warning.
+- [ ] Headless: full content-scan still passes (`--content-scan` prints D1→D8 PASS as before).
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):
