@@ -1,0 +1,9 @@
+{
+  "_schema": "Per-rule multipliers applied to draft offer weights. Read by draft_director._weight_for. Tweak to dial up/down each bias without touching code. Higher values = stronger bias. 1.0 = no effect.",
+  "owned_base_unit_mult":      1.30,
+  "owned_base_unit_modes":     ["merge_stars", "merge_evolution_hybrid"],
+  "shared_tag_mult_per_tag":   1.08,
+  "shared_tag_max_tags":       3,
+  "missing_role_boost_mult":   1.15,
+  "missing_role_boost_chance": 0.25
+}

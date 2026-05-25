@@ -25,6 +25,11 @@ func execute(main: Node) -> bool:
 	var unit_id: String = draft.current_offers[offer_index]
 	var trait_id: String = draft.get_trait_for(offer_index)
 	var flaw_id: String = draft.get_flaw_for(offer_index)
+	# A7: any time the player buys an offer of a base they already own,
+	# bump the "duplicate offers bought" counter. Captured here (not in the
+	# shard path alone) so classic-mode duplicate placements also count.
+	if _already_owns_base(unit_id) and RunLog.active:
+		RunLog.stats["duplicate_offers_bought"] = int(RunLog.stats.get("duplicate_offers_bought", 0)) + 1
 	# A4: in merge_stars / merge_evolution_hybrid, buying a unit you already
 	# have placed converts the offer into a shard immediately (no placement
 	# preview). Gold spent, shard recorded, offer consumed — committed action.
