@@ -556,7 +556,40 @@ func _update_wave_preview(wave_num: int, is_active: bool) -> void:
 	wave_title.text = "%s: %s" % [prefix, wdef.get("name", "")]
 	var tags: Array = wdef.get("tags", [])
 	wave_tags.text = _format_tag_chips(tags)
-	wave_hint.text = _format_hints(tags)
+	var spawn_line: String = _format_spawn_summary(wdef)
+	var hint_body: String = _format_hints(tags)
+	if spawn_line != "" and hint_body != "":
+		wave_hint.text = spawn_line + "\n" + hint_body
+	elif spawn_line != "":
+		wave_hint.text = spawn_line
+	else:
+		wave_hint.text = hint_body
+
+# Aggregate spawn_groups in a wave def into a "Nx Name, Mx Other" summary.
+# Falls back to the enemy_id (capitalized) if the def has no display_name.
+func _format_spawn_summary(wdef: Dictionary) -> String:
+	var groups: Array = wdef.get("spawn_groups", [])
+	if groups.is_empty():
+		return ""
+	var counts: Dictionary = {}
+	var order: Array = []
+	for g in groups:
+		var eid: String = String(g.get("enemy_id", ""))
+		if eid == "":
+			continue
+		var c: int = int(g.get("count", 0))
+		if not counts.has(eid):
+			counts[eid] = 0
+			order.append(eid)
+		counts[eid] = counts[eid] + c
+	if counts.is_empty():
+		return ""
+	var parts: Array[String] = []
+	for eid in order:
+		var def: Dictionary = EnemyFactory.get_def(eid)
+		var name: String = String(def.get("display_name", eid.capitalize()))
+		parts.append("%d× %s" % [counts[eid], name])
+	return "Spawns: " + ", ".join(parts)
 
 func _format_tag_chips(tags: Array) -> String:
 	if tags.is_empty():
