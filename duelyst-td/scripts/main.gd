@@ -88,6 +88,7 @@ func _ready() -> void:
 	phase_controller.pact_choice_started.connect(hud.show_pact_choice)
 	phase_controller.relic_choice_started.connect(hud.show_relic_choice)
 	phase_controller.income_granted.connect(hud.show_income_breakdown)
+	phase_controller.wave_resolved.connect(hud.on_wave_resolved)
 	phase_controller.run_ended.connect(_on_run_ended)
 	spawner.wave_cleared.connect(phase_controller.notify_wave_cleared)
 	spawner.wave_cleared.connect(_credit_tower_wave_survival)

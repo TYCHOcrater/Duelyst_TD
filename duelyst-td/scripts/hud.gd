@@ -519,6 +519,19 @@ func show_wave_banner_planning(wave: int) -> void:
 	_update_wave_preview(wave, false)
 	_animate_banner("Planning · Wave %d" % wave, Color(1, 1, 1))
 
+# Fires from PhaseController when a wave's enemy queue empties. Used to
+# reward clean waves (zero leaks) with a small celebration cue so survival
+# without damage feels distinct from "barely scraped through".
+func on_wave_resolved(wave_num: int, leaks: int) -> void:
+	if leaks == 0:
+		AudioManager.play("place_tower", 0.18)  # higher-pitch chime
+		_flash_phase_vignette(Color(0.55, 1.0, 0.7, 1.0), 0.35)
+		# A small upward sparkle near the wave label so the cue has a focal point.
+		var host: Node = get_tree().current_scene
+		if host and wave_label and wave_label.is_inside_tree():
+			var anchor: Vector2 = wave_label.get_global_rect().get_center()
+			CombatFX.burst(host, anchor, Color(0.7, 1.0, 0.75), 10, 0.5)
+
 func show_wave_banner(wave_num: int) -> void:
 	_update_wave_preview(wave_num, true)
 	# Highlight in red when this wave has the BOSS tag.
