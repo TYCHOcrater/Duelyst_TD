@@ -15,6 +15,14 @@ Each entry: date, decision, why, impact.
 
 ---
 
+## 2026-05-25 — Iter C3: route ownership and placement zones
+**Decision:** PlayerSlot now carries an `owned_tiles: Dictionary` keyset of `Vector2i` coords it's allowed to build on. SessionController.assign_routes(board) seeds it at map-load: solo on a single-topology map = every buildable tile; solo on a multi-route (outburst) map = every tile within 3 of any route's chain (across all routes); multi-player = only tiles within 3 of *the slot's own* route. placement_controller.is_valid_placement gates by `local_slot.owns_tile(gp)`, so off-zone placement preview tints red.
+**Why:** C-track next step. Even though solo doesn't visibly enforce ownership, the zone data must exist so [[c4-synced-phases]] / multi-player can gate placement per slot. Doing the math at map-load (rather than per-frame) keeps placement validation O(1).
+**Impact:** `scripts/player_slot.gd` (owned_tiles dict + owns_tile() helper), `scripts/session_controller.gd` (assign_routes/_zone_for_routes/_assign_universal_ownership), `scripts/placement_controller.gd` (bind_session + zone check in is_valid_placement), `scripts/main.gd` (calls session.assign_routes + placement.bind_session post-map-load).
+**Test:** Headless boots both default (single) and `--use-battleground` (outburst) without errors. In solo battleground, placement is allowed near any of the 4 routes; tiles in the deep corners (no route nearby) are rejected. Default starter map's full buildable area still places (single-topology path → universal ownership).
+
+---
+
 ## 2026-05-25 — Iter C2a: multi-route enemy spawning (fan-out)
 **Decision:** `wave_spawner` now spawns one enemy per scheduled entry on **every** active route Path2D, not just the primary. `board` builds one runtime `Path2D` per route on outburst maps (route_paths[]); single-topology maps still see a 1-element array and behavior is unchanged. Per-route gate-shield routing (C2 criteria 3-4) is deferred to fold into [[c6-gate-shield]] since it requires the Gate Shield system.
 **Why:** C-track next step. The battleground map already has 4 routes (from C1) but only one was spawning enemies — the others rendered as inert paths. This wires waves across all routes so the multi-core arena actually plays as 4 routes, which is also the foundation co-op needs.

@@ -51,7 +51,12 @@ func _ready() -> void:
 		return
 	_apply_map_background()
 	_spawn_base()
+	# C3: now that the grid + routes are loaded, seed each PlayerSlot's
+	# owned-tile set so placement can gate by zone. In solo this just makes
+	# every buildable tile belong to slot 0 (no visible change).
+	session.assign_routes(board)
 	placement.bind_grid(board.grid)
+	placement.bind_session(session)
 	placement.path = board.enemy_path
 	phase_controller = Node.new()
 	phase_controller.set_script(PHASE_SCRIPT)

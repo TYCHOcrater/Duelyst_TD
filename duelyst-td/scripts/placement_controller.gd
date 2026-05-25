@@ -16,9 +16,15 @@ var preview_valid: bool = true
 var picked_tower: Node = null
 var hover_tower: Node = null
 var placement_locked: bool = false
+# C3: reference to the SessionController so is_valid_placement can ask the
+# local player slot whether it owns the target tile.
+var session: Node = null
 
 func bind_grid(g: GridController) -> void:
 	grid = g
+
+func bind_session(s: Node) -> void:
+	session = s
 
 func _process(_d: float) -> void:
 	if preview:
@@ -151,4 +157,11 @@ func is_valid_placement(pos: Vector2) -> bool:
 			var their_gp: Vector2i = grid.world_to_grid(child.global_position)
 			if their_gp == gp:
 				return false
+	# C3: route-ownership gate. In solo, slot 0 owns every buildable tile so
+	# this is a no-op. In multi-player, slot[i] only owns its assigned route's
+	# zone — placing outside it is rejected and the preview tints red.
+	if session and session.has_method("local_slot"):
+		var slot = session.local_slot()
+		if slot != null and not slot.owns_tile(gp):
+			return false
 	return true

@@ -21,10 +21,14 @@ const DEFAULT_COLORS := [
 var slot_id: int = 0
 var display_name: String = "P1"
 var color: Color = Color.WHITE
-var route_id: String = ""        # populated by C1 once CoopMapDef exists
+var route_id: String = ""        # populated by C1 once CoopMapDef exists; C3 may join multiple ids with ","
 var gate_shield: int = 0         # populated by C6
 var ready_for_wave: bool = false  # C4 uses this for synced phases
 var aid_tokens: int = 0          # C7
+# C3: keyset of Vector2i tile coordinates this slot is allowed to build on.
+# Populated by SessionController.assign_routes() at map-load time.
+# Empty dict => no zone yet known (caller should treat as "everywhere ok").
+var owned_tiles: Dictionary = {}
 
 # Per-slot summary stats. For solo (slot 0), C2+ will source these from the
 # existing GameState/RunLog when wave processing is split per route.
@@ -48,3 +52,11 @@ func to_dict() -> Dictionary:
 		"aid_tokens": aid_tokens,
 		"stats": stats.duplicate(),
 	}
+
+# C3: returns true if this slot is allowed to place a tower on `gp`.
+# Empty owned_tiles dict means ownership has not been assigned yet — treat
+# permissively (don't break the run on un-configured maps).
+func owns_tile(gp: Vector2i) -> bool:
+	if owned_tiles.is_empty():
+		return true
+	return owned_tiles.has(gp)
