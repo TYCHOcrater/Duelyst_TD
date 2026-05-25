@@ -1,0 +1,210 @@
+{
+  "id": "magmar_foundation",
+  "display_name": "Magmar Foundation Pack",
+  "faction": "magmar",
+  "type": "faction_pack",
+  "version": 1,
+  "description": "Big bodies, regen, primal impact. Slow-to-deploy but scales hard. Strong against attrition waves; weak early game and to silence (loses regen + scaling).",
+  "fantasy": "Eggs, growth, regeneration, mutation, brutal impact.",
+  "balance_state": "needs_playtest",
+  "enabled_in_debug": true,
+  "enabled_in_normal_runs": false,
+
+  "defender_unit_ids": [
+    "earth_walker",
+    "young_silithar"
+  ],
+
+  "defender_shells": [
+    {
+      "id": "magmar_grimrock",
+      "source_duelyst_unit_id": "f5_grimrock",
+      "display_name": "Grimrock",
+      "asset_profile_id": "f5_grimrock",
+      "faction": "magmar",
+      "role": "blocker",
+      "rarity": "common",
+      "cost": 6,
+      "range": 80,
+      "damage": 5,
+      "fire_rate": 0.8,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [1.0, 0.55, 0.25],
+      "tags": ["magmar", "blocker", "construct", "primal"],
+      "description": "Stone-skinned blocker. Cheap pack frontline."
+    },
+    {
+      "id": "magmar_ankylos",
+      "source_duelyst_unit_id": "f5_ankylos",
+      "display_name": "Ankylos",
+      "asset_profile_id": "f5_ankylos",
+      "faction": "magmar",
+      "role": "blocker",
+      "rarity": "uncommon",
+      "cost": 9,
+      "range": 88,
+      "damage": 7,
+      "fire_rate": 0.7,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [1.0, 0.6, 0.3],
+      "tags": ["magmar", "blocker", "reptile", "tank_melee"],
+      "description": "Heavy reptilian blocker. Higher HP than typical."
+    },
+    {
+      "id": "magmar_brundlbeast",
+      "source_duelyst_unit_id": "f5_brundlbeast",
+      "display_name": "Brundlbeast",
+      "asset_profile_id": "f5_brundlbeast",
+      "faction": "magmar",
+      "role": "basic_melee",
+      "rarity": "rare",
+      "cost": 10,
+      "range": 96,
+      "damage": 9,
+      "fire_rate": 0.95,
+      "damage_type": "strike",
+      "targeting": "first",
+      "projectile_speed": 0,
+      "projectile_color": [1.0, 0.5, 0.2],
+      "tags": ["magmar", "basic_melee", "beast", "regen_self"],
+      "description": "Brutal melee bruiser. Slow attack but heavy hits."
+    },
+    {
+      "id": "magmar_dreadnaught",
+      "source_duelyst_unit_id": "f5_dreadnaught",
+      "display_name": "Dreadnaught",
+      "asset_profile_id": "f5_dreadnaught",
+      "faction": "magmar",
+      "role": "artillery",
+      "rarity": "rare",
+      "cost": 12,
+      "range": 224,
+      "damage": 9,
+      "fire_rate": 0.5,
+      "damage_type": "siege",
+      "targeting": "strongest",
+      "projectile_speed": 420,
+      "projectile_color": [1.0, 0.4, 0.15],
+      "splash_radius": 72,
+      "tags": ["magmar", "artillery", "construct_large", "siege", "elite"],
+      "description": "Massive siege beast. Slowest fire rate, biggest splash."
+    },
+    {
+      "id": "magmar_drogon",
+      "source_duelyst_unit_id": "f5_drogon",
+      "display_name": "Drogon",
+      "asset_profile_id": "f5_drogon",
+      "faction": "magmar",
+      "role": "splash_mage",
+      "rarity": "rare",
+      "cost": 11,
+      "range": 160,
+      "damage": 7,
+      "fire_rate": 0.85,
+      "damage_type": "arcane",
+      "targeting": "first",
+      "projectile_speed": 460,
+      "projectile_color": [1.0, 0.45, 0.2],
+      "splash_radius": 56,
+      "tags": ["magmar", "splash_mage", "dragon", "fire"],
+      "description": "Dragon-flavored splash. Pairs with frontline tanks."
+    },
+    {
+      "id": "magmar_catalyst_quillbeast",
+      "source_duelyst_unit_id": "f5_catalystquillbeast",
+      "display_name": "Catalyst Quillbeast",
+      "asset_profile_id": "f5_catalystquillbeast",
+      "faction": "magmar",
+      "role": "control_unit",
+      "rarity": "rare",
+      "cost": 9,
+      "range": 144,
+      "damage": 4,
+      "fire_rate": 1.2,
+      "damage_type": "spirit",
+      "targeting": "first",
+      "projectile_speed": 460,
+      "projectile_color": [1.0, 0.55, 0.3],
+      "tags": ["magmar", "control_unit", "beast", "primal"],
+      "description": "Fast quill volleys. Lower damage but pressures the path."
+    }
+  ],
+
+  "enemy_shell_ids": [
+    "f5_grimrock_enemy",
+    "f5_ankylos_enemy",
+    "f5_brundlbeast_enemy",
+    "f5_dreadnaught_enemy",
+    "f5_drogon_enemy",
+    "f5_catalystquillbeast_enemy"
+  ],
+
+  "trait": {
+    "id": "magmar_relentless",
+    "display_name": "Relentless",
+    "rarity": "rare",
+    "applies_to_factions": ["magmar"],
+    "stat_mods": {"damage_mult": 1.15, "fire_rate_mult": 0.9},
+    "description": "+15% damage, -10% fire rate. Net DPS gain on tankier enemies."
+  },
+
+  "flaw": {
+    "id": "magmar_slow_start",
+    "display_name": "Slow Start",
+    "applies_to_factions": ["magmar"],
+    "stat_mods": {"cost_mult": 0.8, "wave1_damage_mult": 0.7},
+    "description": "20% cheaper but deals 30% less damage during the FIRST wave only (placeholder: not enforced yet)."
+  },
+
+  "relic": {
+    "id": "magmar_primal_growth",
+    "display_name": "Primal Growth",
+    "category": "scaling",
+    "boon": "Each Magmar unit gains +5% damage per wave it survives (max +50%). Magmar bruisers also gain 1 HP regen per wave (slow trickle).",
+    "effects": [
+      {"type": "magmar_wave_survival_damage_per_wave", "value": 0.05, "max": 0.5},
+      {"type": "magmar_wave_survival_hp_regen_per_wave", "value": 1}
+    ]
+  },
+
+  "wave_modifier": {
+    "id": "extinction_event",
+    "display_name": "Extinction Event",
+    "wave_index_hint": 8,
+    "description": "Massive boss-tier wave: huge tanks with regen. Magmar mirror match.",
+    "tags": ["tank", "regen", "boss_lite"],
+    "spawn_overrides": {
+      "force_family": "tank",
+      "hp_mult": 1.5,
+      "regen_per_sec_bonus": 3.0
+    }
+  },
+
+  "vfx_event_overrides": {
+    "attack_projectile": "magmar_quill_volley",
+    "hit_impact":        "magmar_impact_crush",
+    "unit_evolve":       "magmar_growth_pulse"
+  },
+
+  "sfx_event_overrides": {
+    "unit_place":   "place_tower",
+    "tower_shoot":  "tower_archer_shoot",
+    "tower_cast":   "tower_caster_shoot",
+    "enemy_death":  "enemy_death"
+  },
+
+  "challenge_seed": "SHARD-M46M4RR1",
+
+  "balance_notes": [
+    "Magmar is the most expensive pack — average shell cost is ~9-12. Needs gold ramp before deploying.",
+    "Grimrock (cost 6) is the only true budget pick; place 2 early to bridge to the heavy units.",
+    "Dreadnaught at 224 range + 72 splash is the carry. Place dead-center, surround with Ankylos.",
+    "Brundlbeast is melee but hits like an assassin — pairs with Aymara Healer (Vetruvian) for an aura burst combo.",
+    "Primal Growth relic snowballs hard if early units survive. Don't sell early picks.",
+    "Extinction Event wave is intentionally Magmar-mirror: you need anti-regen (Vanar shatter, Lyonar pierce) imported from another pack to break the tank's regen + hp scaling."
+  ]
+}

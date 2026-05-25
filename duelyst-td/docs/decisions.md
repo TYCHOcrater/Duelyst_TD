@@ -1589,6 +1589,44 @@ The A-track (growth bake-off) is paused after A1 in favor of the new co-op adden
 
 ---
 
+## 2026-05-25 — Songhai + Vetruvian + Magmar packs complete the 6-faction set
+**Decision:** Three more foundation packs to round out all six Duelyst factions. 18 more sprite-ready atlas conversions + 18 new defender shells. Six packs total now ship, covering the complete faction wheel.
+**6-pack faction wheel** (60 units total when all enabled):
+- Lyonar — armored frontline, defensive auras
+- Songhai — burst/speed, crit windows, single-target carries
+- Vetruvian — long-range artillery + obelysks + healer auras
+- Abyssian — swarm/sacrifice, cheap quantity + soul economy
+- Magmar — big bodies + regen + scaling
+- Vanar — frost control, slow-stack-into-execute
+**End-to-end verification**:
+```
+Curated baseline: 24
++abyssian → 30
++lyonar → 36
++magmar → 42
++songhai → 48
++vanar → 54
++vetruvian → 60
+```
+**Cross-pack interactions** worth playtesting (mentioned in balance notes):
+- Brundlbeast (Magmar) inside Aymara Healer aura (Vetruvian) — heavy melee + 20% damage buff combo
+- Songhai Demon Oni filling chokepoint role for Vetruvian artillery
+- Anti-regen units imported into the Magmar mirror-match wave
+- Anti-armor sources for the Songhai armored-tide wave
+**Bulk conversions**:
+- Songhai: keshraifanblade, flareslinger, katara, godpalmblacktiger, caster, demononi
+- Vetruvian: anubis, aymarahealer, curseddervish, dervish, deathobelysk, dreamshaper
+- Magmar: ankylos, brundlbeast, dreadnaught, grimrock, drogon, catalystquillbeast
+- ~1MB additional spritesheets/atlases committed total.
+**Impact:**
+- New `data/content_packs/duelyst/songhai_foundation.json` — Swift trait, Overcommitted flaw, Kindling Blade relic (every 4th hit +200%), Ironbound Tide wave (armored hard counter).
+- New `data/content_packs/duelyst/vetruvian_foundation.json` — Geomantic trait, Dusty flaw, Obelisk Array relic (+1 range/wave), Sandstorm Rush wave (fast swarm counter).
+- New `data/content_packs/duelyst/magmar_foundation.json` — Relentless trait, Slow Start flaw, Primal Growth relic (+5% dmg per wave survived), Extinction Event wave (regen tank mirror).
+- `assets/units/`: 18 new converted SpriteFrames directories.
+**Test:** Toggle any combination of the 6 packs in the Content Pack Manager. The draft shop pool will include all enabled-pack shells alongside the 24 curated units.
+
+---
+
 ## Next iteration candidates (C-track + D-track now interleaved)
 
 **D-track — content pipeline** (from ingestion addendum §19 "Best next sequence"):
