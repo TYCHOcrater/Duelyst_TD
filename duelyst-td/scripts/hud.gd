@@ -261,8 +261,22 @@ func _on_gold_changed(v: int) -> void:
 	if draft_director:
 		_refresh_reroll_label()
 
+var _last_lives: int = GameState.START_LIVES
+@onready var lives_box: HBoxContainer = $TopBar/HBox/LivesBox
+
 func _on_lives_changed(v: int) -> void:
 	lives_label.text = str(v)
+	# Mirror the gate-shield row flash for Core damage so leaks that bypass
+	# the shield read just as clearly. No flash on heals or initial reset.
+	if v < _last_lives and lives_box != null:
+		lives_box.modulate = Color(1.7, 0.5, 0.5, 1.0)
+		var t := create_tween()
+		t.tween_property(lives_box, "modulate", Color.WHITE, 0.45)
+		lives_label.scale = Vector2(1.3, 1.3)
+		lives_label.pivot_offset = lives_label.size * 0.5
+		var s := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		s.tween_property(lives_label, "scale", Vector2.ONE, 0.45)
+	_last_lives = v
 
 func _on_wave_changed(v: int) -> void:
 	wave_label.text = "Wave %d" % v
